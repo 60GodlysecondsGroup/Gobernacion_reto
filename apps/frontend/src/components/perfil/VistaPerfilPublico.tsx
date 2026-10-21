@@ -3,7 +3,9 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { AvatarProvisional } from '@/components/avatar/AvatarProvisional';
+import { BotonReportar } from '@/components/comunidad/BotonReportar';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
+import { useSesion } from '@/components/sesion/ProveedorSesion';
 import { Aviso, BotonEnlace, Insignia, Tarjeta } from '@/components/ui';
 import { ErrorApi, mensajeDeError } from '@/lib/api/cliente';
 import { obtenerPerfilPublico, type PerfilPublico } from '@/lib/api/comunidad';
@@ -17,6 +19,7 @@ type Estado =
 
 export function VistaPerfilPublico() {
   const { id } = useParams<{ id: string }>();
+  const { usuario } = useSesion();
   const [estado, setEstado] = useState<Estado>({ tipo: 'cargando' });
 
   useEffect(() => {
@@ -66,6 +69,9 @@ export function VistaPerfilPublico() {
               )}
             </div>
           </Tarjeta>
+          {estado.perfil.id !== usuario?.id && (
+            <BotonReportar tipoContenido="perfil" idContenido={estado.perfil.id} />
+          )}
         </>
       )}
       <div className={comun.fila}>

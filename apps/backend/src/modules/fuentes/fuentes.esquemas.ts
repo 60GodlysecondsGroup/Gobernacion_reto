@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { vacioANull } from '../../http/validacion.js';
 
 export const ESTADOS_FUENTE = ['activo', 'requiere_revision', 'inactivo'] as const;
 export type EstadoFuente = (typeof ESTADOS_FUENTE)[number];
@@ -20,10 +21,6 @@ export const ZONA_HORARIA = 'America/Bogota';
 /** Fecha de hoy en Colombia, `AAAA-MM-DD`. */
 export const hoyEnColombia = (ahora = new Date()) =>
   new Intl.DateTimeFormat('en-CA', { timeZone: ZONA_HORARIA }).format(ahora);
-
-/** Un campo opcional vacío ("" o solo espacios) se guarda como null. */
-const vacioANull = (valor: unknown) =>
-  typeof valor === 'string' && valor.trim() === '' ? null : valor;
 
 const fechaVerificacion = z.iso
   .date('Usa el formato AAAA-MM-DD.')

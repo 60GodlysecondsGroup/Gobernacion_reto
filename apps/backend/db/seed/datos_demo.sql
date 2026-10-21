@@ -63,4 +63,39 @@ from app.comunidad c
 join app.categoria cat on cat.codigo = 'bienestar-cotidiano'
 where c.rango_edad = 'B';
 
+-- Hilos sintéticos (Fase 4): uno o dos por comunidad, para que cada inicio tenga contenido y
+-- se pueda comprobar el aislamiento. Textos ficticios, sin datos personales.
+insert into app.hilo (id_usuario, id_comunidad, id_categoria, titulo, contenido, fecha_creacion)
+select u.id_usuario, c.id_comunidad, cat.id_categoria, h.titulo, h.contenido,
+       now() - h.antiguedad
+from (values
+  ('Usuario_002', 'vida-academica', '¿Cómo organizan su tiempo para estudiar?',
+   'Esta semana tengo varias tareas y me cuesta repartir el tiempo. ¿Qué les funciona a ustedes?',
+   interval '2 days'),
+  ('Usuario_001', 'cambios-nuevas-etapas', 'Me cuesta adaptarme a los cambios de este año',
+   'Cambiaron varios horarios y profesores, y todavía me siento un poco perdido. ¿A alguien más le pasó?',
+   interval '5 hours'),
+  ('Usuario_003', 'relaciones-convivencia', '¿Cómo hacer nuevos amigos en el descanso?',
+   'Llegué hace poco y en el descanso casi siempre estoy solo. ¿Qué podría intentar?',
+   interval '1 day'),
+  ('Usuario_004', 'bienestar-cotidiano', 'Ideas para empezar el día con calma',
+   '¿Qué hacen en la mañana para empezar con buena energía? Yo estoy probando salir a caminar un rato.',
+   interval '3 hours'),
+  ('Usuario_005', 'orientacion', '¿Dónde encuentro información sobre orientación vocacional?',
+   'Estoy pensando qué estudiar y quisiera saber qué opciones de orientación existen.',
+   interval '6 hours')
+) as h (codigo, categoria, titulo, contenido, antiguedad)
+join app.usuario u on u.codigo = h.codigo
+join app.comunidad c on c.rango_edad = u.rango_edad
+join app.categoria cat on cat.codigo = h.categoria;
+
+insert into app.respuesta (id_hilo, id_usuario, contenido, fecha_creacion)
+select hi.id_hilo, u.id_usuario, r.contenido, now() - r.antiguedad
+from (values
+  ('¿Cómo organizan su tiempo para estudiar?', 'Usuario_001',
+   'A mí me sirve hacer una lista corta cada mañana y empezar por lo más fácil.', interval '1 day')
+) as r (titulo, codigo, contenido, antiguedad)
+join app.hilo hi on hi.titulo = r.titulo
+join app.usuario u on u.codigo = r.codigo;
+
 -- Las fuentes institucionales de demostración se cargan después, desde fuentes_institucionales.json.

@@ -2,8 +2,14 @@
 
 Este es el modelo definitivo del prototipo. Convierte el modelo conceptual B.4 del Documento Maestro en tablas de PostgreSQL, dentro del esquema `app`.
 
-- Fuente: [`0001_esquema_inicial.sql`](../apps/backend/db/migraciones/0001_esquema_inicial.sql) y [`0002_orientacion_fuentes.sql`](../apps/backend/db/migraciones/0002_orientacion_fuentes.sql).
+- Fuente: [`0001_esquema_inicial.sql`](../apps/backend/db/migraciones/0001_esquema_inicial.sql) y [`0002_orientacion_fuentes.sql`](../apps/backend/db/migraciones/0002_orientacion_fuentes.sql) y [`0003_comunidad.sql`](../apps/backend/db/migraciones/0003_comunidad.sql).
 - Datos de demostración: [`datos_demo.sql`](../apps/backend/db/seed/datos_demo.sql), [`reglas_dlp.json`](../apps/backend/db/seed/reglas_dlp.json) y [`fuentes_institucionales.json`](../apps/backend/db/seed/fuentes_institucionales.json).
+
+**Cambios de la migración 0003 (Fase 4):**
+
+- `reporte_abierto_unico`: índice único parcial que impide que un usuario tenga dos reportes abiertos (pendientes o en revisión) sobre el mismo contenido.
+- `evento_dlp.tipo_contenido` admite `reporte`: el detalle opcional de un reporte también pasa por el DLP.
+- `hilo_comunidad_categoria`: índice para listar hilos de una comunidad por categoría.
 
 **Cambios de la migración 0002 (Fase 3):**
 

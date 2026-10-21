@@ -14,7 +14,7 @@ export const CATEGORIAS_DLP = [
 ] as const;
 export type CategoriaDlp = (typeof CATEGORIAS_DLP)[number];
 export type AccionDlp = 'bloquear' | 'advertir' | 'registrar';
-export type TipoContenido = 'perfil' | 'hilo' | 'respuesta' | 'sala';
+export type TipoContenido = 'perfil' | 'hilo' | 'respuesta' | 'sala' | 'reporte';
 
 /** Mensaje de bloqueo exacto (F22). Nunca repite el dato detectado. */
 export const MENSAJE_BLOQUEO =

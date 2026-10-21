@@ -1,5 +1,6 @@
-import type { RequestHandler } from 'express';
+import type { RequestHandler, Response } from 'express';
 import { errores } from '../../http/errores.js';
+import type { Sesion } from './sesion.service.js';
 
 export const ROLES = ['usuario', 'moderador', 'admin_plataforma', 'gestor_fuentes'] as const;
 export type Rol = (typeof ROLES)[number];
@@ -41,15 +42,21 @@ export const tienePermiso = (rol: Rol, permiso: Permiso): boolean =>
 export const permisosDe = (rol: Rol): Permiso[] =>
   (Object.keys(MATRIZ) as Permiso[]).filter((permiso) => tienePermiso(rol, permiso));
 
+/** Sesión con el permiso pedido, o 401 / 403. Para usar dentro de un handler. */
+export function exigirPermiso(res: Response, permiso: Permiso): Sesion {
+  const sesion = res.locals.sesion;
+  if (!sesion) throw errores.noAutenticado();
+  if (!tienePermiso(sesion.rol, permiso)) throw errores.prohibido();
+  return sesion;
+}
+
 /**
  * Guardián reutilizable: 401 sin sesión, 403 si el rol no tiene el permiso.
  * Siempre en el backend; ocultar algo en la interfaz no es una medida de seguridad.
  */
 export function requerirPermiso(permiso: Permiso): RequestHandler {
   return (_req, res, next) => {
-    const sesion = res.locals.sesion;
-    if (!sesion) return next(errores.noAutenticado());
-    if (!tienePermiso(sesion.rol, permiso)) return next(errores.prohibido());
+    exigirPermiso(res, permiso);
     next();
   };
 }

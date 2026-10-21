@@ -15,7 +15,10 @@ export function PiePagina() {
             oficial de ninguna institución.
           </p>
         </div>
-        <Link href="/guia-de-estilos">Guía de estilos</Link>
+        <div className={estilos.enlaces}>
+          <Link href="/reglas">Reglas de la comunidad</Link>
+          <Link href="/guia-de-estilos">Guía de estilos</Link>
+        </div>
       </div>
     </footer>
   );

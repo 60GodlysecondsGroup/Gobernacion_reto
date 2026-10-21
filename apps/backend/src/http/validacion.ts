@@ -7,6 +7,10 @@ z.config(z.locales.es());
 const PATRON_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const esUuid = (valor: string) => PATRON_UUID.test(valor);
 
+/** Para campos opcionales: un texto vacío ("" o solo espacios) se trata como null. */
+export const vacioANull = (valor: unknown) =>
+  typeof valor === 'string' && valor.trim() === '' ? null : valor;
+
 /**
  * Valida y normaliza una entrada (body, query o params) con un esquema zod.
  * Si no es válida lanza un 400 con la lista de campos; nunca devuelve los valores recibidos.

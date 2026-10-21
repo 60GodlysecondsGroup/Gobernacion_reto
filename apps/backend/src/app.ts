@@ -10,6 +10,9 @@ import type { Logger } from './lib/logger.js';
 import { crearRepositorioComunidades } from './modules/comunidad/comunidad.repository.js';
 import { rutasComunidad } from './modules/comunidad/comunidad.routes.js';
 import { crearServicioComunidad } from './modules/comunidad/comunidad.service.js';
+import { crearRepositorioHilos } from './modules/comunidad/hilos.repository.js';
+import { rutasHilos } from './modules/comunidad/hilos.routes.js';
+import { crearServicioHilos } from './modules/comunidad/hilos.service.js';
 import { crearRepositorioDlp } from './modules/dlp/dlp.repository.js';
 import { crearServicioDlp } from './modules/dlp/dlp.service.js';
 import { crearRepositorioFuentes } from './modules/fuentes/fuentes.repository.js';
@@ -22,6 +25,9 @@ import { rutasPerfil } from './modules/perfil/perfil.routes.js';
 import { rutasOrientacion } from './modules/orientacion/orientacion.routes.js';
 import { crearServicioOrientacion } from './modules/orientacion/orientacion.service.js';
 import { crearServicioPerfil } from './modules/perfil/perfil.service.js';
+import { crearRepositorioReportes } from './modules/reportes/reportes.repository.js';
+import { rutasReportes } from './modules/reportes/reportes.routes.js';
+import { crearServicioReportes } from './modules/reportes/reportes.service.js';
 import {
   proveedorRangoSintetico,
   type ProveedorRangoEdad,
@@ -87,7 +93,28 @@ export function crearApp({
       cookieSegura: config.sesion.cookieSegura,
     }),
   );
-  app.use('/api', rutasComunidad(crearServicioComunidad(comunidades)));
+  const servicioComunidad = crearServicioComunidad(comunidades);
+  app.use('/api', rutasComunidad(servicioComunidad));
+  app.use(
+    '/api',
+    rutasHilos(
+      crearServicioHilos({
+        repositorio: crearRepositorioHilos(db),
+        comunidades: servicioComunidad,
+        dlp,
+      }),
+    ),
+  );
+  app.use(
+    '/api',
+    rutasReportes(
+      crearServicioReportes({
+        repositorio: crearRepositorioReportes(db),
+        comunidades: servicioComunidad,
+        dlp,
+      }),
+    ),
+  );
   app.use(
     '/api',
     rutasPerfil(crearServicioPerfil({ repositorio: crearRepositorioPerfil(db), dlp })),

@@ -116,6 +116,8 @@ describe('Guardianes de seguridad (sin base de datos)', () => {
     '/api/perfiles?buscar=Luna',
     '/api/moderacion/incidencias-dlp',
     '/api/gestion/fuentes',
+    '/api/comunidad/hilos',
+    '/api/comunidad/categorias',
   ])('sin sesión, %s responde 401', async (ruta) => {
     const res = await request(app()).get(ruta);
     expect(res.status).toBe(401);

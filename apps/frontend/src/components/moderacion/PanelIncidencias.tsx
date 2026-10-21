@@ -19,6 +19,7 @@ const TIPO_CONTENIDO: Record<string, string> = {
   hilo: 'Hilo',
   respuesta: 'Respuesta',
   sala: 'Chat de sala',
+  reporte: 'Detalle de un reporte',
 };
 
 const formatoFecha = new Intl.DateTimeFormat('es-CO', { dateStyle: 'short', timeStyle: 'short' });

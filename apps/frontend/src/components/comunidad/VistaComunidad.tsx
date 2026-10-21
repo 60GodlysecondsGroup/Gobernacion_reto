@@ -1,14 +1,19 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
-import { Aviso, Insignia } from '@/components/ui';
+import { useSesion } from '@/components/sesion/ProveedorSesion';
+import { Aviso, BotonEnlace, Insignia } from '@/components/ui';
 import { mensajeDeError } from '@/lib/api/cliente';
 import { obtenerComunidadPropia, type Comunidad } from '@/lib/api/comunidad';
 import comun from '../comun.module.css';
 import { BuscadorPersonas } from './BuscadorPersonas';
+import { ListaHilos } from './ListaHilos';
 
+/** Inicio de la comunidad (F03): bienvenida, reglas, orientación y ayuda, categorías e hilos. */
 export function VistaComunidad() {
+  const { puede } = useSesion();
   const [comunidad, setComunidad] = useState<Comunidad | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,11 +39,23 @@ export function VistaComunidad() {
         </div>
       </EncabezadoPagina>
 
-      <Aviso tono="info" titulo="Un espacio solo para tu rango de edad">
-        Solo ves contenido y personas de esta comunidad. Las demás comunidades no aparecen en
-        búsquedas ni se pueden abrir, y nadie de otro rango puede ver este espacio.
+      <Aviso tono="info" titulo="Te damos la bienvenida">
+        Aquí conversas con tu alias con personas de tu mismo rango de edad; nadie de otra comunidad
+        puede ver este espacio. Antes de publicar, revisa las{' '}
+        <Link href="/reglas">reglas de la comunidad</Link>. Si buscas información o un canal de
+        apoyo, tienes <Link href="/orientacion">Orientación</Link> y el botón «Necesito ayuda».
       </Aviso>
 
+      {puede('crear_hilo') && (
+        <div className={comun.fila}>
+          <BotonEnlace href="/comunidad/hilos/nuevo">Crear hilo</BotonEnlace>
+          <BotonEnlace href="/reglas" variante="secundario">
+            Ver las reglas
+          </BotonEnlace>
+        </div>
+      )}
+
+      <ListaHilos />
       <BuscadorPersonas />
     </div>
   );

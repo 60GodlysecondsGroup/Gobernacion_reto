@@ -19,3 +19,9 @@
   gap: var(--espacio-2);
   max-width: 52rem;
 }
+
+.enlaces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2) var(--espacio-4);
+}
