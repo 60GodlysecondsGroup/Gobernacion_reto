@@ -54,14 +54,50 @@ select id_usuario,
        (array['base-azul', 'base-verde', 'base-coral'])[1 + (row_number() over (order by codigo))::int % 3]
 from app.usuario;
 
--- Sala temática de B.7 en la comunidad B.
-insert into app.sala (id_comunidad, id_categoria, nombre, descripcion, reglas)
-select c.id_comunidad, cat.id_categoria, 'Bienestar cotidiano',
-       'Sala para conversar sobre hábitos y rutinas que ayudan en el día a día.',
-       'Trata a todos con respeto. No compartas datos personales, de contacto ni redes sociales. Puedes salir cuando quieras.'
-from app.comunidad c
-join app.categoria cat on cat.codigo = 'bienestar-cotidiano'
-where c.rango_edad = 'B';
+-- Salas temáticas predefinidas (F10, RF09): las mismas cinco en cada comunidad, cada una con su
+-- escenario de 12 × 8 celdas. Los obstáculos son datos: {x, y, tipo} (planta, mesa, sofa, cojin,
+-- estante, caja). Los usuarios no crean salas ni eligen nombres. «Bienestar cotidiano» de la
+-- comunidad B es la sala de B.7.
+with temas (nombre, categoria, descripcion, obstaculos) as (values
+  ('Bienestar cotidiano', 'bienestar-cotidiano',
+   'Para conversar sobre hábitos y rutinas que ayudan en el día a día.',
+   '[{"x":2,"y":1,"tipo":"planta"},{"x":9,"y":1,"tipo":"planta"},{"x":4,"y":4,"tipo":"cojin"},
+     {"x":5,"y":4,"tipo":"mesa"},{"x":6,"y":4,"tipo":"mesa"},{"x":7,"y":4,"tipo":"cojin"},
+     {"x":10,"y":6,"tipo":"planta"}]'),
+  ('Vida académica', 'vida-academica',
+   'Para hablar de estudio, tareas y organización del tiempo.',
+   '[{"x":1,"y":0,"tipo":"estante"},{"x":2,"y":0,"tipo":"estante"},{"x":3,"y":0,"tipo":"estante"},
+     {"x":6,"y":2,"tipo":"mesa"},{"x":7,"y":2,"tipo":"mesa"},{"x":6,"y":5,"tipo":"mesa"},
+     {"x":7,"y":5,"tipo":"mesa"},{"x":10,"y":1,"tipo":"planta"}]'),
+  ('Relaciones y convivencia', 'relaciones-convivencia',
+   'Para conversar sobre amistades, familia y convivencia.',
+   '[{"x":3,"y":2,"tipo":"sofa"},{"x":4,"y":2,"tipo":"sofa"},{"x":5,"y":2,"tipo":"sofa"},
+     {"x":4,"y":4,"tipo":"mesa"},{"x":8,"y":5,"tipo":"sofa"},{"x":9,"y":5,"tipo":"sofa"},
+     {"x":10,"y":1,"tipo":"planta"}]'),
+  ('Cambios y nuevas etapas', 'cambios-nuevas-etapas',
+   'Para compartir cómo vivimos los cambios de colegio, de ciudad o de etapa.',
+   '[{"x":2,"y":2,"tipo":"caja"},{"x":3,"y":2,"tipo":"caja"},{"x":2,"y":3,"tipo":"caja"},
+     {"x":6,"y":0,"tipo":"estante"},{"x":7,"y":0,"tipo":"estante"},{"x":8,"y":4,"tipo":"caja"},
+     {"x":9,"y":4,"tipo":"caja"},{"x":10,"y":1,"tipo":"planta"}]'),
+  ('Hablar con alguien', 'orientacion',
+   'Un espacio tranquilo para conversar con personas de tu comunidad. Si buscas apoyo de una institución, usa «Necesito ayuda».',
+   '[{"x":3,"y":3,"tipo":"sofa"},{"x":3,"y":4,"tipo":"sofa"},{"x":5,"y":3,"tipo":"mesa"},
+     {"x":5,"y":4,"tipo":"mesa"},{"x":7,"y":3,"tipo":"sofa"},{"x":7,"y":4,"tipo":"sofa"},
+     {"x":1,"y":1,"tipo":"planta"},{"x":10,"y":1,"tipo":"planta"}]')
+),
+salas as (
+  insert into app.sala (id_comunidad, id_categoria, nombre, descripcion, reglas)
+  select c.id_comunidad, cat.id_categoria, t.nombre, t.descripcion,
+         'Trata a todos con respeto. No compartas datos personales, de contacto, ubicaciones ni redes sociales. Los mensajes se revisan antes de mostrarse. Puedes salir cuando quieras.'
+  from app.comunidad c
+  cross join temas t
+  join app.categoria cat on cat.codigo = t.categoria
+  returning id_sala, nombre
+)
+insert into app.escenario_sala (id_sala, ancho, alto, obstaculos, aparicion_x, aparicion_y)
+select s.id_sala, 12, 8, t.obstaculos::jsonb, 1, 6
+from salas s
+join temas t on t.nombre = s.nombre;
 
 -- Hilos sintéticos (Fase 4): uno o dos por comunidad, para que cada inicio tenga contenido y
 -- se pueda comprobar el aislamiento. Textos ficticios, sin datos personales.

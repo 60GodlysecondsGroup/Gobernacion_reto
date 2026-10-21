@@ -1,6 +1,6 @@
 import { api } from './cliente';
 
-export type TipoReportable = 'hilo' | 'respuesta' | 'perfil';
+export type TipoReportable = 'hilo' | 'respuesta' | 'perfil' | 'sala';
 
 /** Motivos de reporte (sección 17.2). */
 export const MOTIVOS_REPORTE = [

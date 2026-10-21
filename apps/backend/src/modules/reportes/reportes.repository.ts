@@ -1,7 +1,7 @@
 import type { Database } from '../../db/database.js';
 import type { CodigoRango } from '../seguridad/rango-edad.js';
 
-export type TipoReportable = 'hilo' | 'respuesta' | 'perfil';
+export type TipoReportable = 'hilo' | 'respuesta' | 'perfil' | 'sala';
 
 export type NuevoReporte = {
   idUsuario: string;
@@ -26,6 +26,11 @@ const CONTENIDO_EN_COMUNIDAD: Record<TipoReportable, (a: Ambito) => [string, unk
      join app.hilo h on h.id_hilo = r.id_hilo
      where r.id_respuesta = $1 and h.id_comunidad = $2
        and r.estado = 'publicada' and h.estado <> 'oculto'`,
+    [idContenido, idComunidad],
+  ],
+  // Los mensajes de sala no se guardan: se reporta la sala y el detalle explica qué pasó.
+  sala: ({ idContenido, idComunidad }) => [
+    `select 1 from app.sala where id_sala = $1 and id_comunidad = $2`,
     [idContenido, idComunidad],
   ],
   perfil: ({ idContenido, rango }) => [

@@ -1,0 +1,304 @@
+/* Lista de salas */
+.listaSalas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  gap: var(--espacio-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tarjetaSala {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--espacio-2);
+  padding: var(--espacio-4) var(--espacio-5);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-1);
+}
+
+.nombreSala {
+  font-size: var(--texto-lg);
+}
+
+.pieSala {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-2);
+}
+
+/* Antesala */
+.reglas {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding-left: var(--espacio-5);
+}
+
+/* Sala en vivo: más ancha que las demás páginas para dejar sitio al escenario. */
+.paginaSala {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-4);
+}
+
+.enVivo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-5);
+  align-items: start;
+}
+
+@media (min-width: 60rem) {
+  .enVivo {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+  }
+}
+
+.columnaEscenario,
+.columnaLateral {
+  display: grid;
+  gap: var(--espacio-4);
+  min-width: 0;
+}
+
+.escenario {
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  overflow: hidden;
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-1);
+}
+
+.lienzo {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.entidad {
+  transition: transform 140ms linear;
+}
+
+.nombre,
+.nombrePropio {
+  font-family: var(--fuente-base);
+  font-size: 5px;
+  fill: var(--color-texto);
+  stroke: var(--color-superficie);
+  stroke-width: 1.6px;
+  stroke-linejoin: round;
+}
+
+.nombrePropio {
+  font-weight: var(--peso-fuerte);
+  fill: var(--color-primario-oscuro);
+}
+
+/* Controles de movimiento */
+.controles {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--espacio-3) var(--espacio-5);
+}
+
+.instrucciones {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.instrucciones kbd {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0 0.3em;
+  border: 1px solid var(--color-borde-fuerte);
+  border-bottom-width: 2px;
+  border-radius: var(--radio-sm);
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  font-family: var(--fuente-mono);
+  font-size: 0.85em;
+  text-align: center;
+}
+
+.cruceta {
+  display: grid;
+  grid-template-columns: repeat(3, 2.75rem);
+  grid-template-rows: repeat(2, 2.75rem);
+  grid-template-areas:
+    '. arriba .'
+    'izquierda abajo derecha';
+  gap: var(--espacio-1);
+}
+
+.cruceta > button {
+  min-height: 0;
+  padding: 0;
+}
+
+.arriba {
+  grid-area: arriba;
+}
+
+.izquierda {
+  grid-area: izquierda;
+}
+
+.abajo {
+  grid-area: abajo;
+}
+
+.derecha {
+  grid-area: derecha;
+}
+
+.rechazo {
+  grid-column: 1 / -1;
+  min-height: 1.6em;
+  color: var(--color-advertencia);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+}
+
+.destello {
+  animation: destello 600ms ease;
+}
+
+@keyframes destello {
+  from {
+    opacity: 0.2;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 30rem) {
+  .controles {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+  }
+}
+
+/* Paneles laterales */
+.panel,
+.chat,
+.panelAyuda {
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--espacio-4);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-1);
+}
+
+.panelAyuda {
+  padding: var(--espacio-3);
+  border-color: var(--color-acento);
+  background: var(--color-acento-suave);
+  box-shadow: none;
+}
+
+.tituloPanel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espacio-2);
+  font-size: var(--texto-md);
+}
+
+.ocupacion {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.personas {
+  display: grid;
+  gap: var(--espacio-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.persona {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  font-size: var(--texto-sm);
+  overflow-wrap: anywhere;
+}
+
+.accionesSala {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+/* Chat */
+.registro {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-2);
+  height: 16rem;
+  margin: 0;
+  padding: var(--espacio-2);
+  overflow-y: auto;
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-suave);
+  list-style: none;
+}
+
+.mensaje,
+.mensajePropio {
+  display: grid;
+  gap: 0.1rem;
+  padding: var(--espacio-2) var(--espacio-3);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+  font-size: var(--texto-sm);
+}
+
+.mensajePropio {
+  background: var(--color-primario-suave);
+}
+
+.autorMensaje {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espacio-2);
+  font-weight: var(--peso-fuerte);
+}
+
+.autorMensaje time {
+  color: var(--color-texto-suave);
+  font-weight: var(--peso-normal);
+  font-size: var(--texto-xs);
+}
+
+.textoMensaje {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.avisoChat {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-xs);
+  text-align: center;
+}
+
+.formularioChat {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.formularioChat > button {
+  justify-self: end;
+}

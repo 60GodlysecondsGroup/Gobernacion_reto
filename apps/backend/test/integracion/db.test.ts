@@ -64,12 +64,25 @@ describe('Esquema y datos sintéticos', () => {
     expect(nombres).not.toContain('fecha_nacimiento');
   });
 
-  it('carga la sala «Bienestar cotidiano» de la comunidad B con capacidad 10', async () => {
+  it('carga la sala «Bienestar cotidiano» de la comunidad B (B.7) con capacidad 10', async () => {
     const { rows } = await pool.query(`
-      select s.capacidad_maxima, s.estado, c.rango_edad
+      select s.capacidad_maxima
       from app.sala s join app.comunidad c on c.id_comunidad = s.id_comunidad
-      where s.nombre = 'Bienestar cotidiano'`);
-    expect(rows).toEqual([{ capacidad_maxima: 10, estado: 'disponible', rango_edad: 'B' }]);
+      where s.nombre = 'Bienestar cotidiano' and c.rango_edad = 'B' and s.estado <> 'cerrada'`);
+    expect(rows).toEqual([{ capacidad_maxima: 10 }]);
+  });
+
+  it('tiene las cinco salas temáticas en cada comunidad, cada una con su escenario', async () => {
+    const { rows } = await pool.query(`
+      select c.rango_edad, count(*)::int as salas, count(e.id_escenario)::int as escenarios
+      from app.sala s
+      join app.comunidad c on c.id_comunidad = s.id_comunidad
+      left join app.escenario_sala e on e.id_sala = s.id_sala
+      where s.estado <> 'cerrada'
+      group by c.rango_edad order by c.rango_edad`);
+    expect(rows).toEqual(
+      ['A', 'B', 'C', 'D'].map((rango_edad) => ({ rango_edad, salas: 5, escenarios: 5 })),
+    );
   });
 
   it('carga InstituciónDemo · CanalDemo marcada como demostración y con su bitácora', async () => {

@@ -46,14 +46,17 @@ export function VistaComunidad() {
         apoyo, tienes <Link href="/orientacion">Orientación</Link> y el botón «Necesito ayuda».
       </Aviso>
 
-      {puede('crear_hilo') && (
-        <div className={comun.fila}>
-          <BotonEnlace href="/comunidad/hilos/nuevo">Crear hilo</BotonEnlace>
-          <BotonEnlace href="/reglas" variante="secundario">
-            Ver las reglas
+      <div className={comun.fila}>
+        {puede('crear_hilo') && <BotonEnlace href="/comunidad/hilos/nuevo">Crear hilo</BotonEnlace>}
+        {puede('acceder_salas') && (
+          <BotonEnlace href="/salas" variante="secundario">
+            Salas temáticas
           </BotonEnlace>
-        </div>
-      )}
+        )}
+        <BotonEnlace href="/reglas" variante="secundario">
+          Ver las reglas
+        </BotonEnlace>
+      </div>
 
       <ListaHilos />
       <BuscadorPersonas />

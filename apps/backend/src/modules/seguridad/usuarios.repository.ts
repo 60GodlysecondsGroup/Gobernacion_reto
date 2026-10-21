@@ -48,7 +48,7 @@ export function crearRepositorioUsuarios(db: Database) {
         from app.usuario u
         left join app.comunidad c on c.rango_edad = u.rango_edad
         left join app.rango_edad r on r.codigo = u.rango_edad
-        where u.estado = 'activo'
+        where u.estado = 'activo' and u.codigo not like 'Simulado\\_%'
         order by u.rol = 'usuario' desc, u.rango_edad nulls last, u.codigo`);
       return rows;
     },

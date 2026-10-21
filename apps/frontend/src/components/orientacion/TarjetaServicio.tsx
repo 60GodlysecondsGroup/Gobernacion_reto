@@ -6,8 +6,17 @@ import { formatearFecha } from '@/lib/fechas';
 import { ContactoServicio } from './ContactoServicio';
 import estilos from './Orientacion.module.css';
 
-/** Resumen de un servicio en listas: siempre con canal, fuente y fecha de verificación. */
-export function TarjetaServicio({ servicio }: { servicio: FichaServicio }) {
+/**
+ * Resumen de un servicio en listas: siempre con canal, fuente y fecha de verificación.
+ * Con `nuevaPestana`, la ficha completa se abre aparte (p. ej. sin salir de una sala).
+ */
+export function TarjetaServicio({
+  servicio,
+  nuevaPestana = false,
+}: {
+  servicio: FichaServicio;
+  nuevaPestana?: boolean;
+}) {
   const estado = ESTADOS_FUENTE[servicio.estado];
 
   return (
@@ -17,7 +26,13 @@ export function TarjetaServicio({ servicio }: { servicio: FichaServicio }) {
         {servicio.esDemo && <Insignia tono="info">Dato de demostración</Insignia>}
       </div>
       <h2 className={estilos.tituloTarjeta}>
-        <Link href={`/orientacion/servicios/${servicio.id}`}>{servicio.servicio}</Link>
+        {nuevaPestana ? (
+          <a href={`/orientacion/servicios/${servicio.id}`} target="_blank" rel="noopener">
+            {servicio.servicio} (se abre en otra pestaña)
+          </a>
+        ) : (
+          <Link href={`/orientacion/servicios/${servicio.id}`}>{servicio.servicio}</Link>
+        )}
       </h2>
       <p className={estilos.institucion}>{servicio.institucion}</p>
       <ContactoServicio servicio={servicio} />

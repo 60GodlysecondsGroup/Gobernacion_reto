@@ -22,7 +22,7 @@ export const MENSAJE_REPORTE = 'Tu reporte fue registrado.';
 
 const esquemaReporte = z
   .object({
-    tipoContenido: z.enum(['hilo', 'respuesta', 'perfil']),
+    tipoContenido: z.enum(['hilo', 'respuesta', 'perfil', 'sala']),
     idContenido: z.string(),
     categoria: z.enum(CATEGORIAS_REPORTE, 'Elige un motivo.'),
     descripcion: z.preprocess(

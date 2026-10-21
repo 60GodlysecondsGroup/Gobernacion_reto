@@ -25,6 +25,8 @@ const esquemaEntorno = z.object({
     .transform((valor) => valor || undefined),
   // Selector de usuarios sintéticos en la pantalla de acceso. Solo para la demo.
   ACCESO_DEMO: z.enum(['true', 'false']).optional(),
+  // Segundos sin nadie antes de cerrar una sala (F13). 180 s por defecto; menos solo para ensayar.
+  SALA_CIERRE_SEGUNDOS: z.coerce.number().int().min(1).max(3600).default(180),
 });
 
 export type Config = {
@@ -41,6 +43,7 @@ export type Config = {
     cookieSegura: boolean;
   };
   accesoDemo: boolean;
+  salas: { cierreSegundos: number };
 };
 
 /**
@@ -89,5 +92,6 @@ export function cargarConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
       cookieSegura: produccion,
     },
     accesoDemo: v.ACCESO_DEMO ? v.ACCESO_DEMO === 'true' : !produccion,
+    salas: { cierreSegundos: v.SALA_CIERRE_SEGUNDOS },
   };
 }

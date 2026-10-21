@@ -8,7 +8,7 @@ Plataforma digital de orientación y comunidad protegida para jóvenes de Villav
 - Decisiones técnicas: [`DECISIONES.md`](DECISIONES.md).
 - Modelo de datos: [`docs/MODELO_DE_DATOS.md`](docs/MODELO_DE_DATOS.md).
 - Cómo cargar fuentes institucionales reales: [`docs/FUENTES.md`](docs/FUENTES.md).
-- Estado: **Fases 1 (entorno), 2 (seguridad base), 3 (orientación y fuentes) y 4 (comunidad) terminadas.** Siguiente: Fase 5, salas interactivas.
+- Estado: **Fases 1 (entorno), 2 (seguridad base), 3 (orientación y fuentes), 4 (comunidad) y 5 (salas en tiempo real) terminadas.** Siguiente: Fase 6, avatar.
 
 ## Requisitos
 
@@ -68,52 +68,67 @@ No hace falta iniciar sesión para orientarse ni para pedir ayuda.
 4. **Salir** → `NubeDemo` (Comunidad C): su comunidad solo muestra sus propios hilos, y la URL del hilo de LunaDemo responde «No encontramos ese hilo en tu comunidad».
 5. **Reglas de la comunidad** (en el pie de todas las páginas) se pueden consultar en cualquier momento.
 
+### Demo de la Fase 5 (4 minutos, dos navegadores)
+
+La sesión es una cookie, así que dos pestañas del mismo navegador son la misma persona. Para tener a dos personas usa **dos navegadores** o una ventana normal y otra **de incógnito**. Para la demo del cierre automático puedes poner `SALA_CIERRE_SEGUNDOS=30` en el `.env` (por defecto son 180).
+
+1. **Navegador 1** → **Entrar** → `LunaDemo` → **Salas**: las cinco salas temáticas de la Comunidad B con su ocupación. Abre **Bienestar cotidiano**: la antesala muestra tema, reglas y `0/10`. **Entrar a la sala**.
+2. **Navegador 2** → `SolDemo` → **Salas** → **Bienestar cotidiano** → **Entrar**. Cada una ve a la otra en el escenario y en la lista (`2/10`).
+3. Muévete con **W A S D**: la otra pantalla ve el movimiento. Camina contra el cojín o la mesa del centro («Hay un mueble en esa dirección.») y contra el borde («Llegaste al borde de la sala.»). Mientras escribes en el chat, las teclas no mueven el avatar.
+4. **Chat:** SolDemo escribe «Hola» y aparece en las dos pantallas. LunaDemo escribe `escríbeme al 3000000000`: solo ella ve «Tu mensaje no se envió» y su texto queda en el campo; SolDemo no recibe nada.
+5. **Capacidad:** en una terminal, `npm run salas:simular -- --cantidad 8` llena la sala (`10/10`, con avatares que se mueven solos). En otra, `npm run salas:simular -- --cantidad 1 --desde 9` intenta ser la persona 11 y recibe «La sala está llena.». Ctrl+C en el simulador los saca a todos.
+6. **Salida y cierre:** LunaDemo pulsa **Salir de la sala** y SolDemo cierra su ventana (pérdida de conexión): el cupo se libera y la sala queda en `0/10`. Pasado el tiempo de cierre, la antesala dice «Esta sala se cerró…» y ofrece la instancia nueva del mismo tema. Si alguien entra antes, el contador se cancela.
+
 ## Comandos
 
-| Comando                              | Qué hace                                                                                                                |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `npm install`                        | Instala las dos aplicaciones (npm workspaces).                                                                          |
-| `npm run dev`                        | Levanta backend y frontend a la vez, con recarga automática.                                                            |
-| `npm run db:reset`                   | **Reinicia los datos de demo**: borra el esquema `app`, aplica las migraciones y carga el seed.                         |
-| `npm run db:migrate`                 | Aplica solo las migraciones pendientes.                                                                                 |
-| `npm run db:seed`                    | Vacía las tablas y recarga datos sintéticos, reglas DLP y fuentes de demo (sin tocar el esquema).                       |
-| `npm run fuentes:cargar`             | Sincroniza las fuentes con `db/seed/fuentes_institucionales.json` sin tocar el resto (ver `docs/FUENTES.md`).           |
-| `npm test`                           | Pruebas unitarias y de humo del backend (DLP, permisos, sesión, guardianes). Sin red ni base de datos.                  |
-| `npm run test:db`                    | Integración contra la base del `.env`: TRL-01 a 06, 09, 10 y 12, DLP, reportes y permisos por HTTP. Deja la base igual. |
-| `npm run lint` / `npm run typecheck` | ESLint y TypeScript en las dos aplicaciones.                                                                            |
-| `npm run format` / `format:check`    | Prettier.                                                                                                               |
-| `npm run verificar`                  | Formato + lint + tipos + pruebas: lo que debe pasar antes de cerrar una fase.                                           |
+| Comando                              | Qué hace                                                                                                             |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `npm install`                        | Instala las dos aplicaciones (npm workspaces).                                                                       |
+| `npm run dev`                        | Levanta backend y frontend a la vez, con recarga automática.                                                         |
+| `npm run db:reset`                   | **Reinicia los datos de demo**: borra el esquema `app`, aplica las migraciones y carga el seed.                      |
+| `npm run db:migrate`                 | Aplica solo las migraciones pendientes.                                                                              |
+| `npm run db:seed`                    | Vacía las tablas y recarga datos sintéticos, reglas DLP y fuentes de demo (sin tocar el esquema).                    |
+| `npm run fuentes:cargar`             | Sincroniza las fuentes con `db/seed/fuentes_institucionales.json` sin tocar el resto (ver `docs/FUENTES.md`).        |
+| `npm run salas:simular`              | Conecta personas sintéticas a una sala (`--cantidad`, `--desde`, `--sala`, `--comunidad`) para la demo de capacidad. |
+| `npm test`                           | Pruebas unitarias y de humo del backend (DLP, permisos, sesión, guardianes, salas). Sin red ni base de datos.        |
+| `npm run test:db`                    | Integración contra la base del `.env`: TRL-01 a 10 y 12, DLP, reportes, salas y permisos. Deja la base igual.        |
+| `npm run lint` / `npm run typecheck` | ESLint y TypeScript en las dos aplicaciones.                                                                         |
+| `npm run format` / `format:check`    | Prettier.                                                                                                            |
+| `npm run verificar`                  | Formato + lint + tipos + pruebas: lo que debe pasar antes de cerrar una fase.                                        |
 
 ## API
 
 Todo bajo `/api`. Los errores tienen la forma `{ error: { codigo, mensaje, detalles? } }`.
 
-| Ruta                                              | Quién                       | Qué hace                                                                                        |
-| ------------------------------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------- |
-| `GET /salud`                                      | Cualquiera                  | Estado del backend, de la base y conteo de datos de demo.                                       |
-| `GET /sesion`                                     | Cualquiera                  | Sesión actual (`usuario: null` si no hay).                                                      |
-| `POST /sesion`, `DELETE /sesion`                  | Solo modo demo / cualquiera | Entrar como usuario sintético (`{ codigo }`) / salir.                                           |
-| `GET /sesion/usuarios-demo`                       | Solo modo demo              | Usuarios para el selector de acceso.                                                            |
-| `GET /comunidad`, `GET /comunidades`              | Con comunidad               | La comunidad propia. La lista solo la contiene a ella.                                          |
-| `GET /comunidades/:id-o-A-D`                      | Con comunidad               | La propia, o 404 idéntico al de una inexistente.                                                |
-| `GET /perfil`, `PUT /perfil`                      | Con sesión                  | Perfil propio: alias, intereses y personaje del catálogo. Todo texto pasa por el DLP.           |
-| `GET /perfiles?buscar=`, `GET /perfiles/:id`      | Con comunidad               | Búsqueda y perfiles, solo de la misma comunidad.                                                |
-| `GET /moderacion/incidencias-dlp`                 | Moderación y administración | Bloqueos DLP por categoría y recientes, sin texto ni autor (F35).                               |
-| `GET /comunidad/categorias`                       | Con comunidad               | Las cinco categorías, con el número de hilos de la comunidad propia.                            |
-| `GET /comunidad/hilos?categoria=&buscar=&pagina=` | Con comunidad               | Hilos de la comunidad propia, de 10 en 10, por última actividad.                                |
-| `POST /comunidad/hilos`                           | Jóvenes y administración    | Crear hilo (`{ categoria, titulo, contenido }`). Pasa por el DLP.                               |
-| `GET /comunidad/hilos/:id`                        | Con comunidad               | Hilo con sus respuestas. De otra comunidad: 404 idéntico al de uno inexistente.                 |
-| `POST /comunidad/hilos/:id/respuestas`            | Con comunidad               | Responder (`{ contenido }`). Pasa por el DLP. Un hilo cerrado responde 409.                     |
-| `POST /reportes`                                  | Con comunidad               | Reportar hilo, respuesta o perfil de la propia comunidad. Responde «Tu reporte fue registrado.» |
-| `GET /orientacion/necesidades`                    | Cualquiera, sin sesión      | Las seis necesidades del navegador, con cuántos servicios tiene cada una.                       |
-| `GET /orientacion/necesidades/:codigo`            | Cualquiera, sin sesión      | Servicios activos o en revisión de esa necesidad.                                               |
-| `GET /orientacion/servicios/:id`                  | Cualquiera, sin sesión      | Ficha del servicio. Una fuente inactiva responde 404.                                           |
-| `GET /orientacion/ayuda`                          | Cualquiera, sin sesión      | Canales de «Necesito ayuda».                                                                    |
-| `GET`/`POST /gestion/fuentes`                     | Gestor y administración     | Semáforo y lista / crear una fuente (con fecha de verificación).                                |
-| `GET`/`PUT /gestion/fuentes/:id`                  | Gestor y administración     | Detalle con bitácora / editar datos.                                                            |
-| `POST /gestion/fuentes/:id/revision`              | Gestor y administración     | Marcar para revisión (`{ motivo }`).                                                            |
-| `POST /gestion/fuentes/:id/verificacion`          | Gestor y administración     | Verificar (`{ fecha?, observacion? }`); vuelve a Activo.                                        |
-| `POST /gestion/fuentes/:id/desactivacion`         | Gestor y administración     | Desactivar (`{ motivo }`).                                                                      |
+| Ruta                                              | Quién                       | Qué hace                                                                                                           |
+| ------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `GET /salud`                                      | Cualquiera                  | Estado del backend, de la base y conteo de datos de demo.                                                          |
+| `GET /sesion`                                     | Cualquiera                  | Sesión actual (`usuario: null` si no hay).                                                                         |
+| `POST /sesion`, `DELETE /sesion`                  | Solo modo demo / cualquiera | Entrar como usuario sintético (`{ codigo }`) / salir.                                                              |
+| `GET /sesion/usuarios-demo`                       | Solo modo demo              | Usuarios para el selector de acceso.                                                                               |
+| `GET /comunidad`, `GET /comunidades`              | Con comunidad               | La comunidad propia. La lista solo la contiene a ella.                                                             |
+| `GET /comunidades/:id-o-A-D`                      | Con comunidad               | La propia, o 404 idéntico al de una inexistente.                                                                   |
+| `GET /perfil`, `PUT /perfil`                      | Con sesión                  | Perfil propio: alias, intereses y personaje del catálogo. Todo texto pasa por el DLP.                              |
+| `GET /perfiles?buscar=`, `GET /perfiles/:id`      | Con comunidad               | Búsqueda y perfiles, solo de la misma comunidad.                                                                   |
+| `GET /moderacion/incidencias-dlp`                 | Moderación y administración | Bloqueos DLP por categoría y recientes, sin texto ni autor (F35).                                                  |
+| `GET /comunidad/categorias`                       | Con comunidad               | Las cinco categorías, con el número de hilos de la comunidad propia.                                               |
+| `GET /comunidad/hilos?categoria=&buscar=&pagina=` | Con comunidad               | Hilos de la comunidad propia, de 10 en 10, por última actividad.                                                   |
+| `POST /comunidad/hilos`                           | Jóvenes y administración    | Crear hilo (`{ categoria, titulo, contenido }`). Pasa por el DLP.                                                  |
+| `GET /comunidad/hilos/:id`                        | Con comunidad               | Hilo con sus respuestas. De otra comunidad: 404 idéntico al de uno inexistente.                                    |
+| `POST /comunidad/hilos/:id/respuestas`            | Con comunidad               | Responder (`{ contenido }`). Pasa por el DLP. Un hilo cerrado responde 409.                                        |
+| `POST /reportes`                                  | Con comunidad               | Reportar hilo, respuesta, perfil o sala de la propia comunidad. Responde «Tu reporte fue registrado.»              |
+| `GET /salas`                                      | Con comunidad               | Salas abiertas de la comunidad propia, con ocupación y estado.                                                     |
+| `GET /salas/:id`                                  | Con comunidad               | Antesala: tema, descripción, reglas y ocupación. De otra comunidad: 404. Si se cerró, indica la instancia abierta. |
+| `WS /ws/salas/:id` (fuera de `/api`)              | Con comunidad               | Tiempo real de la sala, autenticado con la cookie de sesión. Protocolo en `salas.protocolo.ts`.                    |
+| `GET /orientacion/necesidades`                    | Cualquiera, sin sesión      | Las seis necesidades del navegador, con cuántos servicios tiene cada una.                                          |
+| `GET /orientacion/necesidades/:codigo`            | Cualquiera, sin sesión      | Servicios activos o en revisión de esa necesidad.                                                                  |
+| `GET /orientacion/servicios/:id`                  | Cualquiera, sin sesión      | Ficha del servicio. Una fuente inactiva responde 404.                                                              |
+| `GET /orientacion/ayuda`                          | Cualquiera, sin sesión      | Canales de «Necesito ayuda».                                                                                       |
+| `GET`/`POST /gestion/fuentes`                     | Gestor y administración     | Semáforo y lista / crear una fuente (con fecha de verificación).                                                   |
+| `GET`/`PUT /gestion/fuentes/:id`                  | Gestor y administración     | Detalle con bitácora / editar datos.                                                                               |
+| `POST /gestion/fuentes/:id/revision`              | Gestor y administración     | Marcar para revisión (`{ motivo }`).                                                                               |
+| `POST /gestion/fuentes/:id/verificacion`          | Gestor y administración     | Verificar (`{ fecha?, observacion? }`); vuelve a Activo.                                                           |
+| `POST /gestion/fuentes/:id/desactivacion`         | Gestor y administración     | Desactivar (`{ motivo }`).                                                                                         |
 
 ## Estructura
 
@@ -126,6 +141,7 @@ apps/
     db/seed/fuentes_institucionales.json  Fuentes de demostración: el archivo que el equipo reemplaza
     scripts/db.ts               migrar | sembrar | reiniciar
     scripts/fuentes.ts          Sincroniza las fuentes con su archivo de carga
+    scripts/salas-simular.ts    Personas sintéticas conectadas a una sala (demo de capacidad)
     src/
       app.ts                    Construye la app HTTP (sin abrir puerto; la usan las pruebas)
       server.ts                 Arranque, conexión a la base y apagado ordenado
@@ -142,12 +158,14 @@ apps/
         moderacion/             Incidencias DLP
         fuentes/                Gestión de fuentes: esquemas, ciclo de vida, bitácora y carga
         orientacion/            Navegador público y «Necesito ayuda»
+        salas/                  Salas en tiempo real: escenario, gestor (autoridad), WebSocket y antesala
     test/                       Unitarias y humo (sin red) e integracion/ (base real)
   frontend/                     Next.js 16 (App Router) + React 19
     src/
-      app/                      Páginas: inicio, acceso, orientación, ayuda, comunidad e hilos, reglas, perfil, moderación, fuentes
+      app/                      Páginas: inicio, acceso, orientación, ayuda, comunidad e hilos, salas, reglas, perfil, moderación, fuentes
       components/ui/            Componentes base: Aviso, Boton, BotonEnlace, Tarjeta, CampoTexto, CampoSeleccion, Insignia
       components/sesion/        Contexto de sesión, guardián de páginas y selector de acceso
+      components/salas/         Lista, antesala, escenario 2D, chat y conexión en tiempo real (useSalaEnVivo)
       components/…              Orientación, fuentes, comunidad, perfil, moderación, avatar y layout
       config/textos.ts          Aviso de límites (texto exacto de la sección 18.1)
       config/navegacion.ts      Menú principal (cada enlace declara el permiso que necesita)
@@ -181,9 +199,21 @@ docs/                           Documento maestro, modelo de datos y guía de ca
 - **Reportes (F19, F20):** en hilos, respuestas y perfiles ajenos. Seis motivos y un detalle opcional, que también pasa por el DLP. La confirmación es siempre «Tu reporte fue registrado.» y no informa qué se hará con la otra persona. Repetir un reporte abierto no crea otro. La revisión llega en la Fase 7.
 - **Reglas (F24):** `/reglas`, pública y enlazada en el pie de todas las páginas: privacidad, convivencia, información no permitida, reportes, límites y orientación.
 
+## Salas en tiempo real (Fase 5)
+
+- **Salas temáticas (F11):** cinco por comunidad, fijas: Cambios y nuevas etapas, Vida académica, Relaciones y convivencia, Bienestar cotidiano y Hablar con alguien. Nadie las crea desde la interfaz. Antes de entrar, la antesala muestra tema, reglas y ocupación `n/10`.
+- **Tiempo real:** un WebSocket (`ws`) en el mismo servidor del backend, en `/ws/salas/:id`. Se autentica con la misma cookie de sesión y rechaza otros orígenes. **El servidor es la autoridad:** decide quién está, dónde está cada avatar y qué movimiento es válido; el cliente solo envía intenciones (`mover`, `mensaje`, `salir`). Quien llega tarde recibe el estado completo.
+- **Segmentación (AV-12):** solo se entra a salas de la comunidad propia; otra sala responde igual que una inexistente. La base lo refuerza con su disparador en participaciones y posiciones.
+- **Capacidad (TRL-07):** máximo 10. Ocupar un cupo es un único `UPDATE … WHERE usuarios_actuales < capacidad_maxima` y la tabla tiene un `CHECK`, así que entradas simultáneas nunca pasan de 10; la persona 11 recibe «La sala está llena.». Otra pestaña de la misma persona reemplaza su conexión sin ocupar otro cupo.
+- **Salida (F15):** salir o perder la conexión libera el cupo, cierra la participación y borra la posición. Al arrancar, el backend cierra lo que hubiera quedado abierto.
+- **Cierre automático (TRL-08, F13):** con 0 personas empieza un contador (`SALA_CIERRE_SEGUNDOS`, 180 por defecto). Si nadie entra, la instancia se cierra y, en la misma sentencia, se abre una nueva del mismo tema con el mismo escenario. Entrar antes cancela el contador. Una instancia cerrada no admite entradas.
+- **Escenario 2D:** cuadrícula de 12×8 con muebles guardados como datos en `escenario_sala` y dibujados por código (pixel art original). Movimiento con W A S D, con las flechas si el escenario tiene el foco o con botones en pantalla; no hay clic para moverse. Las teclas se ignoran mientras se escribe en un campo. Cada movimiento válido se guarda en `posicion_avatar_sala` y se difunde; los rechazados (borde u obstáculo) solo los ve quien se movió.
+- **Chat (F14):** cada mensaje pasa por el DLP. Si se bloquea, solo su autor ve el aviso y su texto queda en el campo; nadie más lo recibe y el bloqueo queda en `evento_dlp` sin el texto. El chat no se guarda.
+- **En la sala:** lista de personas con `n/10`, **Salir de la sala**, **Necesito ayuda** (muestra un canal institucional sin salir de la sala) y **Reportar** la sala.
+
 ## Cómo crece en las siguientes fases
 
-- **Backend:** cada área del producto es un módulo en `apps/backend/src/modules/<modulo>/` con `*.routes.ts`, `*.service.ts` y `*.repository.ts`, registrado en `src/app.ts`. Una ruta nueva usa `requerirPermiso(...)`. Si es comunitaria, obtiene el rango con `exigirRango(sesion)`, y todo texto de usuarios pasa por `dlp.exigirPermitido(...)` antes de guardarse. Módulos previstos: `salas` (Fase 5), `avatar` (Fase 6) y `administracion` (Fase 7).
+- **Backend:** cada área del producto es un módulo en `apps/backend/src/modules/<modulo>/` con `*.routes.ts`, `*.service.ts` y `*.repository.ts`, registrado en `src/app.ts`. Una ruta nueva usa `requerirPermiso(...)`. Si es comunitaria, obtiene el rango con `exigirRango(sesion)`, y todo texto de usuarios pasa por `dlp.exigirPermitido(...)` antes de guardarse. Módulos previstos: `avatar` (Fase 6) y `administracion` (Fase 7).
 - **Base de datos:** el esquema completo de B.4 ya existe. Un cambio de estructura es una migración nueva `000N_descripcion.sql`; los datos de demostración se agregan en `db/seed/`.
 - **Frontend:** las páginas privadas se envuelven en `<RequiereSesion permiso="…">`. Las llamadas van en `src/lib/api/<modulo>.ts` y los enlaces del menú en `src/config/navegacion.ts`. La interfaz se arma con `src/components/ui` y los tokens (ver `/guia-de-estilos`).
 - Toda decisión técnica nueva se registra en una línea en `DECISIONES.md`.
@@ -192,7 +222,7 @@ docs/                           Documento maestro, modelo de datos y guía de ca
 
 - PostgreSQL en Supabase, esquema propio **`app`**. La API pública de Supabase no lo expone y los roles `anon`/`authenticated` no tienen permisos: **el backend es el único acceso a los datos**. El frontend no usa las claves de Supabase.
 - `db:reset` solo borra el esquema `app`; no toca nada más del proyecto de Supabase.
-- Datos sintéticos: 4 comunidades, 5 categorías, 8 usuarios de prueba (tabla de arriba), 3 personajes provisionales, la sala «Bienestar cotidiano», 5 hilos (uno por comunidad y dos en la B) con una respuesta, 19 reglas DLP y 5 fuentes institucionales de demostración (`InstituciónDemo · CanalDemo` y otras; 3 activas, 1 en revisión y 1 inactiva).
+- Datos sintéticos: 4 comunidades, 5 categorías, 8 usuarios de prueba (tabla de arriba), 3 personajes provisionales, 5 salas temáticas por comunidad con su escenario, 5 hilos (uno por comunidad y dos en la B) con una respuesta, 19 reglas DLP y 5 fuentes institucionales de demostración (`InstituciónDemo · CanalDemo` y otras; 3 activas, 1 en revisión y 1 inactiva).
 - Reglas que la propia base garantiza, además del backend: segmentación por edad en hilos, respuestas y salas; máximo 10 participantes por sala; bitácora de fuentes y auditoría de solo inserción; ninguna columna de edad exacta.
 
 ## Seguridad y restricciones

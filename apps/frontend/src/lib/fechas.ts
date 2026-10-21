@@ -11,8 +11,16 @@ const formatoFechaHora = new Intl.DateTimeFormat('es-CO', {
 export const formatearFecha = (fecha: string) =>
   formatoFecha.format(new Date(`${fecha}T00:00:00Z`));
 
+const formatoHora = new Intl.DateTimeFormat('es-CO', {
+  timeStyle: 'short',
+  timeZone: ZONA_HORARIA,
+});
+
 /** Marca de tiempo ISO → fecha y hora de Colombia. */
 export const formatearFechaHora = (iso: string) => formatoFechaHora.format(new Date(iso));
+
+/** Marca de tiempo ISO → solo la hora de Colombia (p. ej. en el chat de una sala). */
+export const formatearHora = (iso: string) => formatoHora.format(new Date(iso));
 
 /** Fecha de hoy en Colombia, `AAAA-MM-DD` (para campos de fecha). */
 export const hoyEnColombia = () =>

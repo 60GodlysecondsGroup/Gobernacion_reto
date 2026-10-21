@@ -24,6 +24,7 @@ export const enlacesNavegacion: EnlaceNavegacion[] = [
     permiso: 'ver_comunidad_propia',
     requiereComunidad: true,
   },
+  { href: '/salas', etiqueta: 'Salas', permiso: 'acceder_salas', requiereComunidad: true },
   { href: '/perfil', etiqueta: 'Mi perfil', requiereSesion: true },
   { href: '/moderacion', etiqueta: 'Moderación', permiso: 'revisar_incidencias_dlp' },
   { href: '/gestion/fuentes', etiqueta: 'Fuentes', permiso: 'gestionar_fuentes' },

@@ -28,6 +28,10 @@ import { crearServicioPerfil } from './modules/perfil/perfil.service.js';
 import { crearRepositorioReportes } from './modules/reportes/reportes.repository.js';
 import { rutasReportes } from './modules/reportes/reportes.routes.js';
 import { crearServicioReportes } from './modules/reportes/reportes.service.js';
+import { crearGestorSalas, type GestorSalas } from './modules/salas/salas.gestor.js';
+import { crearRepositorioSalas } from './modules/salas/salas.repository.js';
+import { rutasSalas } from './modules/salas/salas.routes.js';
+import { crearTiempoRealSalas, type TiempoRealSalas } from './modules/salas/salas.ws.js';
 import {
   proveedorRangoSintetico,
   type ProveedorRangoEdad,
@@ -43,23 +47,42 @@ import { crearServicioSistema } from './modules/sistema/sistema.service.js';
 export type Dependencias = {
   db: Database;
   logger: Logger;
-  config: Pick<Config, 'origenesPermitidos' | 'sesion' | 'accesoDemo'>;
+  config: Pick<Config, 'origenesPermitidos' | 'sesion' | 'accesoDemo' | 'salas'>;
   /** Reemplazable cuando exista la verificación de edad definitiva. */
   proveedorRango?: ProveedorRangoEdad;
   ttlReglasDlpMs?: number;
+  /** Ajustes de tiempo de las salas (las pruebas los acortan). */
+  intervalosSalas?: {
+    movimientoMs?: number;
+    mensajeMs?: number;
+    guardadoMs?: number;
+    latidoMs?: number;
+  };
 };
 
+export type Servidor = {
+  app: Express;
+  /** Estado en memoria de las salas en tiempo real. */
+  salas: GestorSalas;
+  /** WebSocket de salas: se conecta al evento `upgrade` del servidor HTTP. */
+  tiempoReal: TiempoRealSalas;
+};
+
+/** Solo la aplicación HTTP (las pruebas que no usan salas en tiempo real). */
+export const crearApp = (dependencias: Dependencias): Express => crearServidor(dependencias).app;
+
 /**
- * Construye la aplicación HTTP sin abrir el puerto (las pruebas la usan directamente).
+ * Construye la aplicación HTTP y el tiempo real de salas, sin abrir el puerto.
  * Capas por módulo: rutas (HTTP) → servicio (reglas) → repositorio (SQL).
  */
-export function crearApp({
+export function crearServidor({
   db,
   logger,
   config,
   proveedorRango = proveedorRangoSintetico,
   ttlReglasDlpMs,
-}: Dependencias): Express {
+  intervalosSalas = {},
+}: Dependencias): Servidor {
   const app = express();
 
   app.use(registroDeSolicitudes(logger));
@@ -124,8 +147,28 @@ export function crearApp({
   app.use('/api', rutasOrientacion(crearServicioOrientacion(fuentes)));
   app.use('/api', rutasFuentes(crearServicioFuentes(fuentes)));
 
+  const repositorioSalas = crearRepositorioSalas(db);
+  app.use('/api', rutasSalas(repositorioSalas, servicioComunidad));
+  const salas = crearGestorSalas({
+    repositorio: repositorioSalas,
+    comunidades: servicioComunidad,
+    dlp,
+    logger,
+    cierreSegundos: config.salas.cierreSegundos,
+    intervaloMovimientoMs: intervalosSalas.movimientoMs,
+    intervaloMensajeMs: intervalosSalas.mensajeMs,
+    retrasoGuardadoMs: intervalosSalas.guardadoMs,
+  });
+  const tiempoReal = crearTiempoRealSalas({
+    gestor: salas,
+    sesiones,
+    origenesPermitidos: config.origenesPermitidos,
+    logger,
+    latidoMs: intervalosSalas.latidoMs,
+  });
+
   app.use(rutaNoEncontrada);
   app.use(manejadorDeErrores(logger));
 
-  return app;
+  return { app, salas, tiempoReal };
 }

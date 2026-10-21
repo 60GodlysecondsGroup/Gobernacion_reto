@@ -1,4 +1,4 @@
-import { crearApp } from './app.js';
+import { crearServidor } from './app.js';
 import { cargarConfig, type Config } from './config/env.js';
 import { crearPool } from './db/database.js';
 import { crearLogger } from './lib/logger.js';
@@ -24,7 +24,7 @@ if (config.accesoDemo) {
   logger.info('Acceso de demostración habilitado (selector de usuarios sintéticos).');
 }
 
-const app = crearApp({ db: pool, logger, config });
+const { app, salas, tiempoReal } = crearServidor({ db: pool, logger, config });
 
 const servidor = app.listen(config.puerto, (error) => {
   if (error) {
@@ -37,17 +37,25 @@ const servidor = app.listen(config.puerto, (error) => {
   });
 
   // Abre la primera conexión ya: avisa pronto si DATABASE_URL falla y evita la espera en la primera consulta.
+  // Luego reconcilia las salas: tras un reinicio nadie está conectado.
   pool
     .query('select 1')
     .then(() => logger.info('Base de datos conectada'))
+    .then(() => salas.reconciliar())
+    .then((vacias) => logger.info('Salas reconciliadas', { salasVacias: vacias }))
     .catch((errorDb: Error) =>
-      logger.warn('No se pudo conectar a la base de datos', { error: errorDb.message }),
+      logger.warn('No se pudo preparar la base de datos', { error: errorDb.message }),
     );
 });
+
+// WebSocket de salas en /ws/salas/:id, sobre el mismo puerto.
+servidor.on('upgrade', (req, socket, cabecera) => tiempoReal.manejarUpgrade(req, socket, cabecera));
 
 function apagar(senal: string) {
   logger.info(`Señal ${senal} recibida, cerrando el backend…`);
   setTimeout(() => process.exit(1), 5_000).unref();
+  salas.detener();
+  tiempoReal.cerrar();
   servidor.close(() => {
     pool.end().finally(() => process.exit(0));
   });
