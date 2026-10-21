@@ -1,0 +1,19 @@
+.pie {
+  border-top: 1px solid var(--color-borde);
+  background: var(--color-superficie);
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.contenido {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-2) var(--espacio-5);
+  padding-block: var(--espacio-5);
+}
+
+.contenido p {
+  max-width: 48rem;
+}

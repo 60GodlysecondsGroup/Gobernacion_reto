@@ -1,0 +1,29 @@
+.pagina {
+  display: grid;
+  gap: var(--espacio-6);
+  max-width: 48rem;
+}
+
+.presentacion {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.antetitulo {
+  color: var(--color-primario);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.titulo {
+  font-size: var(--texto-3xl);
+  letter-spacing: -0.02em;
+}
+
+.entradilla {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-lg);
+  max-width: 40rem;
+}

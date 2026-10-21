@@ -1,0 +1,42 @@
+.insignia {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  padding: 0.2rem var(--espacio-3);
+  border-radius: var(--radio-total);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  white-space: nowrap;
+}
+
+.punto {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.neutro {
+  background: var(--color-superficie-suave);
+  color: var(--color-texto-suave);
+}
+
+.info {
+  background: var(--color-info-suave);
+  color: var(--color-info);
+}
+
+.exito {
+  background: var(--color-exito-suave);
+  color: var(--color-exito);
+}
+
+.advertencia {
+  background: var(--color-advertencia-suave);
+  color: var(--color-advertencia);
+}
+
+.peligro {
+  background: var(--color-peligro-suave);
+  color: var(--color-peligro);
+}

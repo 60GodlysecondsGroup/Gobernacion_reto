@@ -1,0 +1,44 @@
+.campo {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+.etiqueta {
+  font-weight: var(--peso-fuerte);
+}
+
+.control {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: var(--espacio-2) var(--espacio-3);
+  border: 1px solid var(--color-borde-fuerte);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  font: inherit;
+  transition: border-color var(--transicion);
+}
+
+textarea.control {
+  min-height: 6rem;
+  resize: vertical;
+}
+
+.control:hover {
+  border-color: var(--color-texto-suave);
+}
+
+.control[aria-invalid='true'] {
+  border-color: var(--color-peligro);
+}
+
+.ayuda {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.error {
+  color: var(--color-peligro);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+}

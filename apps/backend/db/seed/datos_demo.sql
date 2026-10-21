@@ -1,0 +1,70 @@
+-- Datos sintéticos de demostración (Anexo B.7).
+-- Ningún registro corresponde a personas, conversaciones ni instituciones reales.
+-- Este archivo REINICIA los datos: vacía las tablas y vuelve a cargarlas.
+-- Los catálogos del sistema (rangos, categorías DLP, necesidades) viven en las migraciones.
+
+truncate
+  app.registro_auditoria, app.bitacora_fuente, app.fuente_necesidad, app.fuente_institucional,
+  app.evento_dlp, app.regla_dlp, app.reporte,
+  app.posicion_avatar_sala, app.escenario_sala, app.participacion_sala, app.sala,
+  app.respuesta, app.hilo, app.configuracion_avatar, app.elemento_avatar,
+  app.usuario, app.categoria, app.comunidad
+restart identity;
+
+-- Comunidades: una por rango de edad, aisladas entre sí (sección 8).
+insert into app.comunidad (rango_edad, nombre, descripcion) values
+  ('A', 'Comunidad A', 'Espacio protegido para el rango de 10 a 12 años.'),
+  ('B', 'Comunidad B', 'Espacio protegido para el rango de 13 a 15 años.'),
+  ('C', 'Comunidad C', 'Espacio protegido para el rango de 16 a 17 años.'),
+  ('D', 'Comunidad D', 'Espacio protegido para el rango de 18 a 22 años.');
+
+-- Categorías temáticas de foros y salas (B.4).
+insert into app.categoria (codigo, nombre, descripcion, orden) values
+  ('bienestar-cotidiano', 'Bienestar cotidiano', 'Hábitos y rutinas que ayudan en el día a día.', 1),
+  ('vida-academica', 'Vida académica', 'Estudio, colegio, universidad y organización del tiempo.', 2),
+  ('relaciones-convivencia', 'Relaciones y convivencia', 'Amistades, familia y convivencia con otras personas.', 3),
+  ('cambios-nuevas-etapas', 'Cambios y nuevas etapas', 'Adaptarse a cambios de colegio, de ciudad o de etapa.', 4),
+  ('orientacion', 'Orientación', 'Dudas sobre dónde encontrar información y canales de apoyo.', 5);
+
+-- Usuario sintético de B.7: Usuario_001 · LunaDemo · comunidad 13–15.
+insert into app.usuario (codigo, alias, rol, rango_edad) values
+  ('Usuario_001', 'LunaDemo', 'usuario', 'B');
+
+-- Personaje base provisional (el catálogo completo llega en la Fase 6). Recurso original.
+insert into app.elemento_avatar (id_elemento, tipo, nombre, recurso_grafico, origen, licencia) values
+  ('personaje-base', 'personaje', 'Personaje base (provisional)', 'personaje-base',
+   'Propio del equipo, dibujado por código', 'Propia del proyecto');
+
+insert into app.configuracion_avatar (id_usuario, id_personaje)
+select id_usuario, 'personaje-base' from app.usuario where codigo = 'Usuario_001';
+
+-- Sala temática de B.7 en la comunidad B.
+insert into app.sala (id_comunidad, id_categoria, nombre, descripcion, reglas)
+select c.id_comunidad, cat.id_categoria, 'Bienestar cotidiano',
+       'Sala para conversar sobre hábitos y rutinas que ayudan en el día a día.',
+       'Trata a todos con respeto. No compartas datos personales, de contacto ni redes sociales. Puedes salir cuando quieras.'
+from app.comunidad c
+join app.categoria cat on cat.codigo = 'bienestar-cotidiano'
+where c.rango_edad = 'B';
+
+-- Fuente de demostración de B.7. NO es una institución ni un servicio real.
+with fuente as (
+  insert into app.fuente_institucional (
+    institucion, nombre_servicio, descripcion, tipo_canal, enlace, horario,
+    fuente_original, fecha_verificacion, estado, observaciones, es_demo
+  ) values (
+    'InstituciónDemo', 'CanalDemo',
+    'DATO DE DEMOSTRACIÓN. Canal ficticio para probar el navegador de orientación; no presta ningún servicio.',
+    'web', 'https://canal-demo.example.test', 'Horario de demostración',
+    'Registro de demostración del prototipo (no es una fuente real)', date '2026-10-20', 'activo',
+    'Debe reemplazarse por fuentes institucionales verificadas por el equipo.', true
+  )
+  returning id_fuente
+),
+necesidades as (
+  insert into app.fuente_necesidad (id_fuente, codigo_necesidad)
+  select fuente.id_fuente, necesidad
+  from fuente, unnest(array['hablar_con_alguien', 'lineas_ayuda', 'informacion_institucional']) as necesidad
+)
+insert into app.bitacora_fuente (id_fuente, accion, estado_nuevo, observacion)
+select id_fuente, 'crear', 'activo', 'Registro de demostración cargado por el seed.' from fuente;

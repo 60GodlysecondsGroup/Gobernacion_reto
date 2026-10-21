@@ -1,0 +1,79 @@
+/*
+ * Tokens de diseño. Todo color, tamaño o espaciado de la interfaz sale de aquí.
+ * Paleta tranquila y legible: la plataforma comunica orientación y protección, no un videojuego.
+ * Los pares texto/fondo cumplen contraste AA (≥ 4.5:1).
+ */
+:root {
+  /* ── Paleta ─────────────────────────────────────────── */
+  --color-fondo: #f5f7fa;
+  --color-superficie: #ffffff;
+  --color-superficie-suave: #eef3f7;
+  --color-borde: #d8e0e8;
+  --color-borde-fuerte: #9aa9b8;
+  --color-texto: #1b2633;
+  --color-texto-suave: #4c5a6a;
+
+  --color-primario: #2f6f8f;
+  --color-primario-hover: #255a75;
+  --color-primario-suave: #e2eff5;
+  --color-primario-oscuro: #1f4f66;
+  --color-sobre-primario: #ffffff;
+
+  /* Reservado para el botón «Necesito ayuda» (Fase 3). */
+  --color-acento: #b9472f;
+  --color-acento-hover: #9c3a25;
+  --color-acento-suave: #fbeae5;
+
+  /* Estados (también el semáforo de fuentes: verde, amarillo, rojo). */
+  --color-exito: #2e7d4f;
+  --color-exito-suave: #e3f3ea;
+  --color-advertencia: #8a5a00;
+  --color-advertencia-suave: #fdf1d8;
+  --color-peligro: #b42318;
+  --color-peligro-suave: #fde8e7;
+  --color-info: #2f6f8f;
+  --color-info-suave: #e2eff5;
+
+  --color-foco: #1f5fae;
+  --color-ventana: #f4d58d;
+
+  /* ── Tipografía ─────────────────────────────────────── */
+  --fuente-base:
+    var(--fuente-atkinson, system-ui), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --fuente-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
+
+  --texto-xs: 0.8125rem;
+  --texto-sm: 0.9375rem;
+  --texto-md: 1.0625rem;
+  --texto-lg: 1.25rem;
+  --texto-xl: 1.5rem;
+  --texto-2xl: 2rem;
+  --texto-3xl: clamp(1.875rem, 1.4rem + 2vw, 2.625rem);
+
+  --peso-normal: 400;
+  --peso-fuerte: 700;
+  --interlineado: 1.6;
+  --interlineado-titulo: 1.2;
+
+  /* ── Espaciado (escala de 4 px) ─────────────────────── */
+  --espacio-1: 0.25rem;
+  --espacio-2: 0.5rem;
+  --espacio-3: 0.75rem;
+  --espacio-4: 1rem;
+  --espacio-5: 1.5rem;
+  --espacio-6: 2rem;
+  --espacio-7: 3rem;
+  --espacio-8: 4rem;
+
+  /* ── Forma y movimiento ─────────────────────────────── */
+  --radio-sm: 6px;
+  --radio-md: 10px;
+  --radio-lg: 16px;
+  --radio-total: 999px;
+  --sombra-1: 0 1px 2px rgb(27 38 51 / 0.06), 0 1px 3px rgb(27 38 51 / 0.08);
+  --sombra-2: 0 6px 16px rgb(27 38 51 / 0.08);
+  --transicion: 150ms ease;
+
+  --ancho-contenido: 70rem;
+  --margen-lateral: 1rem;
+}

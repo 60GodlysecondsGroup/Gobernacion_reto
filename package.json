@@ -1,0 +1,31 @@
+{
+  "name": "plataforma-orientacion-comunidad",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Prototipo (TRL 4, datos sintéticos) de orientación y comunidad protegida para jóvenes de Villavicencio.",
+  "workspaces": [
+    "apps/backend",
+    "apps/frontend"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n backend,frontend -c cyan,magenta \"npm run dev -w apps/backend\" \"npm run dev -w apps/frontend\"",
+    "build": "npm run build -w apps/frontend",
+    "db:migrate": "npm run db:migrate -w apps/backend",
+    "db:seed": "npm run db:seed -w apps/backend",
+    "db:reset": "npm run db:reset -w apps/backend",
+    "lint": "npm run lint --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run test -w apps/backend",
+    "test:db": "npm run test:db -w apps/backend",
+    "verificar": "npm run format:check && npm run lint && npm run typecheck && npm test"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6",
+    "prettier": "^3.9.10"
+  }
+}

@@ -1,0 +1,75 @@
+.pagina {
+  display: grid;
+  gap: var(--espacio-5);
+}
+
+.cabecera {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.titulo {
+  font-size: var(--texto-2xl);
+}
+
+.entradilla {
+  color: var(--color-texto-suave);
+  max-width: 44rem;
+}
+
+.paleta {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: var(--espacio-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.color {
+  display: grid;
+  gap: var(--espacio-1);
+  font-size: var(--texto-sm);
+}
+
+.color code {
+  justify-self: start;
+}
+
+.muestra {
+  height: 3.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+}
+
+.uso {
+  color: var(--color-texto-suave);
+}
+
+.tipografia {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  line-height: var(--interlineado-titulo);
+  overflow-wrap: anywhere;
+}
+
+.tokenTexto {
+  font-size: var(--texto-xs);
+  vertical-align: middle;
+}
+
+.fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.formulario {
+  display: grid;
+  gap: var(--espacio-4);
+  max-width: 32rem;
+}
