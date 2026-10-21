@@ -5,7 +5,7 @@ import { AvatarProvisional } from '@/components/avatar/AvatarProvisional';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
 import { useSesion } from '@/components/sesion/ProveedorSesion';
 import { Aviso, Boton, CampoTexto, Tarjeta } from '@/components/ui';
-import { campoDelError, ErrorApi, mensajeDeError } from '@/lib/api/cliente';
+import { campoDelError, erroresPorCampo, mensajeDeError } from '@/lib/api/cliente';
 import type { OpcionAvatar } from '@/lib/api/comunidad';
 import { guardarPerfil, obtenerPerfilPropio } from '@/lib/api/perfil';
 import comun from '../comun.module.css';
@@ -19,18 +19,6 @@ const aIntereses = (texto: string) =>
     .split(',')
     .map((interes) => interes.trim())
     .filter(Boolean);
-
-/** Primer mensaje de validación por campo (`intereses.2` → `intereses`). */
-function erroresDeValidacion(error: unknown): Record<string, string> {
-  const detalles = error instanceof ErrorApi ? error.detalles : undefined;
-  if (!Array.isArray(detalles)) return {};
-  const porCampo: Record<string, string> = {};
-  for (const { campo, mensaje } of detalles as { campo: string; mensaje: string }[]) {
-    const raiz = campo.split('.')[0] ?? campo;
-    porCampo[raiz] ??= mensaje;
-  }
-  return porCampo;
-}
 
 export function EditorPerfil() {
   const { usuario, puede, refrescar } = useSesion();
@@ -87,7 +75,7 @@ export function EditorPerfil() {
       const campo = campoDelError(e);
       // El mensaje del DLP es el estándar del backend y nunca repite el dato detectado.
       setResultado({ tono: 'peligro', mensaje: mensajeDeError(e), campo });
-      setErroresCampo(campo ? { [campo]: 'Revisa este campo.' } : erroresDeValidacion(e));
+      setErroresCampo(campo ? { [campo]: 'Revisa este campo.' } : erroresPorCampo(e));
     } finally {
       setGuardando(false);
     }

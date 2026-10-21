@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type pg from 'pg';
 import type { Logger } from '../lib/logger.js';
+import { cargarFuentes, leerFuentes } from '../modules/fuentes/fuentes.carga.js';
 import type { PoolDeDatos } from './database.js';
 
 const DIR_MIGRACIONES = fileURLToPath(new URL('../../db/migraciones/', import.meta.url));
@@ -23,15 +24,17 @@ export async function leerReglasDlpSemilla(): Promise<ReglaDlpSemilla[]> {
   return JSON.parse(await readFile(ARCHIVO_REGLAS_DLP, 'utf8')) as ReglaDlpSemilla[];
 }
 
-async function enTransaccion(
+/** Ejecuta `trabajo` en una transacción con un cliente dedicado: todo o nada. */
+export async function enTransaccion<T>(
   pool: PoolDeDatos,
-  trabajo: (cliente: pg.PoolClient) => Promise<void>,
-) {
+  trabajo: (cliente: pg.PoolClient) => Promise<T>,
+): Promise<T> {
   const cliente = await pool.connect();
   try {
     await cliente.query('begin');
-    await trabajo(cliente);
+    const resultado = await trabajo(cliente);
     await cliente.query('commit');
+    return resultado;
   } catch (error) {
     await cliente.query('rollback');
     throw error;
@@ -73,12 +76,14 @@ export async function migrar(pool: PoolDeDatos, logger: Logger): Promise<string[
 }
 
 /**
- * Borra los datos y carga de nuevo los datos sintéticos de demostración (Anexo B.7)
- * y las reglas DLP predeterminadas (`db/seed/reglas_dlp.json`).
+ * Borra los datos y carga de nuevo los datos sintéticos de demostración (Anexo B.7),
+ * las reglas DLP predeterminadas (`db/seed/reglas_dlp.json`) y las fuentes institucionales
+ * (`db/seed/fuentes_institucionales.json`).
  */
 export async function sembrar(pool: PoolDeDatos, logger: Logger): Promise<void> {
   const sql = await readFile(ARCHIVO_SEED, 'utf8');
   const reglas = await leerReglasDlpSemilla();
+  const fuentes = await leerFuentes();
   await enTransaccion(pool, async (cliente) => {
     await cliente.query(sql);
     for (const regla of reglas) {
@@ -94,8 +99,11 @@ export async function sembrar(pool: PoolDeDatos, logger: Logger): Promise<void> 
         ],
       );
     }
+    await cargarFuentes(cliente, fuentes, 'Carga inicial desde fuentes_institucionales.json.');
   });
-  logger.info(`Datos sintéticos de demostración y ${reglas.length} reglas DLP cargados.`);
+  logger.info(
+    `Datos sintéticos, ${reglas.length} reglas DLP y ${fuentes.length} fuentes institucionales cargados.`,
+  );
 }
 
 /** Elimina el esquema `app` completo y lo reconstruye con migraciones + seed. Solo para desarrollo. */

@@ -1,0 +1,164 @@
+/* Semáforo (F34): color + número + texto; nunca solo color. */
+.semaforo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: var(--espacio-3);
+}
+
+.luz {
+  display: grid;
+  justify-items: start;
+  gap: var(--espacio-2);
+  padding: var(--espacio-4);
+  border: 1px solid var(--color-borde);
+  border-left-width: 6px;
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.luz[aria-pressed='true'] {
+  box-shadow: var(--sombra-2);
+  outline: 2px solid currentColor;
+}
+
+.activo {
+  border-left-color: var(--color-exito);
+}
+
+.requiere_revision {
+  border-left-color: var(--color-advertencia);
+}
+
+.inactivo {
+  border-left-color: var(--color-peligro);
+}
+
+.total {
+  font-size: var(--texto-2xl);
+  font-weight: var(--peso-fuerte);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* Tabla: se desplaza dentro de su tarjeta, nunca la página. */
+.tablaContenedor {
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--texto-sm);
+}
+
+.tabla th,
+.tabla td {
+  padding: var(--espacio-2) var(--espacio-3);
+  border-bottom: 1px solid var(--color-borde);
+  text-align: left;
+  vertical-align: top;
+}
+
+.tabla td {
+  min-width: 7rem;
+}
+
+.tabla th {
+  color: var(--color-texto-suave);
+  white-space: nowrap;
+}
+
+.tabla td > span {
+  display: block;
+}
+
+.servicio {
+  font-weight: var(--peso-fuerte);
+}
+
+/* Formulario */
+.grupo {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.leyenda {
+  margin-bottom: var(--espacio-1);
+  padding: 0;
+  font-weight: var(--peso-fuerte);
+}
+
+.casillas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: var(--espacio-2);
+}
+
+.casilla {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  cursor: pointer;
+}
+
+.casilla input {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--color-primario);
+}
+
+.error {
+  color: var(--color-peligro);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+}
+
+.dosColumnas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--espacio-4);
+}
+
+/* Acciones de estado */
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+/* Bitácora */
+.bitacora {
+  display: grid;
+  gap: var(--espacio-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entrada {
+  display: grid;
+  gap: var(--espacio-1);
+  padding-left: var(--espacio-4);
+  border-left: 3px solid var(--color-borde);
+}
+
+.cabeceraEntrada {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2);
+}
+
+.cambios {
+  margin: 0;
+  padding-left: var(--espacio-5);
+  font-size: var(--texto-sm);
+  overflow-wrap: anywhere;
+}

@@ -40,6 +40,16 @@ export function Navegacion() {
         </ul>
       </nav>
 
+      {/* Siempre visible, con o sin sesión (F18, RF20). */}
+      <BotonEnlace
+        href="/ayuda"
+        variante="ayuda"
+        tamano="sm"
+        aria-current={ruta === '/ayuda' ? 'page' : undefined}
+      >
+        Necesito ayuda
+      </BotonEnlace>
+
       {!cargando && (
         <div className={estilos.sesion}>
           {usuario ? (

@@ -1,14 +1,20 @@
 import Link from 'next/link';
+import { AVISO_LIMITES } from '@/config/textos';
 import estilos from './PiePagina.module.css';
 
 export function PiePagina() {
   return (
     <footer className={estilos.pie}>
       <div className={`contenedor ${estilos.contenido}`}>
-        <p>
-          Prototipo de hackathon (TRL 4) con <strong>datos sintéticos</strong>. No es un servicio de
-          salud ni un canal oficial de ninguna institución.
-        </p>
+        <div className={estilos.textos}>
+          <p>
+            <strong>Límites de la plataforma.</strong> {AVISO_LIMITES}
+          </p>
+          <p>
+            Prototipo de hackathon (TRL 4) con <strong>datos sintéticos</strong>. No es un canal
+            oficial de ninguna institución.
+          </p>
+        </div>
         <Link href="/guia-de-estilos">Guía de estilos</Link>
       </div>
     </footer>

@@ -12,11 +12,12 @@ export type EnlaceNavegacion = {
 };
 
 /**
- * Menú principal. Cada fase agrega aquí sus secciones cuando funcionen de verdad
- * (Orientación en la Fase 3, Salas en la 5…).
+ * Menú principal. Cada fase agrega aquí sus secciones cuando funcionan de verdad.
+ * «Necesito ayuda» no va aquí: es un botón fijo del encabezado.
  */
 export const enlacesNavegacion: EnlaceNavegacion[] = [
   { href: '/', etiqueta: 'Inicio' },
+  { href: '/orientacion', etiqueta: 'Orientación' },
   {
     href: '/comunidad',
     etiqueta: 'Mi comunidad',
@@ -25,4 +26,5 @@ export const enlacesNavegacion: EnlaceNavegacion[] = [
   },
   { href: '/perfil', etiqueta: 'Mi perfil', requiereSesion: true },
   { href: '/moderacion', etiqueta: 'Moderación', permiso: 'revisar_incidencias_dlp' },
+  { href: '/gestion/fuentes', etiqueta: 'Fuentes', permiso: 'gestionar_fuentes' },
 ];

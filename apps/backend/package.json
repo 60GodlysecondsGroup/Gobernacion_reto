@@ -9,6 +9,7 @@
     "db:migrate": "tsx scripts/db.ts migrar",
     "db:seed": "tsx scripts/db.ts sembrar",
     "db:reset": "tsx scripts/db.ts reiniciar",
+    "fuentes:cargar": "tsx scripts/fuentes.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --exclude \"test/integracion/**\"",

@@ -14,6 +14,8 @@
   padding-block: var(--espacio-5);
 }
 
-.contenido p {
-  max-width: 48rem;
+.textos {
+  display: grid;
+  gap: var(--espacio-2);
+  max-width: 52rem;
 }

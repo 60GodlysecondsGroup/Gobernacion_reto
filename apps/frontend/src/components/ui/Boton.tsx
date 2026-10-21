@@ -3,7 +3,8 @@ import type { ComponentProps } from 'react';
 import estilos from './Boton.module.css';
 
 type PropsBoton = ComponentProps<'button'> & {
-  variante?: 'primario' | 'secundario' | 'fantasma';
+  /** `ayuda` se reserva para «Necesito ayuda». */
+  variante?: 'primario' | 'secundario' | 'fantasma' | 'ayuda';
   tamano?: 'md' | 'sm';
   /** Muestra un indicador de carga y deshabilita el botón. */
   cargando?: boolean;

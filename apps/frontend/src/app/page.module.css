@@ -27,3 +27,10 @@
   font-size: var(--texto-lg);
   max-width: 40rem;
 }
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-3);
+  margin-top: var(--espacio-2);
+}

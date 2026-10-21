@@ -12,10 +12,15 @@ import { rutasComunidad } from './modules/comunidad/comunidad.routes.js';
 import { crearServicioComunidad } from './modules/comunidad/comunidad.service.js';
 import { crearRepositorioDlp } from './modules/dlp/dlp.repository.js';
 import { crearServicioDlp } from './modules/dlp/dlp.service.js';
+import { crearRepositorioFuentes } from './modules/fuentes/fuentes.repository.js';
+import { rutasFuentes } from './modules/fuentes/fuentes.routes.js';
+import { crearServicioFuentes } from './modules/fuentes/fuentes.service.js';
 import { crearRepositorioModeracion } from './modules/moderacion/moderacion.repository.js';
 import { rutasModeracion } from './modules/moderacion/moderacion.routes.js';
 import { crearRepositorioPerfil } from './modules/perfil/perfil.repository.js';
 import { rutasPerfil } from './modules/perfil/perfil.routes.js';
+import { rutasOrientacion } from './modules/orientacion/orientacion.routes.js';
+import { crearServicioOrientacion } from './modules/orientacion/orientacion.service.js';
 import { crearServicioPerfil } from './modules/perfil/perfil.service.js';
 import {
   proveedorRangoSintetico,
@@ -88,6 +93,9 @@ export function crearApp({
     rutasPerfil(crearServicioPerfil({ repositorio: crearRepositorioPerfil(db), dlp })),
   );
   app.use('/api', rutasModeracion(crearRepositorioModeracion(db)));
+  const fuentes = crearRepositorioFuentes(db);
+  app.use('/api', rutasOrientacion(crearServicioOrientacion(fuentes)));
+  app.use('/api', rutasFuentes(crearServicioFuentes(fuentes)));
 
   app.use(rutaNoEncontrada);
   app.use(manejadorDeErrores(logger));

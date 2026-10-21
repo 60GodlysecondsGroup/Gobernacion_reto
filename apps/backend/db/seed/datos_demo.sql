@@ -2,7 +2,8 @@
 -- Ningún registro corresponde a personas, conversaciones ni instituciones reales.
 -- Este archivo REINICIA los datos: vacía las tablas y vuelve a cargarlas.
 -- Los catálogos del sistema (rangos, categorías DLP, necesidades) viven en las migraciones.
--- Las reglas DLP predeterminadas se cargan después, desde reglas_dlp.json.
+-- Las reglas DLP (reglas_dlp.json) y las fuentes institucionales (fuentes_institucionales.json)
+-- se cargan después, desde sus archivos.
 
 truncate
   app.registro_auditoria, app.bitacora_fuente, app.fuente_necesidad, app.fuente_institucional,
@@ -62,24 +63,4 @@ from app.comunidad c
 join app.categoria cat on cat.codigo = 'bienestar-cotidiano'
 where c.rango_edad = 'B';
 
--- Fuente de demostración de B.7. NO es una institución ni un servicio real.
-with fuente as (
-  insert into app.fuente_institucional (
-    institucion, nombre_servicio, descripcion, tipo_canal, enlace, horario,
-    fuente_original, fecha_verificacion, estado, observaciones, es_demo
-  ) values (
-    'InstituciónDemo', 'CanalDemo',
-    'DATO DE DEMOSTRACIÓN. Canal ficticio para probar el navegador de orientación; no presta ningún servicio.',
-    'web', 'https://canal-demo.example.test', 'Horario de demostración',
-    'Registro de demostración del prototipo (no es una fuente real)', date '2026-10-20', 'activo',
-    'Debe reemplazarse por fuentes institucionales verificadas por el equipo.', true
-  )
-  returning id_fuente
-),
-necesidades as (
-  insert into app.fuente_necesidad (id_fuente, codigo_necesidad)
-  select fuente.id_fuente, necesidad
-  from fuente, unnest(array['hablar_con_alguien', 'lineas_ayuda', 'informacion_institucional']) as necesidad
-)
-insert into app.bitacora_fuente (id_fuente, accion, estado_nuevo, observacion)
-select id_fuente, 'crear', 'activo', 'Registro de demostración cargado por el seed.' from fuente;
+-- Las fuentes institucionales de demostración se cargan después, desde fuentes_institucionales.json.

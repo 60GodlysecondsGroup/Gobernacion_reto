@@ -2,8 +2,14 @@
 
 Este es el modelo definitivo del prototipo. Convierte el modelo conceptual B.4 del Documento Maestro en tablas de PostgreSQL, dentro del esquema `app`.
 
-- Fuente: [`apps/backend/db/migraciones/0001_esquema_inicial.sql`](../apps/backend/db/migraciones/0001_esquema_inicial.sql).
-- Datos de demostración: [`apps/backend/db/seed/datos_demo.sql`](../apps/backend/db/seed/datos_demo.sql).
+- Fuente: [`0001_esquema_inicial.sql`](../apps/backend/db/migraciones/0001_esquema_inicial.sql) y [`0002_orientacion_fuentes.sql`](../apps/backend/db/migraciones/0002_orientacion_fuentes.sql).
+- Datos de demostración: [`datos_demo.sql`](../apps/backend/db/seed/datos_demo.sql), [`reglas_dlp.json`](../apps/backend/db/seed/reglas_dlp.json) y [`fuentes_institucionales.json`](../apps/backend/db/seed/fuentes_institucionales.json).
+
+**Cambios de la migración 0002 (Fase 3):**
+
+- `necesidad_orientacion.descripcion`: texto breve y neutral de cada tema del navegador.
+- `fuente_institucional.codigo`: clave estable y única que usa el archivo de carga.
+- `bitacora_fuente.cambios` (jsonb): `{campo: {antes, despues}}` de cada modificación. Además, `fecha` pasa a usar `clock_timestamp()` para ordenar varios cambios hechos en una misma transacción.
 
 No existen campos de salud, diagnóstico, evaluación psicológica ni edad exacta.
 

@@ -78,6 +78,18 @@ export const campoDelError = (error: unknown): string | undefined => {
     : undefined;
 };
 
+/** Primer mensaje de validación por campo (`intereses.2` → `intereses`) de un error 400. */
+export function erroresPorCampo(error: unknown): Record<string, string> {
+  const detalles = error instanceof ErrorApi ? error.detalles : undefined;
+  if (!Array.isArray(detalles)) return {};
+  const porCampo: Record<string, string> = {};
+  for (const { campo, mensaje } of detalles as { campo: string; mensaje: string }[]) {
+    const raiz = campo.split('.')[0] ?? campo;
+    porCampo[raiz] ??= mensaje;
+  }
+  return porCampo;
+}
+
 export const api = {
   get: <T>(ruta: string, opciones?: Opciones) => solicitar<T>('GET', ruta, undefined, opciones),
   post: <T>(ruta: string, cuerpo?: unknown, opciones?: Opciones) =>

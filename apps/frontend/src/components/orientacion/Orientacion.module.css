@@ -1,0 +1,116 @@
+/* Navegador de necesidades */
+.necesidades {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: var(--espacio-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.necesidad {
+  display: grid;
+  gap: var(--espacio-2);
+  height: 100%;
+  padding: var(--espacio-4) var(--espacio-5);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-1);
+  color: var(--color-texto);
+  text-decoration: none;
+  transition:
+    border-color var(--transicion),
+    box-shadow var(--transicion);
+}
+
+.necesidad:hover {
+  border-color: var(--color-primario);
+  box-shadow: var(--sombra-2);
+  color: var(--color-texto);
+}
+
+.nombreNecesidad {
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-fuerte);
+}
+
+/* Tarjeta resumen de servicio */
+.tarjeta {
+  display: grid;
+  gap: var(--espacio-2);
+  padding: var(--espacio-4) var(--espacio-5);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-1);
+}
+
+.insignias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.insignias:empty {
+  display: none;
+}
+
+.tituloTarjeta {
+  font-size: var(--texto-lg);
+}
+
+.institucion {
+  color: var(--color-texto-suave);
+}
+
+.procedencia {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.contacto {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espacio-1) var(--espacio-3);
+  font-weight: var(--peso-fuerte);
+}
+
+.dato {
+  font-weight: var(--peso-normal);
+  overflow-wrap: anywhere;
+}
+
+/* Ficha completa */
+.ficha {
+  display: grid;
+  grid-template-columns: minmax(8rem, max-content) 1fr;
+  gap: var(--espacio-3) var(--espacio-5);
+  margin: 0;
+}
+
+.ficha dt {
+  color: var(--color-texto-suave);
+  font-weight: var(--peso-fuerte);
+}
+
+.ficha dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 34rem) {
+  .ficha {
+    grid-template-columns: 1fr;
+    gap: var(--espacio-1);
+  }
+
+  .ficha dd {
+    margin-bottom: var(--espacio-3);
+  }
+}
+
+.migas {
+  font-size: var(--texto-sm);
+}

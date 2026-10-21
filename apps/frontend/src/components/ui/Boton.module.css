@@ -74,6 +74,17 @@
   background: var(--color-primario-suave);
 }
 
+.ayuda,
+.enlace.ayuda,
+.enlace.ayuda:hover {
+  background: var(--color-acento);
+  color: var(--color-sobre-primario);
+}
+
+.ayuda:not(:disabled):hover {
+  background: var(--color-acento-hover);
+}
+
 .indicador {
   width: 1em;
   height: 1em;

@@ -6,7 +6,7 @@ export default function Inicio() {
   return (
     <div className={estilos.pagina}>
       <section className={estilos.presentacion} aria-labelledby="titulo-inicio">
-        <p className={estilos.antetitulo}>Prototipo · Fase 2: seguridad base</p>
+        <p className={estilos.antetitulo}>Prototipo · Fase 3: orientación y fuentes</p>
         <h1 id="titulo-inicio" className={estilos.titulo}>
           Orientación y comunidad protegida para jóvenes de Villavicencio
         </h1>
@@ -14,7 +14,7 @@ export default function Inicio() {
           Información institucional con fuente y fecha de verificación, y comunidades separadas por
           rango de edad, con identidad protegida y filtros de privacidad.
         </p>
-        <div>
+        <div className={estilos.acciones}>
           <AccionesInicio />
         </div>
       </section>

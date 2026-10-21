@@ -22,6 +22,7 @@ const rutaSegura = (ruta: string | null) =>
 function destinoInicial(usuario: SesionPublica): string {
   if (usuario.comunidad) return '/comunidad';
   if (usuario.permisos.includes('revisar_incidencias_dlp')) return '/moderacion';
+  if (usuario.permisos.includes('gestionar_fuentes')) return '/gestion/fuentes';
   return '/perfil';
 }
 
