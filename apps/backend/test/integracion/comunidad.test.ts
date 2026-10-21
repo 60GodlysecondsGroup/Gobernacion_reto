@@ -76,7 +76,7 @@ describe('TRL-02 · Crear hilo', () => {
       expect(creado.body.hilo).toMatchObject({
         titulo: 'Rutinas que me ayudan en la semana',
         categoria: { codigo: 'bienestar-cotidiano', nombre: 'Bienestar cotidiano' },
-        autor: { alias: 'LunaDemo', avatar: { id: expect.any(String) } },
+        autor: { alias: 'LunaDemo', avatar: { personaje: expect.any(String) } },
       });
       expect(creado.body.respuestas).toEqual([]);
 

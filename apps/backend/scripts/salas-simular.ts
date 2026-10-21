@@ -64,10 +64,19 @@ for (let i = desde; i < desde + cantidad; i++) {
      returning id_usuario as id, alias`,
     [`Simulado_${numero}`, `Simulado${numero}`, rango],
   );
+  // Un avatar del catálogo distinto para cada persona simulada.
   await pool.query(
-    `insert into app.configuracion_avatar (id_usuario, id_personaje)
-     values ($1, $2) on conflict (id_usuario) do nothing`,
-    [rows[0]!.id, ['base-azul', 'base-verde', 'base-coral'][i % 3]],
+    `insert into app.configuracion_avatar
+       (id_usuario, id_personaje, id_cabello, id_rasgos, id_prenda, id_accesorio)
+     values ($1, $2, $3, $4, $5, $6) on conflict (id_usuario) do nothing`,
+    [
+      rows[0]!.id,
+      ['tono-arena', 'tono-miel', 'tono-canela', 'tono-cacao'][i % 4],
+      ['cabello-corto', 'cabello-rizado', 'cabello-largo', 'cabello-recogido', null][i % 5],
+      ['rasgos-sonrisa', 'rasgos-tranquilo', 'rasgos-pecas'][i % 3],
+      ['prenda-camiseta', 'prenda-buzo', 'prenda-chaqueta', 'prenda-rayas'][(i + 1) % 4],
+      ['accesorio-gorra', null, 'accesorio-audifonos', 'accesorio-gafas', null, null][i % 6],
+    ],
   );
   usuarios.push(rows[0]!);
 }

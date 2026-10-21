@@ -20,6 +20,9 @@ import { rutasFuentes } from './modules/fuentes/fuentes.routes.js';
 import { crearServicioFuentes } from './modules/fuentes/fuentes.service.js';
 import { crearRepositorioModeracion } from './modules/moderacion/moderacion.repository.js';
 import { rutasModeracion } from './modules/moderacion/moderacion.routes.js';
+import { crearRepositorioAvatar } from './modules/avatar/avatar.repository.js';
+import { rutasAvatar } from './modules/avatar/avatar.routes.js';
+import { crearServicioAvatar } from './modules/avatar/avatar.service.js';
 import { crearRepositorioPerfil } from './modules/perfil/perfil.repository.js';
 import { rutasPerfil } from './modules/perfil/perfil.routes.js';
 import { rutasOrientacion } from './modules/orientacion/orientacion.routes.js';
@@ -142,6 +145,7 @@ export function crearServidor({
     '/api',
     rutasPerfil(crearServicioPerfil({ repositorio: crearRepositorioPerfil(db), dlp })),
   );
+  app.use('/api', rutasAvatar(crearServicioAvatar(crearRepositorioAvatar(db))));
   app.use('/api', rutasModeracion(crearRepositorioModeracion(db)));
   const fuentes = crearRepositorioFuentes(db);
   app.use('/api', rutasOrientacion(crearServicioOrientacion(fuentes)));

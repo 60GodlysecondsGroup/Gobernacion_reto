@@ -1,4 +1,4 @@
-import { AvatarProvisional } from '@/components/avatar/AvatarProvisional';
+import { Avatar } from '@/components/avatar/Avatar';
 import type { Autor } from '@/lib/api/hilos';
 import { formatearFechaHora } from '@/lib/fechas';
 import estilos from './Comunidad.module.css';
@@ -7,7 +7,7 @@ import estilos from './Comunidad.module.css';
 export function AutorContenido({ autor, fecha }: { autor: Autor; fecha: string }) {
   return (
     <div className={estilos.autor}>
-      <AvatarProvisional recurso={autor.avatar?.recurso} tamano={28} />
+      <Avatar apariencia={autor.avatar} tamano={28} />
       <span>
         <strong>{autor.alias}</strong>
         <span className={estilos.fecha}> · {formatearFechaHora(fecha)}</span>

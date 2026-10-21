@@ -2,7 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { AvatarProvisional } from '@/components/avatar/AvatarProvisional';
+import { Avatar } from '@/components/avatar/Avatar';
 import { BotonReportar } from '@/components/comunidad/BotonReportar';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
 import { useSesion } from '@/components/sesion/ProveedorSesion';
@@ -51,8 +51,8 @@ export function VistaPerfilPublico() {
           <EncabezadoPagina antetitulo="Perfil" titulo={estado.perfil.alias} />
           <Tarjeta>
             <div className={comun.fila}>
-              <AvatarProvisional
-                recurso={estado.perfil.avatar?.recurso}
+              <Avatar
+                apariencia={estado.perfil.avatar}
                 tamano={64}
                 etiqueta={`Avatar de ${estado.perfil.alias}`}
               />

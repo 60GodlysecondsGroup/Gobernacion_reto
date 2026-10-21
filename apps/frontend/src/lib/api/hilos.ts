@@ -1,8 +1,8 @@
 import { api } from './cliente';
-import type { OpcionAvatar } from './comunidad';
+import type { Apariencia } from './avatar';
 
 /** Autor de un contenido: solo alias y avatar. */
-export type Autor = { id: string; alias: string; avatar: OpcionAvatar | null };
+export type Autor = { id: string; alias: string; avatar: Apariencia | null };
 
 export type CategoriaForo = { codigo: string; nombre: string; descripcion: string; hilos: number };
 

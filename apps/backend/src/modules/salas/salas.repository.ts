@@ -1,5 +1,5 @@
 import type { Database } from '../../db/database.js';
-import type { OpcionAvatar } from '../perfil/perfil.repository.js';
+import { sqlApariencia, type Apariencia } from '../avatar/avatar.repository.js';
 import { leerObstaculos, type Escenario, type Posicion } from './salas.escenario.js';
 
 export type EstadoSala = 'disponible' | 'llena' | 'vacia' | 'cerrada';
@@ -21,7 +21,7 @@ export type SalaDetalle = SalaResumen & {
   instanciaVigente: string | null;
 };
 
-export type Participante = { id: string; alias: string; avatar: OpcionAvatar | null };
+export type Participante = { id: string; alias: string; avatar: Apariencia | null };
 
 export type ResultadoEntrada =
   { resultado: 'ok'; ocupacion: number } | { resultado: 'llena' | 'cerrada' };
@@ -89,13 +89,8 @@ export function crearRepositorioSalas(db: Database) {
 
     async participante(idUsuario: string): Promise<Participante> {
       const { rows } = await db.query<Participante>(
-        `select u.id_usuario as id, u.alias,
-                case when e.id_elemento is null then null
-                     else json_build_object('id', e.id_elemento, 'nombre', e.nombre, 'recurso', e.recurso_grafico)
-                end as avatar
+        `select u.id_usuario as id, u.alias, ${sqlApariencia('u.id_usuario')} as avatar
          from app.usuario u
-         left join app.configuracion_avatar ca on ca.id_usuario = u.id_usuario
-         left join app.elemento_avatar e on e.id_elemento = ca.id_personaje
          where u.id_usuario = $1`,
         [idUsuario],
       );

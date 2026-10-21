@@ -21,7 +21,7 @@ const UUID_INEXISTENTE = '00000000-0000-4000-8000-000000000000';
 let pool: PoolDeDatos;
 let app: ReturnType<typeof crearApp>;
 let inicio: Date;
-let lunaOriginal: { alias: string; intereses: string[]; avatar: string };
+let lunaOriginal: { alias: string; intereses: string[] };
 const ids: Record<string, string> = {};
 
 beforeAll(async () => {
@@ -35,9 +35,7 @@ beforeAll(async () => {
   for (const fila of comunidades.rows) ids[`comunidad_${fila.rango_edad}`] = fila.id_comunidad;
 
   const luna = await pool.query(
-    `select u.alias, u.intereses_generales as intereses, ca.id_personaje as avatar
-     from app.usuario u join app.configuracion_avatar ca using (id_usuario)
-     where u.codigo = 'Usuario_001'`,
+    `select alias, intereses_generales as intereses from app.usuario where codigo = 'Usuario_001'`,
   );
   lunaOriginal = luna.rows[0];
 });
@@ -47,10 +45,6 @@ afterAll(async () => {
     `update app.usuario set alias = $1, intereses_generales = $2 where codigo = 'Usuario_001'`,
     [lunaOriginal.alias, lunaOriginal.intereses],
   );
-  await pool.query(`update app.configuracion_avatar set id_personaje = $1 where id_usuario = $2`, [
-    lunaOriginal.avatar,
-    ids.Usuario_001,
-  ]);
   await pool.query(`update app.regla_dlp set estado = 'activa'`);
   await pool.query(`delete from app.evento_dlp where fecha >= $1`, [inicio]);
   await pool.end();
@@ -197,12 +191,12 @@ describe('Perfil protegido con DLP', () => {
     luna = como(await entrar('Usuario_001'));
   });
 
-  const perfilValido = { alias: 'LunaDemo', intereses: ['lectura'], avatar: 'base-azul' };
+  const perfilValido = { alias: 'LunaDemo', intereses: ['lectura'] };
 
   it('muestra el perfil propio con alias, intereses y avatar, nunca la edad', async () => {
     const res = await luna.get('/api/perfil');
     expect(res.body.perfil.alias).toBe('LunaDemo');
-    expect(res.body.opcionesAvatar).toHaveLength(3);
+    expect(res.body.perfil.avatar).toMatchObject({ personaje: expect.any(String) });
     expect(JSON.stringify(res.body)).not.toMatch(/edad|nacimiento|rango/i);
   });
 
@@ -284,13 +278,9 @@ describe('Perfil protegido con DLP', () => {
     const res = await luna.put('/api/perfil', {
       alias: 'LunaDemo',
       intereses: ['lectura', 'música', 'astronomía'],
-      avatar: 'base-verde',
     });
     expect(res.status).toBe(200);
-    expect(res.body.perfil).toMatchObject({
-      intereses: ['lectura', 'música', 'astronomía'],
-      avatar: { id: 'base-verde' },
-    });
+    expect(res.body.perfil).toMatchObject({ intereses: ['lectura', 'música', 'astronomía'] });
   });
 
   it('rechaza campos que no son del perfil (no se puede cambiar el rango)', async () => {
@@ -305,16 +295,9 @@ describe('Perfil protegido con DLP', () => {
     expect(res.body.error.codigo).toBe('ALIAS_EN_USO');
   });
 
-  it('un moderador no puede personalizar su avatar (A.2)', async () => {
-    const moderador = como(await entrar('Moderador_001'));
-    const { perfil } = (await moderador.get('/api/perfil')).body;
-    const otro = perfil.avatar.id === 'base-azul' ? 'base-coral' : 'base-azul';
-    const res = await moderador.put('/api/perfil', {
-      alias: perfil.alias,
-      intereses: [],
-      avatar: otro,
-    });
-    expect(res.status).toBe(403);
+  it('el avatar ya no se cambia desde el perfil: tiene su propia sección (Fase 6)', async () => {
+    const res = await luna.put('/api/perfil', { ...perfilValido, avatar: 'tono-cacao' });
+    expect(res.status).toBe(400);
   });
 });
 

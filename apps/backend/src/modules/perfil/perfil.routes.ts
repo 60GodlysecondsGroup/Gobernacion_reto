@@ -9,7 +9,7 @@ export function rutasPerfil(servicio: ServicioPerfil): Router {
   router.use('/perfiles', requerirPermiso('ver_comunidad_propia'));
 
   router.get('/perfil', async (_req, res) => {
-    res.json(await servicio.obtenerPropioConOpciones(exigirSesion(res)));
+    res.json({ perfil: await servicio.obtenerPropio(exigirSesion(res)) });
   });
 
   router.put('/perfil', async (req, res) => {

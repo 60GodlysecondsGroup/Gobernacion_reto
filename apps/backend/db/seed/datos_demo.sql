@@ -40,19 +40,43 @@ insert into app.usuario (codigo, alias, rol, rango_edad, intereses_generales) va
   ('Admin_001', 'AdminDemo', 'admin_plataforma', null, '{}'),
   ('Gestor_001', 'GestorDemo', 'gestor_fuentes', null, '{}');
 
--- Personajes base provisionales (el catálogo completo llega en la Fase 6). Recursos originales.
-insert into app.elemento_avatar (id_elemento, tipo, nombre, recurso_grafico, origen, licencia) values
-  ('base-azul', 'personaje', 'Personaje base azul (provisional)', 'base-azul',
-   'Propio del equipo, dibujado por código', 'Propia del proyecto'),
-  ('base-verde', 'personaje', 'Personaje base verde (provisional)', 'base-verde',
-   'Propio del equipo, dibujado por código', 'Propia del proyecto'),
-  ('base-coral', 'personaje', 'Personaje base coral (provisional)', 'base-coral',
-   'Propio del equipo, dibujado por código', 'Propia del proyecto');
+-- Catálogo de avatar (F36, RF21, RF27, RF28): cerrado, gratuito y sin opciones ligadas a la edad.
+-- Cada recurso es una clave de un dibujo original hecho por código en el frontend
+-- (apps/frontend/src/components/avatar/capas.ts), con estética pixel art propia. No hay imágenes ni URLs.
+insert into app.elemento_avatar (id_elemento, tipo, nombre, recurso_grafico, origen, licencia, orden)
+select id, tipo, nombre, id,
+       'Propio del equipo: pixel art dibujado por código (SVG)', 'Propia del proyecto', orden
+from (values
+  ('tono-arena', 'personaje', 'Tono arena', 1),
+  ('tono-miel', 'personaje', 'Tono miel', 2),
+  ('tono-canela', 'personaje', 'Tono canela', 3),
+  ('tono-cacao', 'personaje', 'Tono cacao', 4),
+  ('cabello-corto', 'cabello', 'Corto', 1),
+  ('cabello-largo', 'cabello', 'Largo', 2),
+  ('cabello-rizado', 'cabello', 'Rizado', 3),
+  ('cabello-recogido', 'cabello', 'Recogido', 4),
+  ('rasgos-sonrisa', 'rasgo', 'Sonrisa', 1),
+  ('rasgos-tranquilo', 'rasgo', 'Tranquilo', 2),
+  ('rasgos-pecas', 'rasgo', 'Pecas', 3),
+  ('rasgos-mejillas', 'rasgo', 'Mejillas', 4),
+  ('prenda-camiseta', 'prenda', 'Camiseta azul', 1),
+  ('prenda-buzo', 'prenda', 'Buzo verde', 2),
+  ('prenda-chaqueta', 'prenda', 'Chaqueta coral', 3),
+  ('prenda-rayas', 'prenda', 'Camiseta de rayas', 4),
+  ('accesorio-gafas', 'accesorio', 'Gafas', 1),
+  ('accesorio-gorra', 'accesorio', 'Gorra', 2),
+  ('accesorio-audifonos', 'accesorio', 'Audífonos', 3)
+) as catalogo (id, tipo, nombre, orden);
 
-insert into app.configuracion_avatar (id_usuario, id_personaje)
+-- Una apariencia distinta para cada usuario sintético, combinando el catálogo.
+insert into app.configuracion_avatar (id_usuario, id_personaje, id_cabello, id_rasgos, id_prenda, id_accesorio)
 select id_usuario,
-       (array['base-azul', 'base-verde', 'base-coral'])[1 + (row_number() over (order by codigo))::int % 3]
-from app.usuario;
+       (array['tono-arena', 'tono-miel', 'tono-canela', 'tono-cacao'])[1 + n % 4],
+       (array['cabello-largo', 'cabello-corto', 'cabello-rizado', 'cabello-recogido'])[1 + n % 4],
+       (array['rasgos-sonrisa', 'rasgos-pecas', 'rasgos-tranquilo', 'rasgos-mejillas'])[1 + (n + 1) % 4],
+       (array['prenda-buzo', 'prenda-camiseta', 'prenda-rayas', 'prenda-chaqueta'])[1 + (n + 2) % 4],
+       (array['accesorio-audifonos', null, 'accesorio-gafas', null, 'accesorio-gorra'])[1 + n % 5]
+from (select id_usuario, (row_number() over (order by codigo))::int as n from app.usuario) as u;
 
 -- Salas temáticas predefinidas (F10, RF09): las mismas cinco en cada comunidad, cada una con su
 -- escenario de 12 × 8 celdas. Los obstáculos son datos: {x, y, tipo} (planta, mesa, sofa, cojin,

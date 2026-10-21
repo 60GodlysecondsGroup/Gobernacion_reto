@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, type FormEvent } from 'react';
-import { AvatarProvisional } from '@/components/avatar/AvatarProvisional';
+import { Avatar } from '@/components/avatar/Avatar';
 import { Aviso, Boton, CampoTexto, Tarjeta } from '@/components/ui';
 import { mensajeDeError } from '@/lib/api/cliente';
 import { buscarPerfiles, type PerfilPublico } from '@/lib/api/comunidad';
@@ -62,7 +62,7 @@ export function BuscadorPersonas() {
             {resultados.map((perfil) => (
               <li key={perfil.id}>
                 <Link href={`/perfiles/${perfil.id}`} className={estilos.persona}>
-                  <AvatarProvisional recurso={perfil.avatar?.recurso} tamano={32} />
+                  <Avatar apariencia={perfil.avatar} tamano={32} />
                   <span>
                     <strong>{perfil.alias}</strong>
                     {perfil.intereses.length > 0 && (

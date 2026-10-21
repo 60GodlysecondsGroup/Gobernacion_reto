@@ -1,14 +1,13 @@
+import type { Apariencia } from './avatar';
 import { api } from './cliente';
 
 export type Comunidad = { id: string; nombre: string; descripcion: string; rango: string };
-
-export type OpcionAvatar = { id: string; nombre: string; recurso: string };
 
 export type PerfilPublico = {
   id: string;
   alias: string;
   intereses: string[];
-  avatar: OpcionAvatar | null;
+  avatar: Apariencia | null;
 };
 
 export const obtenerComunidadPropia = () => api.get<{ comunidad: Comunidad }>('/api/comunidad');

@@ -1,4 +1,4 @@
-import { AvatarProvisional } from '@/components/avatar/AvatarProvisional';
+import { Avatar } from '@/components/avatar/Avatar';
 import type { Obstaculo, ParticipanteEnSala, TipoObstaculo } from '@/lib/api/salas';
 import estilos from './Salas.module.css';
 
@@ -188,8 +188,8 @@ export function Escenario2D({
               strokeWidth="1"
             />
           )}
-          <g transform="translate(1.5 -1)">
-            <AvatarProvisional recurso={p.avatar?.recurso} tamano={13} />
+          <g transform="translate(1.5 -1.5)">
+            <Avatar apariencia={p.avatar} tamano={13} />
           </g>
         </g>
       ))}

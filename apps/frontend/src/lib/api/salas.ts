@@ -1,5 +1,5 @@
 import { api, URL_API } from './cliente';
-import type { OpcionAvatar } from './comunidad';
+import type { Apariencia } from './avatar';
 
 export type EstadoSala = 'disponible' | 'llena' | 'vacia' | 'cerrada';
 
@@ -27,7 +27,7 @@ export type Direccion = 'arriba' | 'abajo' | 'izquierda' | 'derecha';
 export type ParticipanteEnSala = {
   id: string;
   alias: string;
-  avatar: OpcionAvatar | null;
+  avatar: Apariencia | null;
   x: number;
   y: number;
 };

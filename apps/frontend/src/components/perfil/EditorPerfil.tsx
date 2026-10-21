@@ -1,17 +1,17 @@
 'use client';
 
 import { useEffect, useState, type FormEvent } from 'react';
-import { AvatarProvisional } from '@/components/avatar/AvatarProvisional';
+import { Avatar } from '@/components/avatar/Avatar';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
 import { useSesion } from '@/components/sesion/ProveedorSesion';
-import { Aviso, Boton, CampoTexto, Tarjeta } from '@/components/ui';
+import { Aviso, Boton, BotonEnlace, CampoTexto, Tarjeta } from '@/components/ui';
 import { campoDelError, erroresPorCampo, mensajeDeError } from '@/lib/api/cliente';
-import type { OpcionAvatar } from '@/lib/api/comunidad';
+import type { Apariencia } from '@/lib/api/avatar';
 import { guardarPerfil, obtenerPerfilPropio } from '@/lib/api/perfil';
 import comun from '../comun.module.css';
 import estilos from './EditorPerfil.module.css';
 
-type Formulario = { alias: string; intereses: string; avatar: string };
+type Formulario = { alias: string; intereses: string };
 type Resultado = { tono: 'exito' | 'peligro'; mensaje: string; campo?: string } | null;
 
 const aIntereses = (texto: string) =>
@@ -23,7 +23,7 @@ const aIntereses = (texto: string) =>
 export function EditorPerfil() {
   const { usuario, puede, refrescar } = useSesion();
   const [formulario, setFormulario] = useState<Formulario | null>(null);
-  const [opciones, setOpciones] = useState<OpcionAvatar[]>([]);
+  const [apariencia, setApariencia] = useState<Apariencia | null>(null);
   const [errorCarga, setErrorCarga] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [resultado, setResultado] = useState<Resultado>(null);
@@ -32,14 +32,10 @@ export function EditorPerfil() {
   useEffect(() => {
     let vigente = true;
     obtenerPerfilPropio()
-      .then(({ perfil, opcionesAvatar }) => {
+      .then(({ perfil }) => {
         if (!vigente) return;
-        setOpciones(opcionesAvatar);
-        setFormulario({
-          alias: perfil.alias,
-          intereses: perfil.intereses.join(', '),
-          avatar: perfil.avatar?.id ?? opcionesAvatar[0]?.id ?? '',
-        });
+        setApariencia(perfil.avatar);
+        setFormulario({ alias: perfil.alias, intereses: perfil.intereses.join(', ') });
       })
       .catch((e: unknown) => vigente && setErrorCarga(mensajeDeError(e)));
     return () => {
@@ -66,7 +62,6 @@ export function EditorPerfil() {
       const { perfil } = await guardarPerfil({
         alias: formulario.alias,
         intereses: aIntereses(formulario.intereses),
-        avatar: formulario.avatar,
       });
       setFormulario({ ...formulario, alias: perfil.alias, intereses: perfil.intereses.join(', ') });
       setResultado({ tono: 'exito', mensaje: 'Perfil guardado.' });
@@ -82,7 +77,6 @@ export function EditorPerfil() {
   }
 
   const puedeCambiarAvatar = puede('personalizar_avatar_propio');
-  const avatarElegido = opciones.find((opcion) => opcion.id === formulario.avatar);
 
   return (
     <div className={comun.pagina}>
@@ -93,10 +87,13 @@ export function EditorPerfil() {
       </EncabezadoPagina>
 
       <div className={estilos.distribucion}>
-        <Tarjeta titulo="Vista previa">
+        <Tarjeta titulo="Tu avatar">
           <div className={estilos.vistaPrevia}>
-            <AvatarProvisional recurso={avatarElegido?.recurso} tamano={72} />
+            <Avatar apariencia={apariencia} tamano={72} etiqueta="Tu avatar" />
             <strong>{formulario.alias || 'Tu alias'}</strong>
+            <BotonEnlace href="/perfil/avatar" variante="secundario" tamano="sm">
+              {puedeCambiarAvatar ? 'Personalizar mi avatar' : 'Ver mi avatar'}
+            </BotonEnlace>
           </div>
         </Tarjeta>
 
@@ -122,31 +119,6 @@ export function EditorPerfil() {
               error={erroresCampo.intereses}
               autoComplete="off"
             />
-
-            <fieldset className={estilos.avatares} disabled={!puedeCambiarAvatar}>
-              <legend className={estilos.leyenda}>Personaje (provisional)</legend>
-              {!puedeCambiarAvatar && (
-                <p className={comun.suave}>Tu rol no personaliza el avatar.</p>
-              )}
-              <div className={estilos.opciones}>
-                {opciones.map((opcion) => (
-                  <label key={opcion.id} className={estilos.opcion}>
-                    <input
-                      type="radio"
-                      name="avatar"
-                      value={opcion.id}
-                      checked={formulario.avatar === opcion.id}
-                      onChange={() => cambiar('avatar', opcion.id)}
-                    />
-                    <AvatarProvisional recurso={opcion.recurso} tamano={36} />
-                    <span className={comun.suave}>
-                      {opcion.nombre.replace(' (provisional)', '')}
-                    </span>
-                  </label>
-                ))}
-              </div>
-              {erroresCampo.avatar && <p className={estilos.error}>{erroresCampo.avatar}</p>}
-            </fieldset>
 
             <div className={comun.fila}>
               <Boton type="submit" cargando={guardando}>

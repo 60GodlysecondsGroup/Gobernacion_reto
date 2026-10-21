@@ -7,7 +7,7 @@ import {
   useState,
   type KeyboardEvent as EventoTeclado,
 } from 'react';
-import { AvatarProvisional } from '@/components/avatar/AvatarProvisional';
+import { Avatar } from '@/components/avatar/Avatar';
 import { BotonReportar } from '@/components/comunidad/BotonReportar';
 import { Boton } from '@/components/ui';
 import type { Direccion, MensajeCliente, SalaDetalle } from '@/lib/api/salas';
@@ -179,7 +179,7 @@ export function SalaEnVivo({
           <ul className={estilos.personas}>
             {participantes.map((p) => (
               <li key={p.id} className={estilos.persona}>
-                <AvatarProvisional recurso={p.avatar?.recurso} tamano={20} />
+                <Avatar apariencia={p.avatar} tamano={20} />
                 <span>{p.id === yo ? `${p.alias} (tú)` : p.alias}</span>
               </li>
             ))}

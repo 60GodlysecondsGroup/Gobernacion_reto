@@ -1,0 +1,135 @@
+.pagina {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-5);
+  max-width: 60rem;
+}
+
+.distribucion {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-5);
+  align-items: start;
+}
+
+@media (min-width: 52rem) {
+  .distribucion {
+    grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
+  }
+
+  /* La vista previa queda a la vista mientras se recorren las categorías. */
+  .vistaPrevia {
+    position: sticky;
+    top: var(--espacio-4);
+  }
+}
+
+.vistaPrevia {
+  display: grid;
+  justify-items: center;
+  gap: var(--espacio-3);
+  padding: var(--espacio-5);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-1);
+  text-align: center;
+}
+
+.vistaPrevia > [role='status'],
+.vistaPrevia > [role='alert'] {
+  justify-self: stretch;
+  text-align: left;
+}
+
+.tituloSeccion {
+  margin-bottom: var(--espacio-2);
+  padding: 0;
+  font-size: var(--texto-md);
+  font-weight: var(--peso-fuerte);
+}
+
+.lienzo {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  padding: var(--espacio-4);
+  border-radius: var(--radio-md);
+  background: repeating-conic-gradient(
+      var(--color-superficie-suave) 0 25%,
+      var(--color-superficie) 0 50%
+    )
+    0 0 / 16px 16px;
+}
+
+.alias {
+  overflow-wrap: anywhere;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--espacio-2);
+}
+
+.categorias {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.capa {
+  margin: 0;
+  padding: var(--espacio-4);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+}
+
+.opciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5.25rem, 1fr));
+  gap: var(--espacio-2);
+}
+
+.opcion {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--espacio-1);
+  padding: var(--espacio-2) var(--espacio-2) var(--espacio-3);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  font-size: var(--texto-sm);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color var(--transicion),
+    background var(--transicion);
+}
+
+.opcion:hover {
+  border-color: var(--color-borde-fuerte);
+}
+
+.opcion:has(input:checked) {
+  border-color: var(--color-primario);
+  background: var(--color-primario-suave);
+  font-weight: var(--peso-fuerte);
+}
+
+.opcion:has(input:focus-visible) {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.opcion input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.capa:disabled .opcion {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

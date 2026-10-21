@@ -1,8 +1,8 @@
 import type { Database } from '../../db/database.js';
-import type { OpcionAvatar } from '../perfil/perfil.repository.js';
+import { sqlApariencia, type Apariencia } from '../avatar/avatar.repository.js';
 
 /** Autor de un contenido: solo alias y avatar (F09). Nunca edad, rango ni datos de contacto. */
-export type Autor = { id: string; alias: string; avatar: OpcionAvatar | null };
+export type Autor = { id: string; alias: string; avatar: Apariencia | null };
 
 export type CategoriaForo = { codigo: string; nombre: string; descripcion: string; hilos: number };
 
@@ -25,17 +25,9 @@ export type HiloDetalle = Omit<HiloResumen, 'extracto' | 'respuestas' | 'ultimaA
 export type Respuesta = { id: string; contenido: string; fecha: string; autor: Autor };
 
 const AUTOR = `json_build_object(
-  'id', u.id_usuario, 'alias', u.alias,
-  'avatar', case when e.id_elemento is null then null
-                 else json_build_object('id', e.id_elemento, 'nombre', e.nombre, 'recurso', e.recurso_grafico)
-            end)`;
+  'id', u.id_usuario, 'alias', u.alias, 'avatar', ${sqlApariencia('u.id_usuario')})`;
 
-const UNIR_AUTOR = `
-  join app.usuario u on u.id_usuario = %AUTOR%
-  left join app.configuracion_avatar ca on ca.id_usuario = u.id_usuario
-  left join app.elemento_avatar e on e.id_elemento = ca.id_personaje`;
-
-const unirAutor = (columna: string) => UNIR_AUTOR.replace('%AUTOR%', columna);
+const unirAutor = (columna: string) => `join app.usuario u on u.id_usuario = ${columna}`;
 
 const CATEGORIA = `json_build_object('codigo', cat.codigo, 'nombre', cat.nombre)`;
 
@@ -87,7 +79,7 @@ export function crearRepositorioHilos(db: Database) {
          where h.id_comunidad = $1 and h.estado <> 'oculto'
            and ($2::text is null or cat.codigo = $2)
            and ($3::text is null or h.titulo ilike $3 or h.contenido ilike $3)
-         group by h.id_hilo, cat.codigo, cat.nombre, u.id_usuario, e.id_elemento
+         group by h.id_hilo, cat.codigo, cat.nombre, u.id_usuario
          order by "ultimaActividad" desc, h.id_hilo
          limit $4 offset $5`,
         [idComunidad, filtro.categoria ?? null, patron, filtro.limite, filtro.desplazamiento],

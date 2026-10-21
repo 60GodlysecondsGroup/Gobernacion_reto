@@ -8,7 +8,7 @@ Plataforma digital de orientación y comunidad protegida para jóvenes de Villav
 - Decisiones técnicas: [`DECISIONES.md`](DECISIONES.md).
 - Modelo de datos: [`docs/MODELO_DE_DATOS.md`](docs/MODELO_DE_DATOS.md).
 - Cómo cargar fuentes institucionales reales: [`docs/FUENTES.md`](docs/FUENTES.md).
-- Estado: **Fases 1 (entorno), 2 (seguridad base), 3 (orientación y fuentes), 4 (comunidad) y 5 (salas en tiempo real) terminadas.** Siguiente: Fase 6, avatar.
+- Estado: **Fases 1 (entorno), 2 (seguridad base), 3 (orientación y fuentes), 4 (comunidad), 5 (salas en tiempo real) y 6 (avatar) terminadas.** Siguiente: Fase 7, moderación y administración.
 
 ## Requisitos
 
@@ -79,22 +79,34 @@ La sesión es una cookie, así que dos pestañas del mismo navegador son la mism
 5. **Capacidad:** en una terminal, `npm run salas:simular -- --cantidad 8` llena la sala (`10/10`, con avatares que se mueven solos). En otra, `npm run salas:simular -- --cantidad 1 --desde 9` intenta ser la persona 11 y recibe «La sala está llena.». Ctrl+C en el simulador los saca a todos.
 6. **Salida y cierre:** LunaDemo pulsa **Salir de la sala** y SolDemo cierra su ventana (pérdida de conexión): el cupo se libera y la sala queda en `0/10`. Pasado el tiempo de cierre, la antesala dice «Esta sala se cerró…» y ofrece la instancia nueva del mismo tema. Si alguien entra antes, el contador se cancela.
 
+### Demo de la Fase 6 (3 minutos)
+
+1. **Entrar** → `LunaDemo` → **Mi perfil** → **Personalizar mi avatar**.
+2. Elige personaje base, cabello, rasgos, prenda y accesorio: la vista previa cambia al instante y cada opción se muestra ya aplicada a tu avatar. **Deshacer cambios** vuelve a lo guardado. **Guardar avatar** → «Avatar guardado.».
+3. **Salir** y volver a entrar como `LunaDemo` → **Mi avatar** muestra la misma apariencia.
+4. **Mi comunidad**: el avatar nuevo aparece junto a tu alias en tus hilos y respuestas. **Salas** → entra a una sala: tu avatar es el mismo en el escenario y en la lista de personas.
+5. **No hay foto ni texto:** la pantalla solo ofrece opciones del catálogo (no hay botón de subir ni campo de texto). Si alguien lo intenta por la API, se rechaza:
+   ```bash
+   curl -X PUT http://localhost:4000/api/avatar -H "Content-Type: application/json" -d "{\"personaje\":\"https://ejemplo.com/foto.png\"}"
+   ```
+   responde `401` sin sesión y `400 AVATAR_INVALIDO` con ella (lo cubre `npm run test:db`).
+
 ## Comandos
 
-| Comando                              | Qué hace                                                                                                             |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| `npm install`                        | Instala las dos aplicaciones (npm workspaces).                                                                       |
-| `npm run dev`                        | Levanta backend y frontend a la vez, con recarga automática.                                                         |
-| `npm run db:reset`                   | **Reinicia los datos de demo**: borra el esquema `app`, aplica las migraciones y carga el seed.                      |
-| `npm run db:migrate`                 | Aplica solo las migraciones pendientes.                                                                              |
-| `npm run db:seed`                    | Vacía las tablas y recarga datos sintéticos, reglas DLP y fuentes de demo (sin tocar el esquema).                    |
-| `npm run fuentes:cargar`             | Sincroniza las fuentes con `db/seed/fuentes_institucionales.json` sin tocar el resto (ver `docs/FUENTES.md`).        |
-| `npm run salas:simular`              | Conecta personas sintéticas a una sala (`--cantidad`, `--desde`, `--sala`, `--comunidad`) para la demo de capacidad. |
-| `npm test`                           | Pruebas unitarias y de humo del backend (DLP, permisos, sesión, guardianes, salas). Sin red ni base de datos.        |
-| `npm run test:db`                    | Integración contra la base del `.env`: TRL-01 a 10 y 12, DLP, reportes, salas y permisos. Deja la base igual.        |
-| `npm run lint` / `npm run typecheck` | ESLint y TypeScript en las dos aplicaciones.                                                                         |
-| `npm run format` / `format:check`    | Prettier.                                                                                                            |
-| `npm run verificar`                  | Formato + lint + tipos + pruebas: lo que debe pasar antes de cerrar una fase.                                        |
+| Comando                              | Qué hace                                                                                                                               |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm install`                        | Instala las dos aplicaciones (npm workspaces).                                                                                         |
+| `npm run dev`                        | Levanta backend y frontend a la vez, con recarga automática.                                                                           |
+| `npm run db:reset`                   | **Reinicia los datos de demo**: borra el esquema `app`, aplica las migraciones y carga el seed.                                        |
+| `npm run db:migrate`                 | Aplica solo las migraciones pendientes.                                                                                                |
+| `npm run db:seed`                    | Vacía las tablas y recarga datos sintéticos, reglas DLP y fuentes de demo (sin tocar el esquema).                                      |
+| `npm run fuentes:cargar`             | Sincroniza las fuentes con `db/seed/fuentes_institucionales.json` sin tocar el resto (ver `docs/FUENTES.md`).                          |
+| `npm run salas:simular`              | Conecta personas sintéticas a una sala (`--cantidad`, `--desde`, `--sala`, `--comunidad`) para la demo de capacidad.                   |
+| `npm test`                           | Pruebas unitarias y de humo del backend (DLP, permisos, sesión, guardianes, salas). Sin red ni base de datos.                          |
+| `npm run test:db`                    | Integración contra la base del `.env`: TRL-01 a 10 y 12, AV-01 a 03 y 11, DLP, reportes, salas, avatar y permisos. Deja la base igual. |
+| `npm run lint` / `npm run typecheck` | ESLint y TypeScript en las dos aplicaciones.                                                                                           |
+| `npm run format` / `format:check`    | Prettier.                                                                                                                              |
+| `npm run verificar`                  | Formato + lint + tipos + pruebas: lo que debe pasar antes de cerrar una fase.                                                          |
 
 ## API
 
@@ -108,7 +120,9 @@ Todo bajo `/api`. Los errores tienen la forma `{ error: { codigo, mensaje, detal
 | `GET /sesion/usuarios-demo`                       | Solo modo demo              | Usuarios para el selector de acceso.                                                                               |
 | `GET /comunidad`, `GET /comunidades`              | Con comunidad               | La comunidad propia. La lista solo la contiene a ella.                                                             |
 | `GET /comunidades/:id-o-A-D`                      | Con comunidad               | La propia, o 404 idéntico al de una inexistente.                                                                   |
-| `GET /perfil`, `PUT /perfil`                      | Con sesión                  | Perfil propio: alias, intereses y personaje del catálogo. Todo texto pasa por el DLP.                              |
+| `GET /perfil`, `PUT /perfil`                      | Con sesión                  | Perfil propio: alias e intereses (y su avatar, de solo lectura). Todo texto pasa por el DLP.                       |
+| `GET /avatar`                                     | Con sesión                  | «Mi avatar»: la configuración propia y el catálogo activo.                                                         |
+| `PUT /avatar`                                     | Jóvenes y administración    | Guardar el avatar propio: solo ids del catálogo, una por capa. No hay ruta para otra persona ni carga de archivos. |
 | `GET /perfiles?buscar=`, `GET /perfiles/:id`      | Con comunidad               | Búsqueda y perfiles, solo de la misma comunidad.                                                                   |
 | `GET /moderacion/incidencias-dlp`                 | Moderación y administración | Bloqueos DLP por categoría y recientes, sin texto ni autor (F35).                                                  |
 | `GET /comunidad/categorias`                       | Con comunidad               | Las cinco categorías, con el número de hilos de la comunidad propia.                                               |
@@ -155,6 +169,7 @@ apps/
         comunidad/              Comunidad propia, categorías, hilos y respuestas (siempre filtrados por la sesión)
         reportes/               Reportes de hilos, respuestas y perfiles
         perfil/                 Perfil protegido y búsqueda dentro de la comunidad
+        avatar/                 Catálogo, «Mi avatar» y la apariencia que usan perfiles, hilos y salas
         moderacion/             Incidencias DLP
         fuentes/                Gestión de fuentes: esquemas, ciclo de vida, bitácora y carga
         orientacion/            Navegador público y «Necesito ayuda»
@@ -166,7 +181,8 @@ apps/
       components/ui/            Componentes base: Aviso, Boton, BotonEnlace, Tarjeta, CampoTexto, CampoSeleccion, Insignia
       components/sesion/        Contexto de sesión, guardián de páginas y selector de acceso
       components/salas/         Lista, antesala, escenario 2D, chat y conexión en tiempo real (useSalaEnVivo)
-      components/…              Orientación, fuentes, comunidad, perfil, moderación, avatar y layout
+      components/avatar/        Avatar (único componente, por capas), sus dibujos (capas.ts) y «Mi avatar»
+      components/…              Orientación, fuentes, comunidad, perfil, moderación y layout
       config/textos.ts          Aviso de límites (texto exacto de la sección 18.1)
       config/navegacion.ts      Menú principal (cada enlace declara el permiso que necesita)
       lib/api/                  Cliente HTTP centralizado y llamadas por módulo
@@ -211,9 +227,17 @@ docs/                           Documento maestro, modelo de datos y guía de ca
 - **Chat (F14):** cada mensaje pasa por el DLP. Si se bloquea, solo su autor ve el aviso y su texto queda en el campo; nadie más lo recibe y el bloqueo queda en `evento_dlp` sin el texto. El chat no se guarda.
 - **En la sala:** lista de personas con `n/10`, **Salir de la sala**, **Necesito ayuda** (muestra un canal institucional sin salir de la sala) y **Reportar** la sala.
 
+## Avatar (Fase 6)
+
+- **Catálogo cerrado y gratuito (F36, RF27):** `elemento_avatar` con 4 personajes base (tonos de piel), 4 cabellos, 4 rasgos, 4 prendas y 3 accesorios, cada uno con origen y licencia. No hay precios, monedas, tienda ni artículos premium, y ninguna opción depende de la edad.
+- **Recursos originales (RF28):** cada elemento apunta a un dibujo propio en pixel art hecho por código ([`components/avatar/capas.ts`](apps/frontend/src/components/avatar/capas.ts)), sobre una cuadrícula de 16 × 20. No se usan imágenes externas.
+- **«Mi avatar»:** desde **Mi perfil**. Vista previa en vivo, cada opción se muestra aplicada al avatar actual, guardado en `configuracion_avatar` y recuperación al volver a entrar. Cabello y accesorio pueden quedar vacíos.
+- **Un solo componente (F37):** `<Avatar apariencia>` dibuja por capas (cabello de atrás, personaje, prenda, rasgos, cabello de delante y accesorio). Lo usan el perfil, el buscador, los hilos, las respuestas y el escenario de las salas. En la base, una sola expresión (`sqlApariencia`) arma la apariencia para todos. En una sala, un cambio se ve desde la siguiente entrada.
+- **Validación (RF21, RF22, AV-11):** `PUT /api/avatar` solo acepta un id del catálogo por capa, del tipo correcto y activo. Cualquier otro campo, texto, URL, teléfono o imagen responde `400 AVATAR_INVALIDO` sin repetir el valor. No existe ninguna ruta de carga de archivos y no hay forma de indicar a otra persona: el usuario sale de la sesión. La base lo refuerza: el recurso gráfico debe ser una clave (nunca una URL) y cada capa debe apuntar a un elemento de su tipo.
+
 ## Cómo crece en las siguientes fases
 
-- **Backend:** cada área del producto es un módulo en `apps/backend/src/modules/<modulo>/` con `*.routes.ts`, `*.service.ts` y `*.repository.ts`, registrado en `src/app.ts`. Una ruta nueva usa `requerirPermiso(...)`. Si es comunitaria, obtiene el rango con `exigirRango(sesion)`, y todo texto de usuarios pasa por `dlp.exigirPermitido(...)` antes de guardarse. Módulos previstos: `avatar` (Fase 6) y `administracion` (Fase 7).
+- **Backend:** cada área del producto es un módulo en `apps/backend/src/modules/<modulo>/` con `*.routes.ts`, `*.service.ts` y `*.repository.ts`, registrado en `src/app.ts`. Una ruta nueva usa `requerirPermiso(...)`. Si es comunitaria, obtiene el rango con `exigirRango(sesion)`, y todo texto de usuarios pasa por `dlp.exigirPermitido(...)` antes de guardarse. Módulo previsto: `administracion` (Fase 7).
 - **Base de datos:** el esquema completo de B.4 ya existe. Un cambio de estructura es una migración nueva `000N_descripcion.sql`; los datos de demostración se agregan en `db/seed/`.
 - **Frontend:** las páginas privadas se envuelven en `<RequiereSesion permiso="…">`. Las llamadas van en `src/lib/api/<modulo>.ts` y los enlaces del menú en `src/config/navegacion.ts`. La interfaz se arma con `src/components/ui` y los tokens (ver `/guia-de-estilos`).
 - Toda decisión técnica nueva se registra en una línea en `DECISIONES.md`.
@@ -222,7 +246,7 @@ docs/                           Documento maestro, modelo de datos y guía de ca
 
 - PostgreSQL en Supabase, esquema propio **`app`**. La API pública de Supabase no lo expone y los roles `anon`/`authenticated` no tienen permisos: **el backend es el único acceso a los datos**. El frontend no usa las claves de Supabase.
 - `db:reset` solo borra el esquema `app`; no toca nada más del proyecto de Supabase.
-- Datos sintéticos: 4 comunidades, 5 categorías, 8 usuarios de prueba (tabla de arriba), 3 personajes provisionales, 5 salas temáticas por comunidad con su escenario, 5 hilos (uno por comunidad y dos en la B) con una respuesta, 19 reglas DLP y 5 fuentes institucionales de demostración (`InstituciónDemo · CanalDemo` y otras; 3 activas, 1 en revisión y 1 inactiva).
+- Datos sintéticos: 4 comunidades, 5 categorías, 8 usuarios de prueba (tabla de arriba), un catálogo de avatar de 19 elementos (cada usuario con una apariencia distinta), 5 salas temáticas por comunidad con su escenario, 5 hilos (uno por comunidad y dos en la B) con una respuesta, 19 reglas DLP y 5 fuentes institucionales de demostración (`InstituciónDemo · CanalDemo` y otras; 3 activas, 1 en revisión y 1 inactiva).
 - Reglas que la propia base garantiza, además del backend: segmentación por edad en hilos, respuestas y salas; máximo 10 participantes por sala; bitácora de fuentes y auditoría de solo inserción; ninguna columna de edad exacta.
 
 ## Seguridad y restricciones
