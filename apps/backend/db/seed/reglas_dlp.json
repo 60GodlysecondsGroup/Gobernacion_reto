@@ -1,0 +1,116 @@
+[
+  {
+    "codigo": "contacto-telefono",
+    "categoria": "contacto",
+    "descripcion": "Números telefónicos de 7 a 12 dígitos, juntos o separados por espacios, puntos o guiones.",
+    "patron": "(?<!\\d)(?:\\+?57[\\s.-]?)?(?:\\d[\\s.-]?){6,11}\\d(?!\\d)"
+  },
+  {
+    "codigo": "contacto-correo",
+    "categoria": "contacto",
+    "descripcion": "Direcciones de correo electrónico.",
+    "patron": "[a-z0-9._%+-]+@[a-z0-9-]+(?:\\.[a-z0-9-]+)*\\.[a-z]{2,}"
+  },
+  {
+    "codigo": "contacto-enlace",
+    "categoria": "contacto",
+    "descripcion": "Enlaces web (http, www o dominios comunes).",
+    "patron": "\\b(?:https?://|www\\.)\\S+|\\b[a-z0-9-]{2,}\\.(?:com|co|net|org|io|me|gg|app|ly|xyz|info|site|online|tv|link)\\b"
+  },
+  {
+    "codigo": "contacto-usuario-externo",
+    "categoria": "contacto",
+    "descripcion": "Nombres de usuario externos con arroba (@usuario).",
+    "patron": "(?:^|[^a-z0-9.])@[a-z0-9_.]{3,}"
+  },
+  {
+    "codigo": "contacto-solicitud",
+    "categoria": "contacto",
+    "descripcion": "Pedir o compartir datos de contacto para hablar fuera de la plataforma.",
+    "patron": "\\b(?:pasa|pasame|dame|manda|mandame|envia|enviame|regalame)\\s+(?:tu|su|el)\\s+(?:numero|cel|celular|telefono|correo|mail|email|contacto)\\b|\\bmi\\s+(?:numero|cel|celular|telefono|correo|mail|email|contacto)\\s+es\\b|\\b(?:llamame|marcame|timbrame)\\b|\\b(?:escribeme|hablame)\\s+(?:al|por)\\b"
+  },
+  {
+    "codigo": "redes-plataformas",
+    "categoria": "redes_externas",
+    "descripcion": "Menciones de redes sociales y mensajería externas (Instagram, TikTok, WhatsApp, Discord, Telegram y similares).",
+    "patron": "\\b(?:instagram|insta|ig|tiktok|tik tok|whatsapp|whats|wasap|wsp|wpp|discord|telegram|snapchat|snap|facebook|face|fb|messenger|twitter|threads|signal|kik|onlyfans)\\b"
+  },
+  {
+    "codigo": "redes-expresiones",
+    "categoria": "redes_externas",
+    "descripcion": "Expresiones para llevar la conversación fuera: «búscame en», «sígueme en», «escríbeme por», «mi usuario es», «por privado».",
+    "patron": "\\b(?:buscame|agregame|sigueme|seguime)\\s+(?:en|por|como)\\b|\\bmi\\s+(?:usuario|user|cuenta|nick|arroba)\\s+es\\b|\\bpor\\s+(?:interno|privado|dm|md|inbox)\\b"
+  },
+  {
+    "codigo": "ubicacion-direccion",
+    "categoria": "ubicacion",
+    "descripcion": "Direcciones (calle, carrera, avenida, #12-34) o la palabra «dirección» seguida de un número.",
+    "patron": "\\b(?:calle|cll|carrera|cra|kra|avenida|av|diagonal|transversal|manzana|mz|apto|apartamento)\\.?\\s+(?:[a-z]+\\s+){0,2}#?\\s?\\d+|#\\s?\\d+\\s?-\\s?\\d+|\\bdireccion\\b[^.!?\\n]{0,40}\\d"
+  },
+  {
+    "codigo": "ubicacion-encuentro",
+    "categoria": "ubicacion",
+    "descripcion": "Propuestas de encuentro en un lugar físico (parque, colegio, esquina, centro comercial…).",
+    "patron": "\\b(?:nos vemos|veamonos|vernos|encontremonos|nos encontramos|te espero|quedemos)\\s+(?:en|frente a|afuera de|cerca de|por)\\s+(?:(?:el|la|los|las|mi|tu|un|una)\\s+)?(?:parque|centro comercial|centro|colegio|escuela|esquina|estacion|direccion|casa|barrio|calle|carrera|tienda|cancha|plaza|conjunto|terminal|mall|cc|iglesia|panaderia|salida)\\b"
+  },
+  {
+    "codigo": "ubicacion-residencia",
+    "categoria": "ubicacion",
+    "descripcion": "Barrio, conjunto o lugar donde vive una persona.",
+    "patron": "\\b(?:vivo|vive|vivimos|me quedo)\\s+(?:en|por|cerca de)\\s+(?:(?:el|la)\\s+)?(?:barrio|conjunto|urbanizacion|vereda|edificio|calle|carrera|manzana)\\b|\\bmi\\s+(?:direccion|barrio|conjunto|urbanizacion)\\b|\\bbarrio\\s+(?:(?:el|la|los|las)\\s+)?[a-z]{3,}"
+  },
+  {
+    "codigo": "identidad-documento",
+    "categoria": "identidad",
+    "descripcion": "Números o menciones de documentos de identidad.",
+    "patron": "\\b(?:cedula|cc|tarjeta de identidad|ti|documento|pasaporte|registro civil|nuip)\\b[^.!?\\n]{0,25}\\d{5,}|\\bmi\\s+(?:cedula|documento|tarjeta de identidad|pasaporte)\\b"
+  },
+  {
+    "codigo": "identidad-nombre-completo",
+    "categoria": "identidad",
+    "descripcion": "Nombres completos o apellidos.",
+    "patron": "\\bmi\\s+nombre\\s+(?:completo|real)\\b|\\bmis?\\s+apellidos?\\s+(?:es|son)\\b|\\bme\\s+llamo\\s+[a-z]{2,}\\s+(?!(?:y|e|o|pero|porque|tengo|soy|de|aunque|me|mi|en|con|desde|que|vivo|estudio)\\b)[a-z]{3,}"
+  },
+  {
+    "codigo": "identidad-colegio",
+    "categoria": "identidad",
+    "descripcion": "Colegio o institución educativa específica de una persona.",
+    "patron": "\\b(?:estudio en|voy al|voy a la|mi colegio es)\\s+(?:(?:el|la)\\s+)?(?:colegio|institucion|instituto|escuela|liceo|gimnasio|normal)\\b"
+  },
+  {
+    "codigo": "identidad-solicitud",
+    "categoria": "identidad",
+    "descripcion": "Pedir datos personales: nombre real, dónde vive, colegio o fotos.",
+    "patron": "\\b(?:como te llamas|cual es tu nombre|tu nombre real|tu nombre completo|tu apellido|donde vives|por donde vives|en que barrio|cual es tu direccion|en que colegio|de que colegio|cual es tu colegio|donde estudias|(?:mandame|pasame|enviame) (?:una )?foto)\\b"
+  },
+  {
+    "codigo": "edad-propia",
+    "categoria": "edad",
+    "descripcion": "Compartir la edad exacta («tengo 14 años»).",
+    "patron": "\\b(?:tengo|cumplo|cumpli|cumplire|voy a cumplir|acabo de cumplir|ya tengo)\\s+(?:\\d{1,2}|diez|once|doce|trece|catorce|quince|dieciseis|diecisiete|dieciocho|diecinueve|veinte|veintiuno|veintidos|veintitres)\\s+anos\\b|\\bmi\\s+edad\\s+es\\b|\\b\\d{1,2}\\s+anos\\s+de\\s+edad\\b"
+  },
+  {
+    "codigo": "edad-solicitud",
+    "categoria": "edad",
+    "descripcion": "Pedir la edad exacta («¿cuántos años tienes?»).",
+    "patron": "\\b(?:cuantos\\s+anos\\s+(?:tienes|tenes|tiene|tienen|cumples|cumpliste)|que\\s+edad\\s+(?:tienes|tenes|tiene)|cual\\s+es\\s+tu\\s+edad|de\\s+que\\s+edad\\s+eres|tu\\s+edad)\\b"
+  },
+  {
+    "codigo": "comercio-venta",
+    "categoria": "publicidad_comercio",
+    "descripcion": "Ventas, precios y promociones.",
+    "patron": "\\b(?:vendo|vendemos|se vende|te vendo|compro|compramos|alquilo|remato)\\b|\\$\\s?\\d|\\b\\d+(?:[.,]\\d+)?\\s?(?:mil|pesos|cop|usd|dolares|lucas)\\b|\\b(?:promo|promocion|descuento|oferta)\\s+(?:del?\\s+)?\\d+"
+  },
+  {
+    "codigo": "comercio-dinero",
+    "categoria": "publicidad_comercio",
+    "descripcion": "Solicitudes de dinero y medios de pago.",
+    "patron": "\\b(?:prestame|regalame|mandame|enviame|consigname|transfiereme|pasame)\\s+(?:plata|dinero|una recarga|\\d)|\\b(?:nequi|daviplata|paypal|bancolombia|movii|consignacion|transferencia bancaria)\\b"
+  },
+  {
+    "codigo": "publicidad-apps",
+    "categoria": "publicidad_comercio",
+    "descripcion": "Promoción de aplicaciones, canales, códigos de referido o formas de ganar dinero.",
+    "patron": "\\b(?:descarga|descargate|instala|instalate|bajate|baja)\\s+(?:(?:la|esta|mi)\\s+)?(?:app|aplicacion)\\b|\\bcodigo\\s+(?:de\\s+)?(?:referido|descuento|invitacion|promocional)\\b|\\bgana\\s+(?:dinero|plata)\\b|\\bsuscribete\\b|\\b(?:sigue|visita)\\s+mi\\s+(?:canal|pagina|tienda)\\b"
+  }
+]

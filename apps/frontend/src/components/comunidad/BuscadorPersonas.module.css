@@ -1,0 +1,26 @@
+.busqueda {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: var(--espacio-3);
+}
+
+/* El botón se alinea con el campo, no con su etiqueta. */
+.busqueda > button {
+  margin-top: 1.7rem;
+}
+
+.persona {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  padding: var(--espacio-2) var(--espacio-3);
+  border-radius: var(--radio-md);
+  color: var(--color-texto);
+  text-decoration: none;
+}
+
+.persona:hover {
+  background: var(--color-superficie-suave);
+  color: var(--color-texto);
+}

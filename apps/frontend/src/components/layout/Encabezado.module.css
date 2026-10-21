@@ -36,6 +36,11 @@
   .nombre {
     font-size: var(--texto-md);
   }
+
+  .sesion {
+    padding-left: 0;
+    border-left: 0;
+  }
 }
 
 .etiqueta {
@@ -49,7 +54,34 @@
   letter-spacing: 0.06em;
 }
 
+.zona {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-4);
+}
+
+.sesion {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  padding-left: var(--espacio-4);
+  border-left: 1px solid var(--color-borde);
+}
+
+.usuario {
+  display: grid;
+  line-height: 1.2;
+  font-size: var(--texto-sm);
+}
+
+.rol {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-xs);
+}
+
 .menu {
+  flex-wrap: wrap;
   display: flex;
   gap: var(--espacio-1);
   margin: 0;

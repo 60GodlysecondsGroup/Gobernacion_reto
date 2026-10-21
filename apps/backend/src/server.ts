@@ -17,7 +17,14 @@ pool.on('error', (error) => {
   logger.error('Error en una conexión inactiva de la base de datos', { error: error.message });
 });
 
-const app = crearApp({ db: pool, logger, origenesPermitidos: config.origenesPermitidos });
+if (config.sesion.secretoGenerado) {
+  logger.warn('Sin SESSION_SECRET: se usa uno temporal y las sesiones se pierden al reiniciar.');
+}
+if (config.accesoDemo) {
+  logger.info('Acceso de demostración habilitado (selector de usuarios sintéticos).');
+}
+
+const app = crearApp({ db: pool, logger, config });
 
 const servidor = app.listen(config.puerto, (error) => {
   if (error) {

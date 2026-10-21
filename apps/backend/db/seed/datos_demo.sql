@@ -2,6 +2,7 @@
 -- Ningún registro corresponde a personas, conversaciones ni instituciones reales.
 -- Este archivo REINICIA los datos: vacía las tablas y vuelve a cargarlas.
 -- Los catálogos del sistema (rangos, categorías DLP, necesidades) viven en las migraciones.
+-- Las reglas DLP predeterminadas se cargan después, desde reglas_dlp.json.
 
 truncate
   app.registro_auditoria, app.bitacora_fuente, app.fuente_necesidad, app.fuente_institucional,
@@ -26,17 +27,31 @@ insert into app.categoria (codigo, nombre, descripcion, orden) values
   ('cambios-nuevas-etapas', 'Cambios y nuevas etapas', 'Adaptarse a cambios de colegio, de ciudad o de etapa.', 4),
   ('orientacion', 'Orientación', 'Dudas sobre dónde encontrar información y canales de apoyo.', 5);
 
--- Usuario sintético de B.7: Usuario_001 · LunaDemo · comunidad 13–15.
-insert into app.usuario (codigo, alias, rol, rango_edad) values
-  ('Usuario_001', 'LunaDemo', 'usuario', 'B');
+-- Usuarios sintéticos (B.7 + Fase 2): al menos uno por rango de edad y uno por rol.
+-- Usuario_001 · LunaDemo · comunidad 13–15 es el usuario de B.7. El personal no tiene rango.
+insert into app.usuario (codigo, alias, rol, rango_edad, intereses_generales) values
+  ('Usuario_001', 'LunaDemo', 'usuario', 'B', '{lectura, música}'),
+  ('Usuario_002', 'SolDemo', 'usuario', 'B', '{dibujo}'),
+  ('Usuario_003', 'RioDemo', 'usuario', 'A', '{juegos de mesa}'),
+  ('Usuario_004', 'NubeDemo', 'usuario', 'C', '{fotografía}'),
+  ('Usuario_005', 'MarDemo', 'usuario', 'D', '{deporte}'),
+  ('Moderador_001', 'ModeradorDemo', 'moderador', null, '{}'),
+  ('Admin_001', 'AdminDemo', 'admin_plataforma', null, '{}'),
+  ('Gestor_001', 'GestorDemo', 'gestor_fuentes', null, '{}');
 
--- Personaje base provisional (el catálogo completo llega en la Fase 6). Recurso original.
+-- Personajes base provisionales (el catálogo completo llega en la Fase 6). Recursos originales.
 insert into app.elemento_avatar (id_elemento, tipo, nombre, recurso_grafico, origen, licencia) values
-  ('personaje-base', 'personaje', 'Personaje base (provisional)', 'personaje-base',
+  ('base-azul', 'personaje', 'Personaje base azul (provisional)', 'base-azul',
+   'Propio del equipo, dibujado por código', 'Propia del proyecto'),
+  ('base-verde', 'personaje', 'Personaje base verde (provisional)', 'base-verde',
+   'Propio del equipo, dibujado por código', 'Propia del proyecto'),
+  ('base-coral', 'personaje', 'Personaje base coral (provisional)', 'base-coral',
    'Propio del equipo, dibujado por código', 'Propia del proyecto');
 
 insert into app.configuracion_avatar (id_usuario, id_personaje)
-select id_usuario, 'personaje-base' from app.usuario where codigo = 'Usuario_001';
+select id_usuario,
+       (array['base-azul', 'base-verde', 'base-coral'])[1 + (row_number() over (order by codigo))::int % 3]
+from app.usuario;
 
 -- Sala temática de B.7 en la comunidad B.
 insert into app.sala (id_comunidad, id_categoria, nombre, descripcion, reglas)

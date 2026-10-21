@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Atkinson_Hyperlegible } from 'next/font/google';
 import { Encabezado } from '@/components/layout/Encabezado';
 import { PiePagina } from '@/components/layout/PiePagina';
+import { ProveedorSesion } from '@/components/sesion/ProveedorSesion';
 import '@/styles/tokens.css';
 import './globals.css';
 
@@ -31,11 +32,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <a href="#contenido" className="saltar-contenido">
           Saltar al contenido
         </a>
-        <Encabezado />
-        <main id="contenido" className="contenedor contenedor-principal">
-          {children}
-        </main>
-        <PiePagina />
+        <ProveedorSesion>
+          <Encabezado />
+          <main id="contenido" className="contenedor contenedor-principal">
+            {children}
+          </main>
+          <PiePagina />
+        </ProveedorSesion>
       </body>
     </html>
   );

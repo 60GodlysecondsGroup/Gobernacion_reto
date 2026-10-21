@@ -66,6 +66,18 @@ async function solicitar<T>(
   return datos as T;
 }
 
+/** Mensaje para mostrar al usuario a partir de cualquier error de una llamada. */
+export const mensajeDeError = (error: unknown) =>
+  error instanceof ErrorApi ? error.message : 'Ocurrió un error inesperado.';
+
+/** Campo señalado por el backend en `detalles.campo` (p. ej. un bloqueo DLP), si lo hay. */
+export const campoDelError = (error: unknown): string | undefined => {
+  const detalles = error instanceof ErrorApi ? error.detalles : undefined;
+  return detalles && typeof detalles === 'object' && 'campo' in detalles
+    ? String(detalles.campo)
+    : undefined;
+};
+
 export const api = {
   get: <T>(ruta: string, opciones?: Opciones) => solicitar<T>('GET', ruta, undefined, opciones),
   post: <T>(ruta: string, cuerpo?: unknown, opciones?: Opciones) =>

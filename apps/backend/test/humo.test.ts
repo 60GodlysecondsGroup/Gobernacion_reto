@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { crearApp } from '../src/app.js';
 import type { Database } from '../src/db/database.js';
 import { crearLogger } from '../src/lib/logger.js';
+import { configPrueba, ORIGEN_FRONTEND } from './apoyo.js';
 
-const ORIGEN_FRONTEND = 'http://localhost:3000';
 const CONTEO = { comunidades: 4, usuarios: 1, categorias: 5, salas: 1, fuentes: 1 };
 
 type Escenario = 'ok' | 'sin_conexion' | 'sin_esquema' | 'falla_interna';
@@ -26,12 +26,8 @@ function dbSimulada(escenario: Escenario): Database {
   };
 }
 
-const app = (escenario: Escenario = 'ok') =>
-  crearApp({
-    db: dbSimulada(escenario),
-    logger: crearLogger('silencioso'),
-    origenesPermitidos: [ORIGEN_FRONTEND],
-  });
+const app = (escenario: Escenario = 'ok', config = configPrueba) =>
+  crearApp({ db: dbSimulada(escenario), logger: crearLogger('silencioso'), config });
 
 describe('Prueba de humo del backend', () => {
   it('GET /api/salud responde backend ok con la base conectada', async () => {
@@ -110,5 +106,48 @@ describe('Prueba de humo del backend', () => {
     expect(res.headers['x-content-type-options']).toBe('nosniff');
     expect(res.headers['x-powered-by']).toBeUndefined();
     expect(res.headers['x-request-id']).toMatch(/^[0-9a-f-]{36}$/);
+  });
+});
+
+describe('Guardianes de seguridad (sin base de datos)', () => {
+  it.each([
+    '/api/comunidad',
+    '/api/perfil',
+    '/api/perfiles?buscar=Luna',
+    '/api/moderacion/incidencias-dlp',
+  ])('sin sesión, %s responde 401', async (ruta) => {
+    const res = await request(app()).get(ruta);
+    expect(res.status).toBe(401);
+    expect(res.body.error.codigo).toBe('NO_AUTENTICADO');
+  });
+
+  it('una cookie de sesión falsificada no da acceso', async () => {
+    const res = await request(app())
+      .get('/api/comunidad')
+      .set('Cookie', 'sesion=eyJ1IjoieCIsImV4cCI6OTk5OTk5OTk5OTk5OX0.firma-falsa');
+    expect(res.status).toBe(401);
+  });
+
+  it('rechaza escrituras desde un origen distinto al frontend', async () => {
+    const res = await request(app())
+      .post('/api/sesion')
+      .set('Origin', 'https://sitio-ajeno.example')
+      .send({ codigo: 'Usuario_001' });
+    expect(res.status).toBe(403);
+    expect(res.body.error.codigo).toBe('ORIGEN_NO_PERMITIDO');
+  });
+
+  it('sin modo demo no existe el selector de usuarios sintéticos', async () => {
+    const sinDemo = app('ok', { ...configPrueba, accesoDemo: false });
+    expect((await request(sinDemo).get('/api/sesion/usuarios-demo')).status).toBe(404);
+    expect(
+      (await request(sinDemo).post('/api/sesion').send({ codigo: 'Usuario_001' })).status,
+    ).toBe(404);
+  });
+
+  it('sin sesión, GET /api/sesion responde usuario null', async () => {
+    const res = await request(app()).get('/api/sesion');
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ usuario: null });
   });
 });

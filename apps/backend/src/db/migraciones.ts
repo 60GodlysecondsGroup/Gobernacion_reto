@@ -7,6 +7,21 @@ import type { PoolDeDatos } from './database.js';
 
 const DIR_MIGRACIONES = fileURLToPath(new URL('../../db/migraciones/', import.meta.url));
 const ARCHIVO_SEED = fileURLToPath(new URL('../../db/seed/datos_demo.sql', import.meta.url));
+export const ARCHIVO_REGLAS_DLP = fileURLToPath(
+  new URL('../../db/seed/reglas_dlp.json', import.meta.url),
+);
+
+export type ReglaDlpSemilla = {
+  codigo: string;
+  categoria: string;
+  descripcion: string;
+  patron: string;
+  accion?: 'bloquear' | 'advertir' | 'registrar';
+};
+
+export async function leerReglasDlpSemilla(): Promise<ReglaDlpSemilla[]> {
+  return JSON.parse(await readFile(ARCHIVO_REGLAS_DLP, 'utf8')) as ReglaDlpSemilla[];
+}
 
 async function enTransaccion(
   pool: PoolDeDatos,
@@ -57,13 +72,30 @@ export async function migrar(pool: PoolDeDatos, logger: Logger): Promise<string[
   return nuevas;
 }
 
-/** Borra los datos y carga de nuevo los datos sintéticos de demostración (Anexo B.7). */
+/**
+ * Borra los datos y carga de nuevo los datos sintéticos de demostración (Anexo B.7)
+ * y las reglas DLP predeterminadas (`db/seed/reglas_dlp.json`).
+ */
 export async function sembrar(pool: PoolDeDatos, logger: Logger): Promise<void> {
   const sql = await readFile(ARCHIVO_SEED, 'utf8');
+  const reglas = await leerReglasDlpSemilla();
   await enTransaccion(pool, async (cliente) => {
     await cliente.query(sql);
+    for (const regla of reglas) {
+      await cliente.query(
+        `insert into app.regla_dlp (codigo, categoria, descripcion, patron, accion)
+         values ($1, $2, $3, $4, $5)`,
+        [
+          regla.codigo,
+          regla.categoria,
+          regla.descripcion,
+          regla.patron,
+          regla.accion ?? 'bloquear',
+        ],
+      );
+    }
   });
-  logger.info('Datos sintéticos de demostración cargados.');
+  logger.info(`Datos sintéticos de demostración y ${reglas.length} reglas DLP cargados.`);
 }
 
 /** Elimina el esquema `app` completo y lo reconstruye con migraciones + seed. Solo para desarrollo. */

@@ -1,0 +1,64 @@
+.grupo {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.tituloGrupo {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.usuarios {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  gap: var(--espacio-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.usuario {
+  display: grid;
+  gap: var(--espacio-1);
+  width: 100%;
+  padding: var(--espacio-4);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-1);
+  color: var(--color-texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--transicion),
+    box-shadow var(--transicion);
+}
+
+.usuario:not(:disabled):hover {
+  border-color: var(--color-primario);
+  box-shadow: var(--sombra-2);
+}
+
+.usuario:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.alias {
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-fuerte);
+}
+
+.detalle {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.codigo {
+  color: var(--color-texto-suave);
+  font-family: var(--fuente-mono);
+  font-size: var(--texto-xs);
+}

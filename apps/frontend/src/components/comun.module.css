@@ -1,0 +1,45 @@
+/* Estructuras compartidas por las páginas de la aplicación. */
+
+.pagina {
+  display: grid;
+  gap: var(--espacio-5);
+  max-width: 52rem;
+}
+
+.formulario {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.lista {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cargando {
+  color: var(--color-texto-suave);
+}
+
+.suave {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

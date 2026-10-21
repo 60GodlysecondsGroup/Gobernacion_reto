@@ -48,6 +48,29 @@ describe('cargarConfig()', () => {
     expect(cargarConfig({ DATABASE_URL: URL_PRUEBA, BACKEND_PORT: '4100' }).puerto).toBe(4100);
   });
 
+  it('sin SESSION_SECRET (o vacío) usa uno temporal; en producción es obligatorio', () => {
+    const vacio = cargarConfig({ DATABASE_URL: URL_PRUEBA, SESSION_SECRET: '' });
+    expect(vacio.sesion).toMatchObject({ secretoGenerado: true });
+    expect(vacio.sesion.secreto).toHaveLength(64);
+    expect(() => cargarConfig({ DATABASE_URL: URL_PRUEBA, SESSION_SECRET: 'corto' })).toThrow(
+      /32 caracteres/,
+    );
+    expect(() => cargarConfig({ DATABASE_URL: URL_PRUEBA, NODE_ENV: 'production' })).toThrow(
+      /SESSION_SECRET/,
+    );
+  });
+
+  it('el acceso de demostración está activo en desarrollo y apagado en producción', () => {
+    const produccion = {
+      DATABASE_URL: URL_PRUEBA,
+      NODE_ENV: 'production',
+      SESSION_SECRET: 'x'.repeat(32),
+    };
+    expect(cargarConfig({ DATABASE_URL: URL_PRUEBA }).accesoDemo).toBe(true);
+    expect(cargarConfig(produccion).accesoDemo).toBe(false);
+    expect(cargarConfig({ DATABASE_URL: URL_PRUEBA, ACCESO_DEMO: 'false' }).accesoDemo).toBe(false);
+  });
+
   it('admite varios orígenes de CORS separados por coma', () => {
     const config = cargarConfig({
       DATABASE_URL: URL_PRUEBA,

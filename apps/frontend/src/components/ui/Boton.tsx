@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { ComponentProps } from 'react';
 import estilos from './Boton.module.css';
 
@@ -34,4 +35,17 @@ export function Boton({
       {children}
     </button>
   );
+}
+
+/** Enlace de navegación con la apariencia de un botón. */
+export function BotonEnlace({
+  variante = 'primario',
+  tamano = 'md',
+  className,
+  ...resto
+}: ComponentProps<typeof Link> & Pick<PropsBoton, 'variante' | 'tamano'>) {
+  const clases = [estilos.boton, estilos[variante], estilos[tamano], estilos.enlace, className]
+    .filter(Boolean)
+    .join(' ');
+  return <Link className={clases} {...resto} />;
 }

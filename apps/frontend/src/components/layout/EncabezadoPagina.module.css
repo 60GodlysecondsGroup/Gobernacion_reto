@@ -1,0 +1,22 @@
+.encabezado {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.antetitulo {
+  color: var(--color-primario);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.titulo {
+  font-size: var(--texto-2xl);
+  letter-spacing: -0.01em;
+}
+
+.descripcion {
+  max-width: 44rem;
+  color: var(--color-texto-suave);
+}

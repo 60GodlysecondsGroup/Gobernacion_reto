@@ -1,0 +1,36 @@
+.aviso {
+  display: grid;
+  gap: var(--espacio-1);
+  padding: var(--espacio-3) var(--espacio-4);
+  border-left: 4px solid currentColor;
+  border-radius: var(--radio-sm);
+}
+
+.titulo {
+  font-weight: var(--peso-fuerte);
+}
+
+.cuerpo {
+  color: var(--color-texto);
+  font-size: var(--texto-sm);
+}
+
+.info {
+  background: var(--color-info-suave);
+  color: var(--color-info);
+}
+
+.exito {
+  background: var(--color-exito-suave);
+  color: var(--color-exito);
+}
+
+.advertencia {
+  background: var(--color-advertencia-suave);
+  color: var(--color-advertencia);
+}
+
+.peligro {
+  background: var(--color-peligro-suave);
+  color: var(--color-peligro);
+}

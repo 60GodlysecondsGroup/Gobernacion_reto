@@ -12,7 +12,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --exclude \"test/integracion/**\"",
-    "test:db": "vitest run test/integracion"
+    "test:db": "vitest run test/integracion --no-file-parallelism"
   },
   "dependencies": {
     "cors": "^2.8.6",

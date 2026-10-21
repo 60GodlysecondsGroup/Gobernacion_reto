@@ -15,6 +15,21 @@
     color var(--transicion);
 }
 
+.enlace,
+.enlace:hover {
+  text-decoration: none;
+}
+
+.enlace.primario,
+.enlace.primario:hover {
+  color: var(--color-sobre-primario);
+}
+
+.enlace.secundario,
+.enlace.secundario:hover {
+  color: var(--color-texto);
+}
+
 .boton:disabled {
   cursor: not-allowed;
   opacity: 0.6;

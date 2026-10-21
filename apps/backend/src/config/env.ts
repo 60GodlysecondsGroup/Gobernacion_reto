@@ -1,6 +1,9 @@
+import { randomBytes } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
+
+const DURACION_SESION_MS = 8 * 60 * 60 * 1000;
 
 const esquemaEntorno = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -12,6 +15,16 @@ const esquemaEntorno = z.object({
     .string({ error: 'Falta DATABASE_URL en el .env de la raíz (ver .env.example).' })
     .regex(/^postgres(ql)?:\/\//, 'DATABASE_URL debe empezar por postgresql://'),
   DATABASE_SSL: z.enum(['disable', 'require', 'verify-full']).default('require'),
+  // Vacío equivale a ausente (así queda al copiar .env.example).
+  SESSION_SECRET: z
+    .union([
+      z.literal(''),
+      z.string().min(32, 'SESSION_SECRET debe tener al menos 32 caracteres (ver .env.example).'),
+    ])
+    .optional()
+    .transform((valor) => valor || undefined),
+  // Selector de usuarios sintéticos en la pantalla de acceso. Solo para la demo.
+  ACCESO_DEMO: z.enum(['true', 'false']).optional(),
 });
 
 export type Config = {
@@ -20,6 +33,14 @@ export type Config = {
   origenesPermitidos: string[];
   nivelLog: z.infer<typeof esquemaEntorno>['LOG_LEVEL'];
   baseDeDatos: { url: string; ssl: 'disable' | 'require' | 'verify-full' };
+  sesion: {
+    secreto: string;
+    /** true si no había SESSION_SECRET: las sesiones se pierden al reiniciar el backend. */
+    secretoGenerado: boolean;
+    duracionMs: number;
+    cookieSegura: boolean;
+  };
+  accesoDemo: boolean;
 };
 
 /**
@@ -48,11 +69,25 @@ export function cargarConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
   }
 
   const v = resultado.data;
+  const produccion = v.NODE_ENV === 'production';
+  if (produccion && !v.SESSION_SECRET) {
+    throw new Error(
+      'Configuración de entorno inválida:\n  - SESSION_SECRET es obligatorio en producción.',
+    );
+  }
+
   return {
     entorno: v.NODE_ENV,
     puerto: v.BACKEND_PORT,
     origenesPermitidos: v.FRONTEND_ORIGIN.split(',').map((origen) => origen.trim()),
     nivelLog: v.LOG_LEVEL,
     baseDeDatos: { url: v.DATABASE_URL, ssl: v.DATABASE_SSL },
+    sesion: {
+      secreto: v.SESSION_SECRET ?? randomBytes(32).toString('hex'),
+      secretoGenerado: !v.SESSION_SECRET,
+      duracionMs: DURACION_SESION_MS,
+      cookieSegura: produccion,
+    },
+    accesoDemo: v.ACCESO_DEMO ? v.ACCESO_DEMO === 'true' : !produccion,
   };
 }
