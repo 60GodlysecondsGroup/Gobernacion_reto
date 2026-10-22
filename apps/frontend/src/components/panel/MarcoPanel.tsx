@@ -1,7 +1,17 @@
 'use client';
 
 import type { LucideIcon } from 'lucide-react';
-import { Building2, Flag, Gauge, History, Layers, Library, ShieldCheck, Users } from 'lucide-react';
+import {
+  Bot,
+  Building2,
+  Flag,
+  Gauge,
+  History,
+  Layers,
+  Library,
+  ShieldCheck,
+  Users,
+} from 'lucide-react';
 import { motion } from 'motion/react';
 import Link from 'next/link';
 import { Logo } from '@/components/layout/Logo';
@@ -76,6 +86,13 @@ const SECCIONES: Seccion[] = [
     etiqueta: 'Registro de acciones',
     icono: History,
     permiso: 'consultar_registros_administrativos',
+    grupo: 'Administración',
+  },
+  {
+    href: '/panel/asistente',
+    etiqueta: 'Asistente IA',
+    icono: Bot,
+    permiso: 'usar_asistente_admin',
     grupo: 'Administración',
   },
   {

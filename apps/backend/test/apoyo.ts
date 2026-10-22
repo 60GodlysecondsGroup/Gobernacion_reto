@@ -15,6 +15,7 @@ export const configPrueba: Dependencias['config'] = {
   },
   accesoDemo: true,
   salas: { cierreSegundos: 180 },
+  openai: { model: 'gpt-5.4-mini' },
 };
 
 /**

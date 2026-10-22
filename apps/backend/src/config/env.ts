@@ -27,6 +27,10 @@ const esquemaEntorno = z.object({
   ACCESO_DEMO: z.enum(['true', 'false']).optional(),
   // Segundos sin nadie antes de cerrar una sala (F13). 180 s por defecto; menos solo para ensayar.
   SALA_CIERRE_SEGUNDOS: z.coerce.number().int().min(1).max(3600).default(180),
+  // La demo ya tenía `openai` en el .env; OPENAI_API_KEY queda como nombre estándar opcional.
+  OPENAI_API_KEY: z.string().optional(),
+  openai: z.string().optional(),
+  OPENAI_MODEL: z.string().trim().min(1).default('gpt-5.4-mini'),
 });
 
 export type Config = {
@@ -44,6 +48,7 @@ export type Config = {
   };
   accesoDemo: boolean;
   salas: { cierreSegundos: number };
+  openai: { apiKey?: string; model: string };
 };
 
 /**
@@ -93,5 +98,6 @@ export function cargarConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
     },
     accesoDemo: v.ACCESO_DEMO ? v.ACCESO_DEMO === 'true' : !produccion,
     salas: { cierreSegundos: v.SALA_CIERRE_SEGUNDOS },
+    openai: { apiKey: v.OPENAI_API_KEY || v.openai || undefined, model: v.OPENAI_MODEL },
   };
 }

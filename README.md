@@ -31,6 +31,14 @@ npm run dev             # levanta backend (:4000) y frontend (:3000)
 
 Abre <http://localhost:3000>: la tarjeta «Estado del sistema» muestra **backend OK**, la base conectada y los datos sintéticos cargados. Pulsa **Entrar** para elegir un usuario de prueba.
 
+### Asistente IA del panel (demo)
+
+El asistente aparece en **Panel → Asistente IA** únicamente para `Admin_001`. El backend reutiliza la variable `openai` ya presente en el `.env`; también acepta `OPENAI_API_KEY`. Configura el modelo con `OPENAI_MODEL` (por defecto `gpt-5.4-mini`) y reinicia el backend. No copies la API key a variables `NEXT_PUBLIC_*` ni al frontend.
+
+El chat consulta únicamente estadísticas agregadas mediante herramientas controladas. No guarda el historial en el servidor y no recibe contenido ni identidades de reportes. Está limitado a 8 preguntas por minuto por administrador; cada consulta usa como máximo dos llamadas al modelo. Las preguntas de métricas no registradas y las consultas de urgencia reciben una aclaración explícita. El prototipo usa datos sintéticos y no debe usarse para operación clínica ni para evaluar personas.
+
+Ejemplos para la demo: «Dame un resumen ejecutivo», «¿Cuántos reportes recibimos hoy?», «¿Cómo se compara la actividad de hoy con la de ayer?», «¿Cuántas personas están en salas?» y «¿Cuántas sesiones hay activas?».
+
 ## Acceso de demostración
 
 > **Esto NO es verificación de edad real.** El rango de edad sale del usuario sintético que eliges. Todo el sistema obtiene el rango de un único módulo reemplazable ([`seguridad/rango-edad.ts`](apps/backend/src/modules/seguridad/rango-edad.ts)). El mecanismo definitivo de validación de edad sigue pendiente (sección 8.1 y `DECISIONES.md`).
