@@ -48,7 +48,7 @@ export function BuscadorPersonas() {
             autoComplete="off"
             maxLength={30}
           />
-          <Boton type="submit" cargando={buscando}>
+          <Boton type="submit" variante="oscuro" cargando={buscando}>
             Buscar
           </Boton>
         </form>

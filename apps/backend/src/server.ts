@@ -1,6 +1,7 @@
 import { crearServidor } from './app.js';
 import { cargarConfig, type Config } from './config/env.js';
 import { crearPool } from './db/database.js';
+import { AYUDA_BASE } from './http/errores.js';
 import { crearLogger } from './lib/logger.js';
 
 let config: Config;
@@ -12,6 +13,17 @@ try {
 }
 
 const logger = crearLogger(config.nivelLog);
+
+// DATABASE_URL copiada de .env.example sin completar: se avisa con claridad desde el arranque.
+if (
+  /@HOST(:|\/)/.test(config.baseDeDatos.url) ||
+  config.baseDeDatos.url.includes('USUARIO:CONTRASENA')
+) {
+  logger.error(
+    'DATABASE_URL todavía tiene el marcador de .env.example (HOST). La API responderá 503 hasta que lo cambies.',
+    { ayuda: AYUDA_BASE },
+  );
+}
 const pool = crearPool(config.baseDeDatos);
 pool.on('error', (error) => {
   logger.error('Error en una conexión inactiva de la base de datos', { error: error.message });
@@ -44,7 +56,10 @@ const servidor = app.listen(config.puerto, (error) => {
     .then(() => salas.reconciliar())
     .then((vacias) => logger.info('Salas reconciliadas', { salasVacias: vacias }))
     .catch((errorDb: Error) =>
-      logger.warn('No se pudo preparar la base de datos', { error: errorDb.message }),
+      logger.warn('No se pudo preparar la base de datos', {
+        error: errorDb.message,
+        ayuda: AYUDA_BASE,
+      }),
     );
 });
 

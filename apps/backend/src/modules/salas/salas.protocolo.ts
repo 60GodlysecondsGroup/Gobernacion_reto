@@ -5,6 +5,7 @@ import type { Participante } from './salas.repository.js';
 
 export type MensajeCliente =
   | { tipo: 'mover'; direccion: 'arriba' | 'abajo' | 'izquierda' | 'derecha' }
+  | { tipo: 'ir'; x: number; y: number }
   | { tipo: 'mensaje'; texto: string }
   | { tipo: 'salir' };
 
@@ -22,7 +23,10 @@ export type MensajeServidor =
   | { tipo: 'entro'; participante: ParticipanteEnSala; ocupacion: number }
   | { tipo: 'salio'; id: string; ocupacion: number }
   | { tipo: 'movio'; id: string; x: number; y: number }
-  | { tipo: 'movimiento_rechazado'; motivo: 'limite' | 'obstaculo' }
+  | {
+      tipo: 'movimiento_rechazado';
+      motivo: 'limite' | 'obstaculo' | 'destino_invalido' | 'sin_camino';
+    }
   | {
       tipo: 'mensaje';
       id: string;
@@ -43,5 +47,7 @@ export const CIERRE = {
   PROHIBIDO: 4403,
   NO_ENCONTRADA: 4404,
   CERRADA: 4409,
+  /** La administración deshabilitó la sala o suspendió la cuenta (Fase 7). */
+  RETIRADA: 4410,
   LLENA: 4429,
 } as const;

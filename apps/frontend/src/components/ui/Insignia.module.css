@@ -2,18 +2,20 @@
   display: inline-flex;
   align-items: center;
   gap: var(--espacio-2);
-  padding: 0.2rem var(--espacio-3);
+  padding: 0.2rem 0.65rem;
+  border: 1px solid rgb(21 23 61 / 0.06);
   border-radius: var(--radio-total);
-  font-size: var(--texto-sm);
+  font-size: var(--texto-xs);
   font-weight: var(--peso-fuerte);
   white-space: nowrap;
 }
 
 .punto {
-  width: 0.55rem;
-  height: 0.55rem;
+  width: 0.5rem;
+  height: 0.5rem;
   border-radius: 50%;
   background: currentColor;
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 20%, transparent);
 }
 
 .neutro {

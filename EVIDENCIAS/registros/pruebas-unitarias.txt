@@ -1,0 +1,173 @@
+
+ RUN  v5.0.5 /home/claude/proyecto/apps/backend
+
+ ✓ test/salas.test.ts > Escenario 2D > mueve dentro del área y rechaza límites y obstáculos (AV-06, AV-07) 2ms
+ ✓ test/salas.test.ts > Escenario 2D > hace aparecer a cada persona en una celda libre cercana 0ms
+ ✓ test/salas.test.ts > Escenario 2D > F40 · calcula el camino más corto rodeando obstáculos 1ms
+ ✓ test/salas.test.ts > Escenario 2D > F40 · rechaza destinos fuera del área, sobre un obstáculo o inalcanzables 1ms
+ ✓ test/salas.test.ts > Escenario 2D > descarta obstáculos inválidos o fuera del área 0ms
+ ✓ test/salas.test.ts > Gestor de salas > TRL-07 · con entradas simultáneas nunca pasa de 10 y el 11.º recibe «La sala está llena» 7ms
+ ✓ test/salas.test.ts > Gestor de salas > salir libera el cupo para otra persona (F15) 6ms
+ ✓ test/salas.test.ts > Gestor de salas > AV-04 y AV-08 · el movimiento válido se ve en todas las conexiones 37ms
+ ✓ test/salas.test.ts > Gestor de salas > AV-06 · el límite se rechaza solo para quien se mueve, sin cambiar la posición 7ms
+ ✓ test/salas.test.ts > Gestor de salas > el cliente no puede enviar coordenadas ni direcciones inventadas 2ms
+ ✓ test/salas.test.ts > Gestor de salas > F14 · un mensaje con teléfono solo le muestra el aviso al autor 14ms
+ ✓ test/salas.test.ts > Gestor de salas > AV-12 · sin sesión, sin permiso o de otra comunidad no entra 0ms
+ ✓ test/salas.test.ts > Gestor de salas > otra pestaña de la misma persona reemplaza la conexión sin ocupar otro cupo 2ms
+ ✓ test/salas.test.ts > Gestor de salas > dos conexiones a la vez de la misma persona dejan una sola dentro (montaje doble de React) 4ms
+ ✓ test/salas.test.ts > Gestor de salas > si la primera conexión se cierra mientras entra, la segunda entra igual 3ms
+ ✓ test/salas.test.ts > Gestor de salas > TRL-08 · vacía durante el tiempo de cierre, la sala se cierra 1507ms
+ ✓ test/salas.test.ts > Gestor de salas > TRL-08 · si alguien entra antes del tiempo, el contador se cancela 1705ms
+ ✓ test/salas.test.ts > Gestor de salas > AV-05 · el clic mueve paso a paso hasta el destino y todos lo ven 84ms
+ ✓ test/salas.test.ts > Gestor de salas > AV-05 · un destino inválido se rechaza sin mover el avatar 2ms
+ ✓ test/salas.test.ts > Gestor de salas > F40 · una tecla cancela el recorrido por clic en curso 83ms
+ ✓ test/salas.test.ts > Gestor de salas > Fase 7 · deshabilitar una sala saca a quien está dentro y no deja entrar 11ms
+ ✓ test/salas.test.ts > Gestor de salas > Fase 7 · suspender una cuenta la retira de la sala y los demás lo ven 7ms
+ ✓ test/humo.test.ts > Prueba de humo del backend > GET /api/salud responde backend ok con la base conectada 36ms
+ ✓ test/humo.test.ts > Prueba de humo del backend > sigue respondiendo y avisa si no hay conexión con la base 7ms
+ ✓ test/humo.test.ts > Prueba de humo del backend > avisa si falta inicializar el esquema 5ms
+ ✓ test/humo.test.ts > Prueba de humo del backend > permite CORS solo al origen del frontend 15ms
+ ✓ test/humo.test.ts > Prueba de humo del backend > responde 404 en JSON para rutas inexistentes 5ms
+ ✓ test/humo.test.ts > Prueba de humo del backend > rechaza JSON mal formado con 400 11ms
+ ✓ test/humo.test.ts > Prueba de humo del backend > no filtra detalles internos en errores 500 9ms
+ ✓ test/humo.test.ts > Prueba de humo del backend > envía cabeceras de seguridad básicas y un id de solicitud 7ms
+ ✓ test/humo.test.ts > Guardianes de seguridad (sin base de datos) > sin sesión, /api/comunidad responde 401 7ms
+ ✓ test/humo.test.ts > Guardianes de seguridad (sin base de datos) > sin sesión, /api/perfil responde 401 5ms
+ ✓ test/humo.test.ts > Guardianes de seguridad (sin base de datos) > sin sesión, /api/perfiles?buscar=Luna responde 401 4ms
+ ✓ test/humo.test.ts > Guardianes de seguridad (sin base de datos) > sin sesión, /api/moderacion/incidencias-dlp responde 401 4ms
+ ✓ test/humo.test.ts > Guardianes de seguridad (sin base de datos) > sin sesión, /api/gestion/fuentes responde 401 4ms
+ ✓ test/humo.test.ts > Guardianes de seguridad (sin base de datos) > sin sesión, /api/comunidad/hilos responde 401 3ms
+ ✓ test/humo.test.ts > Guardianes de seguridad (sin base de datos) > sin sesión, /api/comunidad/categorias responde 401 3ms
+ ✓ test/humo.test.ts > Guardianes de seguridad (sin base de datos) > una cookie de sesión falsificada no da acceso 4ms
+ ✓ test/humo.test.ts > Guardianes de seguridad (sin base de datos) > rechaza escrituras desde un origen distinto al frontend 4ms
+ ✓ test/humo.test.ts > Guardianes de seguridad (sin base de datos) > sin modo demo no existe el selector de usuarios sintéticos 10ms
+ ✓ test/humo.test.ts > Guardianes de seguridad (sin base de datos) > sin sesión, GET /api/sesion responde usuario null 3ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > bloquea TRL-04 · contacto 3ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > bloquea TRL-05 · redes sociales 2ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > bloquea TRL-06 · ubicación 2ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > bloquea correo 1ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > bloquea enlace 0ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > bloquea edad propia 3ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > bloquea pedir la edad 2ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > bloquea venta 1ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > bloquea teléfono con espacios 1ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > bloquea usuario externo (B.7) 0ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > bloquea dirección (B.7) 0ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > bloquea sígueme en 0ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > bloquea mi usuario es 0ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > bloquea nombre completo 0ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > bloquea colegio 0ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > bloquea barrio 0ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > bloquea pedir el número 0ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > bloquea pedir dinero 1ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > permite un mensaje inocuo: «Hoy me fue bien en el colegio y quiero contarlo.» 1ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > permite un mensaje inocuo: «Me gusta leer y escuchar música.» 0ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > permite un mensaje inocuo: «Tengo 2 hermanos y un perro.» 0ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > permite un mensaje inocuo: «Nos vemos en la próxima sala.» 0ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > permite un mensaje inocuo: «Me llamo Luna y me gusta dibujar.» 0ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > permite un mensaje inocuo: «A veces me cuesta adaptarme a los cambios.» 0ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > permite un mensaje inocuo: «¿Alguien tiene consejos para organizar el tiempo de estudio?» 0ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > permite un mensaje inocuo: «El examen es el 20 de octubre.» 0ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > todas las reglas del seed compilan y cubren las seis categorías 0ms
+ ✓ test/dlp.test.ts > Reglas DLP predeterminadas > normaliza tildes, mayúsculas y espacios antes de comparar 0ms
+ ✓ test/dlp.test.ts > Servicio DLP > bloquea, devuelve el mensaje estándar y registra el evento sin el texto 2ms
+ ✓ test/dlp.test.ts > Servicio DLP > no registra nada cuando el texto es inocuo 0ms
+ ✓ test/dlp.test.ts > Servicio DLP > solo aplica las reglas activas que entrega la base 0ms
+ ✓ test/dlp.test.ts > Servicio DLP > exigirPermitido lanza 422 con el campo, sin el dato ni la categoría 1ms
+ ✓ test/dlp.test.ts > Servicio DLP > falla cerrado: si no puede leer las reglas, no deja publicar (503) 0ms
+ ✓ test/dlp.test.ts > Servicio DLP > admite un clasificador adicional como punto de extensión 1ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > bloquea teléfono dictado en palabras 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > bloquea teléfono dictado y mezclado 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > bloquea dígitos separados con símbolos 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > bloquea dígitos con guiones bajos 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > bloquea letras sueltas con espacios 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > bloquea letras sueltas con puntos 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > bloquea números en lugar de letras 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > bloquea símbolos en lugar de letras 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > bloquea letras repetidas 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > bloquea nombre alterado 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > bloquea nombre alterado con espacio 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > bloquea correo con palabras 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > bloquea correo con (at) 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > no bloquea un mensaje inocuo: «Tengo dos hermanos y tres gatos.» 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > no bloquea un mensaje inocuo: «El examen es el 21/10/2026 a las 8.» 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > no bloquea un mensaje inocuo: «Saqué 4 de 5 en la tarea de 3 puntos.» 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > no bloquea un mensaje inocuo: «Me encanta la música de los 80.» 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > no bloquea un mensaje inocuo: «Holaaaa, ¿cómo están?» 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > no bloquea un mensaje inocuo: «Uno, dos, tres: ¡a estudiar!» 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > no bloquea un mensaje inocuo: «Me encanta el disco nuevo de mi banda favorita.» 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > no bloquea un mensaje inocuo: «Mi telegrama llegó tarde, jaja.» 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > no bloquea un mensaje inocuo: «Voy en el nivel 3 del juego.» 0ms
+ ✓ test/dlp.test.ts > Detección básica de evasión (F23, Fase 8) > las variantes solo se calculan cuando el texto cambia 1ms
+ ✓ test/fuentes.test.ts > Validación de fuentes > acepta una fuente válida y guarda los opcionales vacíos como null 3ms
+ ✓ test/fuentes.test.ts > Validación de fuentes > un canal telefónico necesita teléfono, y uno web o de chat necesita enlace 2ms
+ ✓ test/fuentes.test.ts > Validación de fuentes > rechaza el enlace «javascript:alert(1)» 1ms
+ ✓ test/fuentes.test.ts > Validación de fuentes > rechaza el enlace «ftp://ejemplo.test» 1ms
+ ✓ test/fuentes.test.ts > Validación de fuentes > rechaza el enlace «no es un enlace» 0ms
+ ✓ test/fuentes.test.ts > Validación de fuentes > rechaza campos desconocidos, necesidades inexistentes y listas vacías 1ms
+ ✓ test/fuentes.test.ts > Validación de fuentes > ninguna fuente se crea sin fecha de verificación, ni con fecha futura 16ms
+ ✓ test/fuentes.test.ts > Validación de fuentes > la verificación usa la fecha de hoy en Colombia si no se indica otra 1ms
+ ✓ test/fuentes.test.ts > Ciclo de vida y bitácora > permite solo las transiciones de la sección 21 1ms
+ ✓ test/fuentes.test.ts > Ciclo de vida y bitácora > registra solo los campos que cambian, con su valor anterior y nuevo 0ms
+ ✓ test/fuentes.test.ts > Ciclo de vida y bitácora > el orden de las necesidades no cuenta como cambio 0ms
+ ✓ test/fuentes.test.ts > Ciclo de vida y bitácora > elige la acción de bitácora según el cambio 0ms
+ ✓ test/fuentes.test.ts > Ciclo de vida y bitácora > genera códigos legibles y válidos 1ms
+ ✓ test/fuentes.test.ts > Archivo de carga fuentes_institucionales.json > es válido y solo contiene datos de demostración, sin canales reales 16ms
+ ✓ test/fuentes.test.ts > Archivo de carga fuentes_institucionales.json > incluye InstituciónDemo · CanalDemo (B.7) y un ejemplo de cada estado 2ms
+ ✓ test/fuentes.test.ts > Archivo de carga fuentes_institucionales.json > cada necesidad del navegador tiene al menos un servicio activo 1ms
+ ✓ test/avatar.test.ts > Configuración del avatar (F36, RF21, RF22) > guarda una configuración del catálogo para la persona de la sesión 6ms
+ ✓ test/avatar.test.ts > Configuración del avatar (F36, RF21, RF22) > cabello y accesorio pueden quedar vacíos 1ms
+ ✓ test/avatar.test.ts > Configuración del avatar (F36, RF21, RF22) > AV-11 · rechaza una URL y no guarda nada 2ms
+ ✓ test/avatar.test.ts > Configuración del avatar (F36, RF21, RF22) > AV-11 · rechaza texto libre y no guarda nada 1ms
+ ✓ test/avatar.test.ts > Configuración del avatar (F36, RF21, RF22) > AV-11 · rechaza un teléfono y no guarda nada 0ms
+ ✓ test/avatar.test.ts > Configuración del avatar (F36, RF21, RF22) > AV-11 · rechaza una imagen en base64 y no guarda nada 1ms
+ ✓ test/avatar.test.ts > Configuración del avatar (F36, RF21, RF22) > AV-11 · rechaza un campo de foto y no guarda nada 1ms
+ ✓ test/avatar.test.ts > Configuración del avatar (F36, RF21, RF22) > AV-11 · rechaza un texto en el avatar y no guarda nada 0ms
+ ✓ test/avatar.test.ts > Configuración del avatar (F36, RF21, RF22) > AV-11 · rechaza el id de otra persona y no guarda nada 1ms
+ ✓ test/avatar.test.ts > Configuración del avatar (F36, RF21, RF22) > AV-11 · rechaza un elemento de otra capa y no guarda nada 0ms
+ ✓ test/avatar.test.ts > Configuración del avatar (F36, RF21, RF22) > AV-11 · rechaza un elemento que no existe y no guarda nada 1ms
+ ✓ test/avatar.test.ts > Configuración del avatar (F36, RF21, RF22) > AV-11 · rechaza una capa obligatoria vacía y no guarda nada 1ms
+ ✓ test/avatar.test.ts > Configuración del avatar (F36, RF21, RF22) > AV-11 · rechaza algo que no es un objeto y no guarda nada 0ms
+ ✓ test/avatar.test.ts > Configuración del avatar (F36, RF21, RF22) > el error no repite el valor recibido 0ms
+ ✓ test/validacion.test.ts > validar() > devuelve los datos normalizados cuando son válidos 4ms
+ ✓ test/validacion.test.ts > validar() > lanza un 400 con los campos inválidos, sin repetir el valor recibido 2ms
+ ✓ test/validacion.test.ts > cargarConfig() > aplica valores por defecto seguros 3ms
+ ✓ test/validacion.test.ts > cargarConfig() > usa BACKEND_PORT e ignora PORT, que reservan Next.js y otras herramientas 1ms
+ ✓ test/validacion.test.ts > cargarConfig() > sin SESSION_SECRET (o vacío) usa uno temporal; en producción es obligatorio 2ms
+ ✓ test/validacion.test.ts > cargarConfig() > el acceso de demostración está activo en desarrollo y apagado en producción 1ms
+ ✓ test/validacion.test.ts > cargarConfig() > admite varios orígenes de CORS separados por coma 0ms
+ ✓ test/validacion.test.ts > cargarConfig() > falla con un mensaje claro si falta DATABASE_URL 1ms
+ ✓ test/seguridad.test.ts > Token de sesión > verifica un token propio y devuelve el id del usuario 3ms
+ ✓ test/seguridad.test.ts > Token de sesión > rechaza un token con el contenido alterado 1ms
+ ✓ test/seguridad.test.ts > Token de sesión > rechaza un token firmado con otro secreto 0ms
+ ✓ test/seguridad.test.ts > Token de sesión > rechaza un token vencido 1ms
+ ✓ test/seguridad.test.ts > Token de sesión > lee la cookie de sesión entre otras cookies 0ms
+ ✓ test/seguridad.test.ts > Matriz de permisos (Anexo A.2) > usuario → ver_comunidad_propia: true 0ms
+ ✓ test/seguridad.test.ts > Matriz de permisos (Anexo A.2) > usuario → crear_hilo: true 0ms
+ ✓ test/seguridad.test.ts > Matriz de permisos (Anexo A.2) > usuario → reportar_contenido: true 0ms
+ ✓ test/seguridad.test.ts > Matriz de permisos (Anexo A.2) > usuario → revisar_reportes: false 0ms
+ ✓ test/seguridad.test.ts > Matriz de permisos (Anexo A.2) > usuario → revisar_incidencias_dlp: false 0ms
+ ✓ test/seguridad.test.ts > Matriz de permisos (Anexo A.2) > usuario → gestionar_fuentes: false 0ms
+ ✓ test/seguridad.test.ts > Matriz de permisos (Anexo A.2) > usuario → crear_sala_tematica: false 0ms
+ ✓ test/seguridad.test.ts > Matriz de permisos (Anexo A.2) > moderador → revisar_reportes: true 0ms
+ ✓ test/seguridad.test.ts > Matriz de permisos (Anexo A.2) > moderador → revisar_incidencias_dlp: true 0ms
+ ✓ test/seguridad.test.ts > Matriz de permisos (Anexo A.2) > moderador → gestionar_reglas_dlp: false 0ms
+ ✓ test/seguridad.test.ts > Matriz de permisos (Anexo A.2) > moderador → gestionar_fuentes: false 0ms
+ ✓ test/seguridad.test.ts > Matriz de permisos (Anexo A.2) > moderador → personalizar_avatar_propio: false 0ms
+ ✓ test/seguridad.test.ts > Matriz de permisos (Anexo A.2) > gestor_fuentes → gestionar_fuentes: true 0ms
+ ✓ test/seguridad.test.ts > Matriz de permisos (Anexo A.2) > gestor_fuentes → ver_comunidad_propia: false 0ms
+ ✓ test/seguridad.test.ts > Matriz de permisos (Anexo A.2) > gestor_fuentes → revisar_reportes: false 0ms
+ ✓ test/seguridad.test.ts > Matriz de permisos (Anexo A.2) > admin_plataforma → gestionar_reglas_dlp: true 0ms
+ ✓ test/seguridad.test.ts > Matriz de permisos (Anexo A.2) > admin_plataforma → configurar_comunidades: true 0ms
+ ✓ test/seguridad.test.ts > Matriz de permisos (Anexo A.2) > todos los roles consultan orientación y editan su propio perfil 1ms
+ ✓ test/seguridad.test.ts > Proveedor de rango de edad (provisional) > toma el rango del usuario sintético y devuelve null para el personal 1ms
+ ✓ test/seguridad.test.ts > Proveedor de rango de edad (provisional) > rechaza un rango desconocido en lugar de adivinar 1ms
+
+ Test Files  7 passed (7)
+      Tests  161 passed (161)
+   Start at  00:27:12
+   Duration  5.43s (tests 82%, import 14%, transform 3%, worker 1%)
+
+    Isolate  7 workers spawned · ~108ms startup each (spawn + environment, per file)
+             at least ~648ms faster with isolate: false — reuses workers across files instead of one per file
+

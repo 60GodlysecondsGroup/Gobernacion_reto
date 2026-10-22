@@ -1,59 +1,110 @@
 /*
- * Tokens de diseño. Todo color, tamaño o espaciado de la interfaz sale de aquí.
- * Paleta tranquila y legible: la plataforma comunica orientación y protección, no un videojuego.
- * Los pares texto/fondo cumplen contraste AA (≥ 4.5:1).
+ * Tokens de diseño. Todo color, tamaño, sombra o movimiento de la interfaz sale de aquí.
+ *
+ * Identidad «Refugio»: un arco que abraza cuatro ventanas de colores. El arco es la protección;
+ * las ventanas, las cuatro comunidades por edad, cada una con su luz (metáfora del edificio de la
+ * sección 28.1). Índigo profundo para la confianza, ámbar para la luz que orienta, menta para lo
+ * que está bien y coral solo para «Necesito ayuda». No es un videojuego ni una red social.
+ * Los pares texto/fondo cumplen contraste AA (≥ 4.5:1); ver DECISIONES.md.
  */
 :root {
-  /* ── Paleta ─────────────────────────────────────────── */
-  --color-fondo: #f5f7fa;
-  --color-superficie: #ffffff;
-  --color-superficie-suave: #eef3f7;
-  --color-borde: #d8e0e8;
-  --color-borde-fuerte: #9aa9b8;
-  --color-texto: #1b2633;
-  --color-texto-suave: #4c5a6a;
+  /* ── Paleta de marca ────────────────────────────────── */
+  --tinta: #15173d; /* texto principal, fondos oscuros */
+  --indigo-950: #1b1a52;
+  --indigo-900: #2a2478;
+  --indigo-700: #3a30bd;
+  --indigo-600: #4a3fd6; /* acción principal (7:1 sobre blanco) */
+  --indigo-500: #5b4fe8;
+  --indigo-100: #eeedff;
+  --indigo-50: #f5f4ff;
 
-  --color-primario: #2f6f8f;
-  --color-primario-hover: #255a75;
-  --color-primario-suave: #e2eff5;
-  --color-primario-oscuro: #1f4f66;
+  --ventana-cielo: #8fd3ff;
+  --ventana-ambar: #ffc857;
+  --ventana-menta: #7de3c3;
+  --ventana-lila: #c4bdff;
+
+  --ambar: #f2a623; /* luces y acentos (nunca texto sobre blanco) */
+  --menta: #127a5c;
+  --coral: #c93a2f; /* solo «Necesito ayuda» */
+
+  /* ── Roles de color ─────────────────────────────────── */
+  --color-fondo: #f6f6fb;
+  --color-superficie: #ffffff;
+  --color-superficie-suave: #f0f0f8;
+  --color-superficie-elevada: rgb(255 255 255 / 0.78);
+  --color-borde: #e3e3ef;
+  --color-borde-fuerte: #a6a8c6;
+  --color-texto: var(--tinta);
+  --color-texto-suave: #50537a;
+  --color-texto-tenue: #6b6e93;
+
+  --color-primario: var(--indigo-600);
+  --color-primario-hover: var(--indigo-700);
+  --color-primario-suave: var(--indigo-100);
+  --color-primario-oscuro: var(--indigo-900);
   --color-sobre-primario: #ffffff;
 
-  /* Reservado para el botón «Necesito ayuda» (Fase 3). */
-  --color-acento: #b9472f;
-  --color-acento-hover: #9c3a25;
-  --color-acento-suave: #fbeae5;
+  /* «Necesito ayuda» (F18): el único elemento coral de la interfaz. */
+  --color-acento: var(--coral);
+  --color-acento-hover: #a82e25;
+  --color-acento-suave: #fdecea;
 
   /* Estados (también el semáforo de fuentes: verde, amarillo, rojo). */
-  --color-exito: #2e7d4f;
-  --color-exito-suave: #e3f3ea;
+  --color-exito: var(--menta);
+  --color-exito-suave: #e1f5ee;
   --color-advertencia: #8a5a00;
-  --color-advertencia-suave: #fdf1d8;
+  --color-advertencia-suave: #fff4dc;
   --color-peligro: #b42318;
   --color-peligro-suave: #fde8e7;
-  --color-info: #2f6f8f;
-  --color-info-suave: #e2eff5;
+  --color-info: var(--indigo-600);
+  --color-info-suave: var(--indigo-100);
 
-  --color-foco: #1f5fae;
-  --color-ventana: #f4d58d;
+  --color-foco: #2563eb;
+  --color-ventana: var(--ambar);
+  --color-cielo-alto: var(--tinta);
+  --color-cielo-bajo: #4b3f9a;
+
+  /* Compatibilidad con nombres anteriores. */
+  --anil-noche: var(--tinta);
+  --anil: var(--indigo-600);
+  --anil-claro: var(--indigo-100);
+  --moriche: var(--menta);
+  --atardecer: var(--ambar);
+  --coral-ayuda: var(--coral);
+  --lavanda: var(--color-fondo);
+
+  /* ── Degradados de marca ────────────────────────────── */
+  --degradado-marca: linear-gradient(135deg, var(--indigo-500) 0%, var(--indigo-900) 100%);
+  --degradado-noche: linear-gradient(160deg, #1f1d5c 0%, var(--tinta) 70%);
+  --degradado-ventanas: linear-gradient(
+    90deg,
+    var(--ventana-cielo),
+    var(--ventana-ambar),
+    var(--ventana-menta),
+    var(--ventana-lila)
+  );
 
   /* ── Tipografía ─────────────────────────────────────── */
   --fuente-base:
     var(--fuente-atkinson, system-ui), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --fuente-titulos: var(--fuente-bricolage, var(--fuente-base)), system-ui, sans-serif;
   --fuente-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
 
+  /* Escala modular 1.2 sobre 17 px; los títulos grandes crecen con la pantalla. */
   --texto-xs: 0.8125rem;
   --texto-sm: 0.9375rem;
   --texto-md: 1.0625rem;
   --texto-lg: 1.25rem;
   --texto-xl: 1.5rem;
-  --texto-2xl: 2rem;
-  --texto-3xl: clamp(1.875rem, 1.4rem + 2vw, 2.625rem);
+  --texto-2xl: clamp(1.75rem, 1.45rem + 1.1vw, 2.25rem);
+  --texto-3xl: clamp(2.35rem, 1.5rem + 3.2vw, 4rem);
 
   --peso-normal: 400;
+  --peso-medio: 560;
   --peso-fuerte: 700;
+  --peso-titulo: 700;
   --interlineado: 1.6;
-  --interlineado-titulo: 1.2;
+  --interlineado-titulo: 1.08;
 
   /* ── Espaciado (escala de 4 px) ─────────────────────── */
   --espacio-1: 0.25rem;
@@ -63,17 +114,50 @@
   --espacio-5: 1.5rem;
   --espacio-6: 2rem;
   --espacio-7: 3rem;
-  --espacio-8: 4rem;
+  --espacio-8: 4.5rem;
+  --espacio-9: 6rem;
 
-  /* ── Forma y movimiento ─────────────────────────────── */
-  --radio-sm: 6px;
-  --radio-md: 10px;
-  --radio-lg: 16px;
+  /* ── Forma: el radio comunica jerarquía (control < tarjeta < panel) ── */
+  --radio-sm: 10px;
+  --radio-md: 14px;
+  --radio-lg: 22px;
+  --radio-xl: 28px;
   --radio-total: 999px;
-  --sombra-1: 0 1px 2px rgb(27 38 51 / 0.06), 0 1px 3px rgb(27 38 51 / 0.08);
-  --sombra-2: 0 6px 16px rgb(27 38 51 / 0.08);
-  --transicion: 150ms ease;
 
-  --ancho-contenido: 70rem;
+  --sombra-1: 0 1px 2px rgb(21 23 61 / 0.05), 0 1px 1px rgb(21 23 61 / 0.03);
+  --sombra-2:
+    0 1px 2px rgb(21 23 61 / 0.04), 0 8px 24px -10px rgb(42 36 120 / 0.18),
+    0 24px 48px -32px rgb(42 36 120 / 0.22);
+  --sombra-3:
+    0 2px 4px rgb(21 23 61 / 0.05), 0 18px 40px -12px rgb(42 36 120 / 0.3),
+    0 40px 80px -40px rgb(42 36 120 / 0.35);
+  --sombra-primario: 0 10px 24px -10px rgb(74 63 214 / 0.75);
+  --sombra-foco: 0 0 0 4px rgb(74 63 214 / 0.22);
+  --anillo-interior: inset 0 1px 0 rgb(255 255 255 / 0.6);
+
+  /* ── Movimiento ─────────────────────────────────────── */
+  --transicion: 180ms cubic-bezier(0.2, 0.7, 0.3, 1);
+  --transicion-lenta: 420ms cubic-bezier(0.16, 1, 0.3, 1);
+  --curva-salida: cubic-bezier(0.16, 1, 0.3, 1);
+  --curva-resorte: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── Estructura ─────────────────────────────────────── */
+  --ancho-contenido: 76rem;
+  --ancho-lectura: 46rem;
   --margen-lateral: 1rem;
+  --alto-encabezado: 4.25rem;
+  /* Barra inferior de navegación en móvil (0 en escritorio). */
+  --alto-barra-inferior: 4.5rem;
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --margen-lateral: 2rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --alto-barra-inferior: 0px;
+  }
 }

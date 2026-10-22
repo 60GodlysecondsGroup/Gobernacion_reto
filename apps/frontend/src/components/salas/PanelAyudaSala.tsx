@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { TarjetaServicio } from '@/components/orientacion/TarjetaServicio';
-import { Aviso } from '@/components/ui';
+import { Aviso, CargandoLista } from '@/components/ui';
 import { AVISO_LIMITES } from '@/config/textos';
 import { mensajeDeError } from '@/lib/api/cliente';
 import { obtenerCanalesDeAyuda, type FichaServicio } from '@/lib/api/orientacion';
@@ -36,7 +36,7 @@ export function PanelAyudaSala() {
       </h2>
       <p className={comun.suave}>{AVISO_LIMITES}</p>
       {error && <Aviso tono="peligro">{error}</Aviso>}
-      {!canales && !error && <p className={comun.cargando}>Cargando canales…</p>}
+      {!canales && !error && <CargandoLista etiqueta="Cargando canales…" />}
       {canales && !primero && (
         <Aviso tono="advertencia">En este momento no hay canales verificados registrados.</Aviso>
       )}

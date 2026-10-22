@@ -49,7 +49,7 @@ beforeEach(async () => {
     logger,
     config: { ...configPrueba, salas: { cierreSegundos: CIERRE_SEGUNDOS } },
     ttlReglasDlpMs: 0,
-    intervalosSalas: { movimientoMs: 0, mensajeMs: 0, guardadoMs: 20 },
+    intervalosSalas: { movimientoMs: 0, mensajeMs: 0, guardadoMs: 20, pasoMs: 10 },
   });
   http = createServer(servidor.app);
   http.on('upgrade', (req, socket, cabecera) =>
@@ -266,6 +266,61 @@ describe('AV-04, AV-06, AV-07 y AV-08 · Movimiento compartido', () => {
       (fila) => fila?.x === 4 && fila?.y === 7,
     );
     expect(posicion).toEqual({ x: 4, y: 7 });
+  }, 30_000);
+});
+
+describe('AV-05 · Movimiento por clic (Fase 8)', () => {
+  it('el avatar llega al destino rodeando obstáculos, los demás lo ven y un destino inválido se rechaza', async () => {
+    const sala = salas['B:Bienestar cotidiano']!;
+    const luna = conectar(sala, await tokenDe('Usuario_001'));
+    const { yo } = await luna.esperar('estado');
+    const sol = conectar(sala, await tokenDe('Usuario_002'));
+    await sol.esperar('estado');
+
+    // Un destino sobre la mesa (5, 4) no es válido.
+    luna.enviar({ tipo: 'ir', x: 5, y: 4 });
+    await luna.esperar('movimiento_rechazado', (m) => m.motivo === 'destino_invalido');
+
+    // De (1, 6) a (6, 3): la fila 4 tiene cojines y mesas entre x = 4 y x = 7.
+    luna.enviar({ tipo: 'ir', x: 6, y: 3 });
+    await sol.esperar('movio', (m) => m.id === yo && m.x === 6 && m.y === 3);
+    const pasos = sol.mensajes.filter(
+      (m): m is Extract<MensajeServidor, { tipo: 'movio' }> => m.tipo === 'movio' && m.id === yo,
+    );
+    const obstaculos = ['2,1', '9,1', '4,4', '5,4', '6,4', '7,4', '10,6'];
+    expect(pasos.every((p) => !obstaculos.includes(`${p.x},${p.y}`))).toBe(true);
+    // Cada paso avanza una sola celda: no hay saltos.
+    let anterior = { x: 1, y: 6 };
+    for (const paso of pasos) {
+      expect(Math.abs(paso.x - anterior.x) + Math.abs(paso.y - anterior.y)).toBe(1);
+      anterior = paso;
+    }
+    expect(servidor.salas.participantes(sala).find((p) => p.id === yo)).toMatchObject({
+      x: 6,
+      y: 3,
+    });
+  }, 30_000);
+});
+
+describe('Fase 7 · La administración deshabilita una sala con gente dentro', () => {
+  it('quien está dentro sale con un aviso, el cupo se libera y no se puede volver a entrar', async () => {
+    const sala = salas['B:Vida académica']!;
+    const luna = conectar(sala, await tokenDe('Usuario_001'));
+    await luna.esperar('estado');
+
+    const admin = await tokenDe('Admin_001');
+    const res = await request(servidor.app)
+      .patch(`/api/admin/salas/${sala}`)
+      .set('Cookie', `sesion=${admin}`)
+      .send({ habilitada: false });
+    expect(res.status).toBe(200);
+
+    expect(await luna.esperar('error')).toMatchObject({ codigo: 'SALA_NO_DISPONIBLE' });
+    expect(await luna.cierre).toBe(4410);
+    expect(await ocupacionEnBase(sala)).toMatchObject({ usuarios_actuales: 0 });
+
+    const sol = conectar(sala, await tokenDe('Usuario_002'));
+    expect(await sol.cierre).toBe(4410);
   }, 30_000);
 });
 

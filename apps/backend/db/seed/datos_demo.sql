@@ -158,4 +158,32 @@ from (values
 join app.hilo hi on hi.titulo = r.titulo
 join app.usuario u on u.codigo = r.codigo;
 
+-- Respuesta sintética que el DLP no detecta (no contiene datos personales ni de contacto), pero
+-- incumple las reglas de convivencia. Sirve para demostrar la segunda capa de protección: el
+-- reporte de una persona y la revisión del moderador (sección 17.1, TRL-11).
+insert into app.respuesta (id_hilo, id_usuario, contenido, fecha_creacion)
+select hi.id_hilo, u.id_usuario,
+       'Tus preguntas siempre son aburridas, mejor no escribas más aquí.', now() - interval '2 hours'
+from app.hilo hi, app.usuario u
+where hi.titulo = 'Me cuesta adaptarme a los cambios de este año' and u.codigo = 'Usuario_002';
+
+-- Reportes sintéticos pendientes (Fase 7), para que el panel de moderación tenga casos que revisar.
+insert into app.reporte
+  (id_usuario_reportante, id_comunidad, tipo_contenido, id_contenido, categoria, descripcion, fecha_reporte)
+select luna.id_usuario, c.id_comunidad, 'respuesta', r.id_respuesta, 'acoso', null,
+       now() - interval '90 minutes'
+from app.usuario luna
+join app.comunidad c on c.rango_edad = luna.rango_edad
+join app.respuesta r on r.contenido like 'Tus preguntas siempre son aburridas%'
+where luna.codigo = 'Usuario_001';
+
+insert into app.reporte
+  (id_usuario_reportante, id_comunidad, tipo_contenido, id_contenido, categoria, descripcion, fecha_reporte)
+select sol.id_usuario, c.id_comunidad, 'sala', s.id_sala, 'contenido_inapropiado',
+       'Hubo varios mensajes fuera del tema de la sala.', now() - interval '40 minutes'
+from app.usuario sol
+join app.comunidad c on c.rango_edad = sol.rango_edad
+join app.sala s on s.id_comunidad = c.id_comunidad and s.nombre = 'Vida académica'
+where sol.codigo = 'Usuario_002';
+
 -- Las fuentes institucionales de demostración se cargan después, desde fuentes_institucionales.json.

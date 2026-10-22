@@ -6,7 +6,7 @@ import { Avatar } from '@/components/avatar/Avatar';
 import { BotonReportar } from '@/components/comunidad/BotonReportar';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
 import { useSesion } from '@/components/sesion/ProveedorSesion';
-import { Aviso, BotonEnlace, Insignia, Tarjeta } from '@/components/ui';
+import { Aviso, BotonEnlace, CargandoLista, Insignia, Tarjeta } from '@/components/ui';
 import { ErrorApi, mensajeDeError } from '@/lib/api/cliente';
 import { obtenerPerfilPublico, type PerfilPublico } from '@/lib/api/comunidad';
 import comun from '../comun.module.css';
@@ -39,7 +39,7 @@ export function VistaPerfilPublico() {
     };
   }, [id]);
 
-  if (estado.tipo === 'cargando') return <p className={comun.cargando}>Cargando perfil…</p>;
+  if (estado.tipo === 'cargando') return <CargandoLista etiqueta="Cargando perfil…" />;
   if (estado.tipo === 'error') return <Aviso tono="peligro">{estado.mensaje}</Aviso>;
 
   return (

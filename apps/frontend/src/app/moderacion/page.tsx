@@ -1,13 +1,6 @@
-import type { Metadata } from 'next';
-import { PanelIncidencias } from '@/components/moderacion/PanelIncidencias';
-import { RequiereSesion } from '@/components/sesion/RequiereSesion';
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = { title: 'Moderación' };
-
+/** La moderación vive ahora en el panel administrativo (Fase 7). Se conserva la ruta anterior. */
 export default function PaginaModeracion() {
-  return (
-    <RequiereSesion permiso="revisar_incidencias_dlp">
-      <PanelIncidencias />
-    </RequiereSesion>
-  );
+  redirect('/panel/incidencias');
 }

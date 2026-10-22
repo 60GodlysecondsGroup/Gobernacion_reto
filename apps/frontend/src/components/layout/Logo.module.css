@@ -1,0 +1,67 @@
+.logo {
+  flex-shrink: 0;
+  display: block;
+}
+
+.ventanas rect {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform var(--transicion-lenta);
+}
+
+/* Al pasar por la marca, las ventanas «se encienden» una tras otra. */
+:where(a:hover, a:focus-visible) .ventanas rect {
+  transform: scale(1.12);
+}
+
+:where(a:hover, a:focus-visible) .ventanas rect:nth-child(2) {
+  transition-delay: 40ms;
+}
+
+:where(a:hover, a:focus-visible) .ventanas rect:nth-child(3) {
+  transition-delay: 80ms;
+}
+
+:where(a:hover, a:focus-visible) .ventanas rect:nth-child(4) {
+  transition-delay: 120ms;
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  color: var(--color-texto);
+}
+
+.oscuro {
+  color: #fff;
+}
+
+.textos {
+  display: grid;
+  line-height: 1.1;
+}
+
+.nombre {
+  font-family: var(--fuente-titulos);
+  font-size: 1.1875rem;
+  font-weight: 720;
+  letter-spacing: -0.02em;
+}
+
+.subtitulo {
+  margin-top: 3px;
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-normal);
+}
+
+.oscuro .subtitulo {
+  color: rgb(255 255 255 / 0.7);
+}
+
+@media (max-width: 35.99rem) {
+  .compacta .textos {
+    display: none;
+  }
+}

@@ -302,6 +302,8 @@ describe('Reportes (F19, F20)', () => {
     await enTransaccionRevertida(async (enTx, cliente) => {
       const sol = await entrar(enTx, 'Usuario_002');
       const { respuestas } = (await sol.get(`/api/comunidad/hilos/${ids[HILO_B]}`)).body;
+      // El seed trae reportes sintéticos para la demo de moderación: se cuentan solo los nuevos.
+      const antes = (await cliente.query('select count(*)::int as n from app.reporte')).rows[0].n;
 
       const res = await sol.post('/api/reportes', {
         tipoContenido: 'respuesta',
@@ -316,7 +318,9 @@ describe('Reportes (F19, F20)', () => {
         `select r.tipo_contenido, r.id_contenido, r.categoria, r.estado, c.rango_edad, u.alias
          from app.reporte r
          join app.comunidad c using (id_comunidad)
-         join app.usuario u on u.id_usuario = r.id_usuario_reportante`,
+         join app.usuario u on u.id_usuario = r.id_usuario_reportante
+         where r.id_contenido = $1`,
+        [respuestas[0].id],
       );
       expect(rows).toEqual([
         {
@@ -335,7 +339,9 @@ describe('Reportes (F19, F20)', () => {
         categoria: 'acoso',
       });
       expect(repetido.body).toEqual({ mensaje: 'Tu reporte fue registrado.' });
-      expect((await cliente.query('select count(*)::int as n from app.reporte')).rows[0].n).toBe(1);
+      expect((await cliente.query('select count(*)::int as n from app.reporte')).rows[0].n).toBe(
+        antes + 1,
+      );
     });
   });
 
@@ -380,6 +386,7 @@ describe('Reportes (F19, F20)', () => {
     );
 
     await enTransaccionRevertida(async (enTx, cliente) => {
+      const antes = (await cliente.query('select count(*)::int as n from app.reporte')).rows[0].n;
       const enTxLuna = await entrar(enTx, 'Usuario_001');
       const res = await enTxLuna.post('/api/reportes', {
         ...base,
@@ -387,7 +394,9 @@ describe('Reportes (F19, F20)', () => {
         descripcion: 'Escríbeme al 3000000000',
       });
       expect(res.status).toBe(422);
-      expect((await cliente.query('select count(*)::int as n from app.reporte')).rows[0].n).toBe(0);
+      expect((await cliente.query('select count(*)::int as n from app.reporte')).rows[0].n).toBe(
+        antes,
+      );
     });
   });
 });

@@ -1,13 +1,13 @@
 .busqueda {
   display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: start;
-  gap: var(--espacio-3);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--espacio-2);
 }
 
 /* El botón se alinea con el campo, no con su etiqueta. */
 .busqueda > button {
-  margin-top: 1.7rem;
+  min-height: 3rem;
 }
 
 .persona {

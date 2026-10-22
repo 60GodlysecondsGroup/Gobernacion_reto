@@ -4,7 +4,16 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Avatar } from '@/components/avatar/Avatar';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
 import { useSesion } from '@/components/sesion/ProveedorSesion';
-import { Aviso, Boton, BotonEnlace, CampoTexto, Tarjeta } from '@/components/ui';
+import {
+  Aviso,
+  Boton,
+  BotonEnlace,
+  CampoTexto,
+  CargandoLista,
+  Insignia,
+  Tarjeta,
+  useNotificar,
+} from '@/components/ui';
 import { campoDelError, erroresPorCampo, mensajeDeError } from '@/lib/api/cliente';
 import type { Apariencia } from '@/lib/api/avatar';
 import { guardarPerfil, obtenerPerfilPropio } from '@/lib/api/perfil';
@@ -27,6 +36,7 @@ export function EditorPerfil() {
   const [errorCarga, setErrorCarga] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [resultado, setResultado] = useState<Resultado>(null);
+  const notificar = useNotificar();
   const [erroresCampo, setErroresCampo] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -44,7 +54,7 @@ export function EditorPerfil() {
   }, []);
 
   if (errorCarga) return <Aviso tono="peligro">{errorCarga}</Aviso>;
-  if (!formulario) return <p className={comun.cargando}>Cargando tu perfil…</p>;
+  if (!formulario) return <CargandoLista etiqueta="Cargando tu perfil…" />;
 
   const cambiar = (campo: keyof Formulario, valor: string) => {
     setFormulario({ ...formulario, [campo]: valor });
@@ -64,7 +74,8 @@ export function EditorPerfil() {
         intereses: aIntereses(formulario.intereses),
       });
       setFormulario({ ...formulario, alias: perfil.alias, intereses: perfil.intereses.join(', ') });
-      setResultado({ tono: 'exito', mensaje: 'Perfil guardado.' });
+      setResultado(null);
+      notificar('exito', 'Perfil guardado', 'Tus cambios ya se ven en tu comunidad.');
       await refrescar();
     } catch (e) {
       const campo = campoDelError(e);
@@ -89,9 +100,17 @@ export function EditorPerfil() {
       <div className={estilos.distribucion}>
         <Tarjeta titulo="Tu avatar">
           <div className={estilos.vistaPrevia}>
-            <Avatar apariencia={apariencia} tamano={72} etiqueta="Tu avatar" />
-            <strong>{formulario.alias || 'Tu alias'}</strong>
-            <BotonEnlace href="/perfil/avatar" variante="secundario" tamano="sm">
+            <div className={estilos.escenarioAvatar}>
+              <Avatar apariencia={apariencia} tamano={96} etiqueta="Tu avatar" />
+            </div>
+            <strong className={estilos.alias}>{formulario.alias || 'Tu alias'}</strong>
+            {usuario?.comunidad && <Insignia tono="info">{usuario.comunidad.nombre}</Insignia>}
+            <BotonEnlace
+              href="/perfil/avatar"
+              variante="secundario"
+              tamano="sm"
+              className={estilos.botonAvatar}
+            >
               {puedeCambiarAvatar ? 'Personalizar mi avatar' : 'Ver mi avatar'}
             </BotonEnlace>
           </div>

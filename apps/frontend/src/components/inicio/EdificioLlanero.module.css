@@ -1,0 +1,75 @@
+.figura {
+  display: grid;
+  gap: var(--espacio-4);
+  margin: 0;
+}
+
+.lienzo {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radio-lg);
+  image-rendering: pixelated;
+}
+
+.piso {
+  transition: opacity 220ms ease;
+}
+
+.letra {
+  font-family: var(--fuente-titulos);
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.leyenda {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.ayudaLeyenda {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.botones {
+  display: flex;
+  gap: var(--espacio-2);
+}
+
+.botonPiso {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1.5px solid var(--color-borde-fuerte);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra-1);
+  font-family: var(--fuente-titulos);
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-titulo);
+  cursor: pointer;
+  transition:
+    background var(--transicion),
+    color var(--transicion),
+    border-color var(--transicion);
+}
+
+.botonPiso:hover {
+  border-color: var(--color-primario);
+  background: var(--indigo-50);
+}
+
+.botonPiso[aria-pressed='true'] {
+  border-color: var(--tinta);
+  background: var(--tinta);
+  color: var(--ventana-ambar);
+}
+
+.explicacion {
+  min-height: 3.2em;
+  color: var(--color-texto);
+  font-size: var(--texto-sm);
+}

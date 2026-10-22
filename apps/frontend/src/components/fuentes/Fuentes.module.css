@@ -9,20 +9,30 @@
   display: grid;
   justify-items: start;
   gap: var(--espacio-2);
-  padding: var(--espacio-4);
+  padding: var(--espacio-4) var(--espacio-5);
   border: 1px solid var(--color-borde);
   border-left-width: 6px;
-  border-radius: var(--radio-md);
+  border-radius: var(--radio-lg);
   background: var(--color-superficie);
   color: var(--color-texto);
   font: inherit;
   text-align: left;
   cursor: pointer;
+  box-shadow: var(--sombra-1);
+  transition:
+    box-shadow var(--transicion),
+    transform var(--transicion);
+}
+
+.luz:hover {
+  box-shadow: var(--sombra-2);
+  transform: translateY(-2px);
 }
 
 .luz[aria-pressed='true'] {
   box-shadow: var(--sombra-2);
-  outline: 2px solid currentColor;
+  outline: 2px solid var(--tinta);
+  outline-offset: 2px;
 }
 
 .activo {
@@ -38,6 +48,7 @@
 }
 
 .total {
+  font-family: var(--fuente-titulos);
   font-size: var(--texto-2xl);
   font-weight: var(--peso-fuerte);
   font-variant-numeric: tabular-nums;
@@ -57,7 +68,7 @@
 
 .tabla th,
 .tabla td {
-  padding: var(--espacio-2) var(--espacio-3);
+  padding: var(--espacio-3);
   border-bottom: 1px solid var(--color-borde);
   text-align: left;
   vertical-align: top;
@@ -68,12 +79,23 @@
 }
 
 .tabla th {
-  color: var(--color-texto-suave);
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
-.tabla td > span {
+.tabla td > span:not(:first-child) {
   display: block;
+}
+
+.tabla tbody tr {
+  transition: background var(--transicion);
+}
+
+.tabla tbody tr:hover {
+  background: var(--indigo-50);
 }
 
 .servicio {

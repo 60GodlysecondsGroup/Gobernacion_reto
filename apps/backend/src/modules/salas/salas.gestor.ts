@@ -10,6 +10,7 @@ import {
   DIRECCIONES,
   mover,
   puntoDeAparicion,
+  ruta,
   type Direccion,
   type Escenario,
   type Posicion,
@@ -31,6 +32,8 @@ type EnSala = {
   ultimoMovimiento: number;
   ultimoMensaje: number;
   guardado?: NodeJS.Timeout;
+  /** Recorrido por clic en curso (F40): un paso por temporizador. */
+  recorrido?: NodeJS.Timeout;
 };
 
 type SalaActiva = {
@@ -56,9 +59,13 @@ type Dependencias = {
   intervaloMensajeMs?: number;
   /** Las posiciones se guardan en la base agrupadas, como mucho una vez por este intervalo. */
   retrasoGuardadoMs?: number;
+  /** Tiempo entre dos pasos de un recorrido por clic (F40). */
+  intervaloPasoMs?: number;
 };
 
 const LARGO_MAXIMO_MENSAJE = 500;
+
+const MENSAJE_NO_DISPONIBLE = 'Esta sala no está disponible en este momento.';
 
 /**
  * Salas en tiempo real (F11–F15, F38, F39, F41). El servidor es la autoridad: decide quién
@@ -73,6 +80,7 @@ export function crearGestorSalas({
   intervaloMovimientoMs = 60,
   intervaloMensajeMs = 500,
   retrasoGuardadoMs = 300,
+  intervaloPasoMs = 140,
 }: Dependencias) {
   const activas = new Map<string, SalaActiva>();
   const cierres = new Map<string, NodeJS.Timeout>();
@@ -177,6 +185,10 @@ export function crearGestorSalas({
       );
       return null;
     }
+    if (entrada.resultado === 'deshabilitada') {
+      rechazar(conexion, 'SALA_NO_DISPONIBLE', MENSAJE_NO_DISPONIBLE, CIERRE.RETIRADA);
+      return null;
+    }
     cancelarCierre(sala.id);
 
     const info = await repositorio.participante(yo);
@@ -232,6 +244,10 @@ export function crearGestorSalas({
           'Esta sala se cerró. Vuelve a la lista de salas.',
           CIERRE.CERRADA,
         );
+        return null;
+      }
+      if (!detalle.habilitada) {
+        rechazar(conexion, 'SALA_NO_DISPONIBLE', MENSAJE_NO_DISPONIBLE, CIERRE.RETIRADA);
         return null;
       }
 
@@ -304,21 +320,46 @@ export function crearGestorSalas({
     // Si la conexión fue reemplazada por otra pestaña, la persona sigue en la sala.
     if (!sala || !participante || participante.conexion !== conexion) return;
 
-    clearTimeout(participante.guardado);
-    sala.participantes.delete(idUsuario);
-    difundir(sala, { tipo: 'salio', id: idUsuario, ocupacion: sala.participantes.size });
-    await liberar(sala, idUsuario);
+    await retirar(sala, participante);
   }
 
-  function moverParticipante(sala: SalaActiva, participante: EnSala, direccion: Direccion) {
+  /** Saca a una persona de la sala en memoria, avisa a los demás y libera su cupo en la base. */
+  async function retirar(sala: SalaActiva, participante: EnSala) {
+    clearTimeout(participante.guardado);
+    clearTimeout(participante.recorrido);
+    sala.participantes.delete(participante.info.id);
+    difundir(sala, {
+      tipo: 'salio',
+      id: participante.info.id,
+      ocupacion: sala.participantes.size,
+    });
+    await liberar(sala, participante.info.id);
+  }
+
+  function cancelarRecorrido(participante: EnSala) {
+    clearTimeout(participante.recorrido);
+    participante.recorrido = undefined;
+  }
+
+  /** Un paso de teclado (WASD) o de un recorrido. Devuelve si el avatar se movió. */
+  function moverParticipante(
+    sala: SalaActiva,
+    participante: EnSala,
+    direccion: Direccion,
+    { porRecorrido = false } = {},
+  ): boolean {
     const ahora = Date.now();
-    if (ahora - participante.ultimoMovimiento < intervaloMovimientoMs) return;
+    if (!porRecorrido) {
+      // El teclado tiene prioridad: cancela un recorrido por clic en curso.
+      cancelarRecorrido(participante);
+      if (ahora - participante.ultimoMovimiento < intervaloMovimientoMs) return false;
+    }
     participante.ultimoMovimiento = ahora;
 
     const resultado = mover(sala.escenario, participante.posicion, direccion);
     if (!resultado.valido) {
       participante.conexion.enviar({ tipo: 'movimiento_rechazado', motivo: resultado.motivo });
-      return;
+      return false;
     }
     participante.posicion = resultado.posicion;
     difundir(sala, { tipo: 'movio', id: participante.info.id, ...resultado.posicion });
@@ -336,6 +377,32 @@ export function crearGestorSalas({
       }, retrasoGuardadoMs);
       participante.guardado.unref();
     }
+    return true;
+  }
+
+  /**
+   * F40: movimiento por clic. El servidor calcula el camino y lo recorre paso a paso; cada paso
+   * se valida otra vez con las mismas reglas que el teclado y se difunde a todos (RF25, RF26).
+   */
+  function irA(sala: SalaActiva, participante: EnSala, destino: { x: number; y: number }) {
+    cancelarRecorrido(participante);
+    const plan = ruta(sala.escenario, participante.posicion, destino);
+    if (!plan.valido) {
+      participante.conexion.enviar({ tipo: 'movimiento_rechazado', motivo: plan.motivo });
+      return;
+    }
+    const pendientes = [...plan.pasos];
+    const avanzar = () => {
+      participante.recorrido = undefined;
+      const paso = pendientes.shift();
+      if (!paso || detenido || !sala.participantes.has(participante.info.id)) return;
+      if (!moverParticipante(sala, participante, paso, { porRecorrido: true })) return;
+      if (pendientes.length > 0) {
+        participante.recorrido = setTimeout(avanzar, intervaloPasoMs);
+        participante.recorrido.unref();
+      }
+    };
+    avanzar();
   }
 
   /** F14: cada mensaje pasa por el DLP. Si se bloquea, solo el autor ve el aviso. */
@@ -394,7 +461,7 @@ export function crearGestorSalas({
     const participante = sala?.participantes.get(idUsuario);
     if (!sala || !participante || participante.conexion !== conexion) return;
 
-    let mensaje: { tipo?: unknown; direccion?: unknown; texto?: unknown };
+    let mensaje: { tipo?: unknown; direccion?: unknown; texto?: unknown; x?: unknown; y?: unknown };
     try {
       mensaje = JSON.parse(crudo) as typeof mensaje;
     } catch {
@@ -406,6 +473,12 @@ export function crearGestorSalas({
       mensaje.direccion in DIRECCIONES
     ) {
       moverParticipante(sala, participante, mensaje.direccion as Direccion);
+    } else if (
+      mensaje.tipo === 'ir' &&
+      Number.isInteger(mensaje.x) &&
+      Number.isInteger(mensaje.y)
+    ) {
+      irA(sala, participante, { x: mensaje.x as number, y: mensaje.y as number });
     } else if (mensaje.tipo === 'mensaje' && typeof mensaje.texto === 'string') {
       await hablar(sala, participante, mensaje.texto);
     } else if (mensaje.tipo === 'salir') {
@@ -428,6 +501,56 @@ export function crearGestorSalas({
       return vacias.length;
     },
 
+    /**
+     * Fase 7: saca a una persona de todas las salas (por ejemplo, al suspender su cuenta).
+     * Devuelve en cuántas salas estaba.
+     */
+    async retirarUsuario(idUsuario: string, mensaje = 'Tu cuenta no está activa.') {
+      let retiros = 0;
+      for (const sala of activas.values()) {
+        const participante = sala.participantes.get(idUsuario);
+        if (!participante) continue;
+        await retirar(sala, participante);
+        rechazar(participante.conexion, 'RETIRADO', mensaje, CIERRE.RETIRADA);
+        retiros++;
+      }
+      return retiros;
+    },
+
+    /** Fase 7 (F29): la administración deshabilita una sala; quien esté dentro sale con un aviso. */
+    async retirarTodos(idSala: string) {
+      const sala = activas.get(idSala);
+      if (!sala) return 0;
+      const participantes = [...sala.participantes.values()];
+      for (const participante of participantes) {
+        await retirar(sala, participante);
+        rechazar(
+          participante.conexion,
+          'SALA_NO_DISPONIBLE',
+          MENSAJE_NO_DISPONIBLE,
+          CIERRE.RETIRADA,
+        );
+      }
+      return participantes.length;
+    },
+
+    /**
+     * Olvida el estado en memoria de una sala sin personas, para que la próxima entrada lea de
+     * nuevo su configuración (capacidad, escenario). Devuelve false si hay personas dentro.
+     */
+    olvidar(idSala: string) {
+      const sala = activas.get(idSala);
+      if (sala && sala.participantes.size > 0) return false;
+      activas.delete(idSala);
+      return true;
+    },
+
+    /** Actualiza la capacidad que se anuncia a quienes ya están dentro (la base es la autoridad). */
+    actualizarCapacidad(idSala: string, capacidad: number) {
+      const sala = activas.get(idSala);
+      if (sala) sala.capacidad = capacidad;
+    },
+
     /** Estado en memoria de una sala (para pruebas y diagnóstico). */
     participantes(idSala: string) {
       const sala = activas.get(idSala);
@@ -441,6 +564,7 @@ export function crearGestorSalas({
       for (const sala of activas.values()) {
         for (const participante of sala.participantes.values()) {
           clearTimeout(participante.guardado);
+          clearTimeout(participante.recorrido);
           participante.conexion.cerrar(CIERRE.SERVIDOR_DETENIDO, 'SERVIDOR_DETENIDO');
         }
       }

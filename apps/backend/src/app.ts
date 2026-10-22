@@ -20,6 +20,11 @@ import { rutasFuentes } from './modules/fuentes/fuentes.routes.js';
 import { crearServicioFuentes } from './modules/fuentes/fuentes.service.js';
 import { crearRepositorioModeracion } from './modules/moderacion/moderacion.repository.js';
 import { rutasModeracion } from './modules/moderacion/moderacion.routes.js';
+import { crearServicioModeracion } from './modules/moderacion/moderacion.service.js';
+import { crearRepositorioAdministracion } from './modules/administracion/administracion.repository.js';
+import { rutasAdministracion } from './modules/administracion/administracion.routes.js';
+import { crearServicioAdministracion } from './modules/administracion/administracion.service.js';
+import { crearRepositorioAuditoria } from './modules/auditoria/auditoria.js';
 import { crearRepositorioAvatar } from './modules/avatar/avatar.repository.js';
 import { rutasAvatar } from './modules/avatar/avatar.routes.js';
 import { crearServicioAvatar } from './modules/avatar/avatar.service.js';
@@ -58,6 +63,7 @@ export type Dependencias = {
   intervalosSalas?: {
     movimientoMs?: number;
     mensajeMs?: number;
+    pasoMs?: number;
     guardadoMs?: number;
     latidoMs?: number;
   };
@@ -146,7 +152,6 @@ export function crearServidor({
     rutasPerfil(crearServicioPerfil({ repositorio: crearRepositorioPerfil(db), dlp })),
   );
   app.use('/api', rutasAvatar(crearServicioAvatar(crearRepositorioAvatar(db))));
-  app.use('/api', rutasModeracion(crearRepositorioModeracion(db)));
   const fuentes = crearRepositorioFuentes(db);
   app.use('/api', rutasOrientacion(crearServicioOrientacion(fuentes)));
   app.use('/api', rutasFuentes(crearServicioFuentes(fuentes)));
@@ -162,6 +167,7 @@ export function crearServidor({
     intervaloMovimientoMs: intervalosSalas.movimientoMs,
     intervaloMensajeMs: intervalosSalas.mensajeMs,
     retrasoGuardadoMs: intervalosSalas.guardadoMs,
+    intervaloPasoMs: intervalosSalas.pasoMs,
   });
   const tiempoReal = crearTiempoRealSalas({
     gestor: salas,
@@ -170,6 +176,21 @@ export function crearServidor({
     logger,
     latidoMs: intervalosSalas.latidoMs,
   });
+
+  // Moderación y administración (Fase 7): necesitan el gestor de salas para retirar personas
+  // de una sala deshabilitada o de una cuenta suspendida.
+  const administracion = crearServicioAdministracion({
+    repositorio: crearRepositorioAdministracion(db),
+    salas,
+    dlp,
+  });
+  app.use(
+    '/api',
+    rutasModeracion(
+      crearServicioModeracion({ repositorio: crearRepositorioModeracion(db), administracion }),
+    ),
+  );
+  app.use('/api', rutasAdministracion(administracion, crearRepositorioAuditoria(db)));
 
   app.use(rutaNoEncontrada);
   app.use(manejadorDeErrores(logger));

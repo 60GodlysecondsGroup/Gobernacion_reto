@@ -1,12 +1,14 @@
 'use client';
 
+import { ArrowRight, DoorClosed } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
-import { Aviso, BotonEnlace } from '@/components/ui';
+import { Aviso, BotonEnlace, CargandoLista, EstadoError, EstadoVacio } from '@/components/ui';
 import { mensajeDeError } from '@/lib/api/cliente';
 import { listarSalas, type SalaResumen } from '@/lib/api/salas';
 import comun from '../comun.module.css';
+import { paletaDeSala } from './Escenario2D';
 import { OcupacionSala } from './OcupacionSala';
 import estilos from './Salas.module.css';
 
@@ -37,7 +39,7 @@ export function ListaSalas() {
   }, []);
 
   return (
-    <div className={comun.pagina}>
+    <div className={`${comun.pagina} ${estilos.paginaSalas}`}>
       <EncabezadoPagina antetitulo="Tu comunidad" titulo="Salas temáticas">
         Espacios en vivo para conversar por temas con personas de tu comunidad. Cada sala admite
         hasta 10 personas a la vez.
@@ -49,26 +51,49 @@ export function ListaSalas() {
         Lee las <Link href="/reglas">reglas de la comunidad</Link> antes de entrar.
       </Aviso>
 
-      {error && <Aviso tono="peligro">{error}</Aviso>}
-      {!salas && !error && <p className={comun.cargando}>Cargando salas…</p>}
+      {error && <EstadoError>{error}</EstadoError>}
+      {!salas && !error && <CargandoLista filas={2} alto="14rem" etiqueta="Cargando salas…" />}
       {salas && salas.length === 0 && (
-        <Aviso tono="advertencia">Tu comunidad no tiene salas abiertas en este momento.</Aviso>
+        <EstadoVacio icono={DoorClosed} titulo="No hay salas abiertas ahora">
+          Vuelve en un rato o conversa en los hilos de <Link href="/comunidad">tu comunidad</Link>.
+        </EstadoVacio>
       )}
       {salas && salas.length > 0 && (
         <ul className={estilos.listaSalas} aria-label="Salas de tu comunidad">
           {salas.map((sala) => (
-            <li key={sala.id} className={estilos.tarjetaSala}>
-              <h2 className={estilos.nombreSala}>{sala.nombre}</h2>
-              <p className={comun.suave}>{sala.descripcion}</p>
+            <li
+              key={sala.id}
+              className={estilos.tarjetaSala}
+              style={
+                {
+                  '--pared': paletaDeSala(sala.nombre).pared,
+                  '--zocalo': paletaDeSala(sala.nombre).zocalo,
+                } as React.CSSProperties
+              }
+            >
+              {/* Miniatura de la sala: pared, zócalo y un puesto por cada cupo (decorativa). */}
+              <div className={estilos.miniaturaSala} aria-hidden="true">
+                <span className={estilos.ventanaSala} />
+                <span className={estilos.puestos}>
+                  {Array.from({ length: sala.capacidad }, (_, i) => (
+                    <span key={i} data-ocupado={i < sala.ocupacion || undefined} />
+                  ))}
+                </span>
+              </div>
+              <div className={estilos.cuerpoSala}>
+                <h2 className={estilos.nombreSala}>{sala.nombre}</h2>
+                <p className={comun.suave}>{sala.descripcion}</p>
+              </div>
               <div className={estilos.pieSala}>
                 <OcupacionSala sala={sala} />
                 <BotonEnlace
                   href={`/salas/${sala.id}`}
-                  variante="secundario"
+                  variante={sala.estado === 'llena' ? 'secundario' : 'primario'}
                   tamano="sm"
                   aria-label={`Ver la sala ${sala.nombre}`}
                 >
                   Ver sala
+                  <ArrowRight aria-hidden="true" size={16} />
                 </BotonEnlace>
               </div>
             </li>

@@ -42,6 +42,12 @@
     "patron": "\\b(?:buscame|agregame|sigueme|seguime)\\s+(?:en|por|como)\\b|\\bmi\\s+(?:usuario|user|cuenta|nick|arroba)\\s+es\\b|\\bpor\\s+(?:interno|privado|dm|md|inbox)\\b"
   },
   {
+    "codigo": "redes-variantes",
+    "categoria": "redes_externas",
+    "descripcion": "Nombres de redes y mensajería escritos de forma alterada (guasap, uasap, instagran, tiktoc, telegran…). Fase 8, F23.",
+    "patron": "\\b(?:g?uasa+p+|wasa|wats?a+p+|whats?ap|guatsap|watsa|insta\\s?gr[ae]m|instagran|instagrm|ig\\s?gram|tik\\s?toc|tic\\s?toc|tic\\s?tok|telegran|telegr[ae]m|disc[o0]rd|disco?rt|snap\\s?chat|faceb[o0]{2}k|feisbuk|feis)\\b"
+  },
+  {
     "codigo": "ubicacion-direccion",
     "categoria": "ubicacion",
     "descripcion": "Direcciones (calle, carrera, avenida, #12-34) o la palabra «dirección» seguida de un número.",

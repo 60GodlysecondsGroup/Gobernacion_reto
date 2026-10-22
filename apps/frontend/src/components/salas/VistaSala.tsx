@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
-import { Aviso, Boton, BotonEnlace, Tarjeta } from '@/components/ui';
+import { Aviso, Boton, BotonEnlace, CargandoLista, EnlaceVolver, Tarjeta } from '@/components/ui';
 import { ErrorApi, mensajeDeError } from '@/lib/api/cliente';
 import { CIERRE, obtenerSala, type SalaDetalle } from '@/lib/api/salas';
 import comun from '../comun.module.css';
@@ -59,12 +59,12 @@ function Sala({ id }: { id: string }) {
   }, [id, fin]);
 
   const volver = (
-    <nav aria-label="Ruta" className={comun.suave}>
-      <Link href="/salas">← Volver a las salas</Link>
+    <nav aria-label="Ruta">
+      <EnlaceVolver href="/salas">Volver a las salas</EnlaceVolver>
     </nav>
   );
 
-  if (estado.tipo === 'cargando') return <p className={comun.cargando}>Cargando la sala…</p>;
+  if (estado.tipo === 'cargando') return <CargandoLista etiqueta="Cargando la sala…" />;
   if (estado.tipo === 'error') return <Aviso tono="peligro">{estado.mensaje}</Aviso>;
   if (estado.tipo === 'no_encontrada') {
     return (

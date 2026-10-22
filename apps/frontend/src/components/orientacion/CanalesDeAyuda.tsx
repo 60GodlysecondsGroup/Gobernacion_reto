@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
-import { Aviso, BotonEnlace } from '@/components/ui';
+import { Aviso, BotonEnlace, CargandoLista } from '@/components/ui';
 import { AVISO_LIMITES } from '@/config/textos';
 import { mensajeDeError } from '@/lib/api/cliente';
 import { obtenerCanalesDeAyuda, type FichaServicio } from '@/lib/api/orientacion';
 import comun from '../comun.module.css';
+import estilos from './Orientacion.module.css';
 import { TarjetaServicio } from './TarjetaServicio';
 
 /**
@@ -28,8 +29,12 @@ export function CanalesDeAyuda() {
   }, []);
 
   return (
-    <div className={comun.pagina}>
-      <EncabezadoPagina antetitulo="Necesito ayuda" titulo="Canales de ayuda institucionales">
+    <div className={comun.paginaAncha}>
+      <EncabezadoPagina
+        antetitulo="Necesito ayuda"
+        titulo="Canales de ayuda institucionales"
+        tono="ayuda"
+      >
         Estos son canales que ofrecen instituciones. Cada uno indica de dónde viene la información y
         cuándo se verificó. Abre la ficha para ver todos los detalles.
       </EncabezadoPagina>
@@ -39,14 +44,14 @@ export function CanalesDeAyuda() {
       </Aviso>
 
       {error && <Aviso tono="peligro">{error}</Aviso>}
-      {!canales && !error && <p className={comun.cargando}>Cargando canales…</p>}
+      {!canales && !error && <CargandoLista etiqueta="Cargando canales…" />}
       {canales && canales.length === 0 && (
         <Aviso tono="advertencia">
           En este momento no hay canales verificados registrados. Consulta Orientación.
         </Aviso>
       )}
       {canales && canales.length > 0 && (
-        <ul className={comun.lista} aria-label="Canales institucionales">
+        <ul className={estilos.rejillaServicios} aria-label="Canales institucionales">
           {canales.map((canal) => (
             <li key={canal.id}>
               <TarjetaServicio servicio={canal} />

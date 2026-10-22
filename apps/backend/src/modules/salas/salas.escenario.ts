@@ -95,3 +95,52 @@ export function puntoDeAparicion(escenario: Escenario, ocupadas: Posicion[]): Po
   }
   return escenario.aparicion;
 }
+
+/** Largo máximo de un recorrido por clic: suficiente para cruzar cualquier sala de 64 × 64. */
+export const PASOS_MAXIMOS_RUTA = 4096;
+
+export type ResultadoRuta =
+  | { valido: true; pasos: Direccion[] }
+  | { valido: false; motivo: 'destino_invalido' | 'sin_camino' };
+
+/**
+ * F40: camino más corto (búsqueda en anchura sobre la cuadrícula, solo en 4 direcciones) desde
+ * `desde` hasta `hasta`. Devuelve la lista de pasos; cada uno se vuelve a validar con `mover` al
+ * ejecutarse, así que el clic nunca permite atravesar obstáculos ni salir del área jugable.
+ */
+export function ruta(escenario: Escenario, desde: Posicion, hasta: Posicion): ResultadoRuta {
+  if (
+    !Number.isInteger(hasta.x) ||
+    !Number.isInteger(hasta.y) ||
+    !esTransitable(escenario, hasta)
+  ) {
+    return { valido: false, motivo: 'destino_invalido' };
+  }
+  if (desde.x === hasta.x && desde.y === hasta.y) return { valido: true, pasos: [] };
+
+  const previo = new Map<string, { desde: string; paso: Direccion }>();
+  const inicio = clave(desde);
+  const visitadas = new Set([inicio]);
+  const cola: Posicion[] = [desde];
+  const destino = clave(hasta);
+
+  while (cola.length > 0 && visitadas.size <= PASOS_MAXIMOS_RUTA) {
+    const actual = cola.shift()!;
+    for (const [nombre, paso] of Object.entries(DIRECCIONES) as [Direccion, Posicion][]) {
+      const vecina = { x: actual.x + paso.x, y: actual.y + paso.y };
+      const k = clave(vecina);
+      if (visitadas.has(k) || !esTransitable(escenario, vecina)) continue;
+      visitadas.add(k);
+      previo.set(k, { desde: clave(actual), paso: nombre });
+      if (k === destino) {
+        const pasos: Direccion[] = [];
+        for (let c = destino; c !== inicio; c = previo.get(c)!.desde) {
+          pasos.unshift(previo.get(c)!.paso);
+        }
+        return { valido: true, pasos };
+      }
+      cola.push(vecina);
+    }
+  }
+  return { valido: false, motivo: 'sin_camino' };
+}

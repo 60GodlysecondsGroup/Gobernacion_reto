@@ -1,0 +1,135 @@
+INICIO jue 22/10/2026  0:36:04,06 
+
+added 105 packages in 4s
+=== FORMATO 
+
+> plataforma-orientacion-comunidad@0.1.0 format:check
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+CODIGO_FORMATO 0 
+=== LINT 
+
+> plataforma-orientacion-comunidad@0.1.0 lint
+> npm run lint --workspaces
+
+
+> backend@0.1.0 lint
+> eslint .
+
+
+> frontend@0.1.0 lint
+> eslint .
+
+CODIGO_LINT 0 
+=== TIPOS 
+
+> plataforma-orientacion-comunidad@0.1.0 typecheck
+> npm run typecheck --workspaces
+
+
+> backend@0.1.0 typecheck
+> tsc --noEmit
+
+
+> frontend@0.1.0 typecheck
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
+CODIGO_TIPOS 0 
+=== PRUEBAS 
+
+> plataforma-orientacion-comunidad@0.1.0 test
+> npm run test -w apps/backend
+
+
+> backend@0.1.0 test
+> vitest run --exclude "test/integracion/**"
+
+
+ RUN  v5.0.5 C:/Documentos/Gobernacion_reto/apps/backend
+
+ ✓ test/seguridad.test.ts (25 tests) 20ms
+ ✓ test/avatar.test.ts (14 tests) 31ms
+ ✓ test/fuentes.test.ts (16 tests) 62ms
+ ✓ test/validacion.test.ts (8 tests) 25ms
+ ✓ test/dlp.test.ts (57 tests) 54ms
+ ✓ test/humo.test.ts (19 tests) 302ms
+ ✓ test/salas.test.ts (22 tests) 3969ms
+   ✓ Gestor de salas (17)
+     ✓ TRL-08 · vacía durante el tiempo de cierre, la sala se cierra 1546ms
+     ✓ TRL-08 · si alguien entra antes del tiempo, el contador se cancela 1764ms
+
+ Test Files  7 passed (7)
+      Tests  161 passed (161)
+   Start at  00:37:09
+   Duration  8.43s (tests 55%, import 23%, transform 21%, worker 1%)
+
+CODIGO_PRUEBAS 0 
+=== BUILD 
+
+> plataforma-orientacion-comunidad@0.1.0 build
+> npm run build -w apps/frontend
+
+
+> frontend@0.1.0 build
+> next build
+
+▲ Next.js 16.4.2 (Turbopack)
+✓ Running next.config.ts took 54ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 6.4s
+  Running TypeScript ...
+  Finished TypeScript in 8.7s ...
+  Collecting page data using 17 workers ...
+  Generating static pages using 17 workers (0/26) ...
+  Generating static pages using 17 workers (6/26) 
+  Generating static pages using 17 workers (12/26) 
+  Generating static pages using 17 workers (19/26) 
+✓ Generating static pages using 17 workers (26/26) in 1370ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /acceso
+├ ○ /ayuda
+├ ○ /comunidad
+├ ƒ /comunidad/hilos/[id]
+├ ○ /comunidad/hilos/nuevo
+├ ƒ /comunidades/[referencia]
+├ ○ /gestion/fuentes
+├ ƒ /gestion/fuentes/[id]
+├ ○ /gestion/fuentes/nueva
+├ ○ /guia
+├ ○ /guia-de-estilos
+├ ○ /icon.svg
+├ ○ /moderacion
+├ ○ /orientacion
+├ ƒ /orientacion/[necesidad]
+├ ƒ /orientacion/servicios/[id]
+├ ○ /panel
+├ ○ /panel/comunidades
+├ ○ /panel/incidencias
+├ ○ /panel/registro
+├ ○ /panel/reglas
+├ ○ /panel/reportes
+├ ƒ /panel/reportes/[id]
+├ ○ /panel/salas
+├ ○ /panel/usuarios
+├ ○ /perfil
+├ ○ /perfil/avatar
+├ ƒ /perfiles/[id]
+├ ○ /reglas
+├ ○ /salas
+└ ƒ /salas/[id]
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+CODIGO_BUILD 0 
+FIN jue 22/10/2026  0:37:53,08 

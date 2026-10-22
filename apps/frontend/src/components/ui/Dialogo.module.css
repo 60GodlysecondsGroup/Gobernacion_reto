@@ -1,0 +1,94 @@
+.dialogo {
+  width: min(100% - 2rem, 30rem);
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radio-xl);
+  background: transparent;
+  color: var(--color-texto);
+  overflow: visible;
+}
+
+.dialogo::backdrop {
+  background: rgb(21 23 61 / 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.dialogo[open] {
+  animation: entrar 260ms var(--curva-salida);
+}
+
+.dialogo[open]::backdrop {
+  animation: fundido 260ms ease-out;
+}
+
+.caja {
+  position: relative;
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--espacio-6);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-xl);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-3);
+}
+
+.cerrar {
+  position: absolute;
+  top: var(--espacio-3);
+  right: var(--espacio-3);
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-texto-suave);
+  cursor: pointer;
+}
+
+.cerrar:hover {
+  background: var(--color-superficie-suave);
+  color: var(--color-texto);
+}
+
+.iconoPeligro {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radio-md);
+  background: var(--color-peligro-suave);
+  color: var(--color-peligro);
+}
+
+.titulo {
+  padding-right: var(--espacio-6);
+  font-size: var(--texto-xl);
+}
+
+.descripcion {
+  color: var(--color-texto-suave);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--espacio-3);
+  margin-top: var(--espacio-3);
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+}
+
+@keyframes fundido {
+  from {
+    opacity: 0;
+  }
+}

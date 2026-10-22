@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Contador } from '@/components/efectos/Contador';
 import { Boton, Insignia, Tarjeta, type TonoInsignia } from '@/components/ui';
 import { ErrorApi, URL_API } from '@/lib/api/cliente';
 import { obtenerEstadoSalud, type EstadoSalud } from '@/lib/api/sistema';
@@ -99,8 +100,8 @@ export function EstadoSistema() {
 
         {vista.tipo === 'listo' && vista.salud.baseDeDatos.estado === 'sin_esquema' && (
           <p className={estilos.aviso}>
-            La base de datos responde pero no tiene el esquema. Ejecuta{' '}
-            <code>npm run db:reset</code>.
+            La base de datos responde pero no tiene las tablas. Ejecuta{' '}
+            <code>npm run db:migrate</code> (crea lo que falta sin borrar datos).
           </p>
         )}
 
@@ -119,7 +120,7 @@ export function EstadoSistema() {
             <ul className={estilos.conteos}>
               {ETIQUETAS_DATOS.map(({ clave, etiqueta }) => (
                 <li key={clave} className={estilos.conteo}>
-                  <span className={estilos.numero}>{vista.salud.datosDemo![clave]}</span>
+                  <Contador className={estilos.numero} valor={vista.salud.datosDemo![clave]} />
                   <span className={estilos.etiquetaConteo}>{etiqueta}</span>
                 </li>
               ))}

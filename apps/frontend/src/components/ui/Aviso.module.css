@@ -1,9 +1,26 @@
 .aviso {
+  position: relative;
   display: grid;
-  gap: var(--espacio-1);
-  padding: var(--espacio-3) var(--espacio-4);
-  border-left: 4px solid currentColor;
-  border-radius: var(--radio-sm);
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--espacio-1) var(--espacio-3);
+  padding: var(--espacio-4) var(--espacio-4) var(--espacio-4) var(--espacio-5);
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: var(--radio-md);
+}
+
+/* Franja lateral de color: el tono se lee de un vistazo, también en escala de grises por el icono. */
+.aviso::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: currentColor;
+}
+
+.icono {
+  grid-row: span 2;
+  margin-top: 0.15rem;
 }
 
 .titulo {
@@ -11,26 +28,31 @@
 }
 
 .cuerpo {
+  grid-column: 2;
   color: var(--color-texto);
   font-size: var(--texto-sm);
 }
 
 .info {
+  border-color: #d6d3fb;
   background: var(--color-info-suave);
   color: var(--color-info);
 }
 
 .exito {
+  border-color: #b7e3d2;
   background: var(--color-exito-suave);
   color: var(--color-exito);
 }
 
 .advertencia {
+  border-color: #f3d79c;
   background: var(--color-advertencia-suave);
   color: var(--color-advertencia);
 }
 
 .peligro {
+  border-color: #f4bcb7;
   background: var(--color-peligro-suave);
   color: var(--color-peligro);
 }
