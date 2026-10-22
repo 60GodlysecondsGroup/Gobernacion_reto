@@ -1,7 +1,7 @@
-import { ArrowRight, EyeOff, Layers, LifeBuoy, ShieldCheck, UserRoundCheck } from 'lucide-react';
+import { ArrowRight, Check, EyeOff, Layers, LifeBuoy, UserRoundCheck } from 'lucide-react';
 import Link from 'next/link';
-import { BordeBrillante } from '@/components/efectos/BordeBrillante';
-import { FondoAurora } from '@/components/efectos/FondoAurora';
+import { Aparecer } from '@/components/movimiento/Aparecer';
+import { ElementoEscalonado, ListaEscalonada } from '@/components/movimiento/Escalonado';
 import { AtajosOrientacion } from '@/components/inicio/AtajosOrientacion';
 import { EdificioLlanero } from '@/components/inicio/EdificioLlanero';
 import { AccionesInicio } from '@/components/sesion/AccionesInicio';
@@ -30,8 +30,8 @@ const CAPAS = [
 ];
 
 const GARANTIAS = [
-  'Sin datos personales públicos',
-  'Fuentes con fecha de verificación',
+  'Participas con alias, sin datos personales',
+  'Cada fuente indica cuándo se verificó',
   'Gratis y sin anuncios',
 ];
 
@@ -40,18 +40,9 @@ export default function Inicio() {
     <div className={estilos.pagina}>
       <section className={estilos.heroe} aria-labelledby="titulo-inicio">
         <div className={estilos.textoHeroe}>
-          <p className={estilos.etiquetaHeroe}>
-            <span className={estilos.puntos} aria-hidden="true">
-              <span />
-              <span />
-              <span />
-              <span />
-            </span>
-            Jóvenes de 10 a 22 años · Villavicencio
-          </p>
+          <p className={estilos.antetitulo}>Para jóvenes de 10 a 22 años en Villavicencio</p>
           <h1 id="titulo-inicio" className={estilos.titulo}>
-            Información confiable y <span className="resaltado">un lugar seguro</span> para hablar
-            con gente de tu edad
+            Información confiable y un lugar seguro para hablar con gente de tu edad
           </h1>
           <p className={estilos.entradilla}>
             Encuentra canales de apoyo de instituciones, siempre con su fuente y la fecha en que se
@@ -63,33 +54,30 @@ export default function Inicio() {
           <ul className={estilos.garantias}>
             {GARANTIAS.map((texto) => (
               <li key={texto}>
-                <ShieldCheck aria-hidden="true" size={16} />
+                <Check aria-hidden="true" size={16} strokeWidth={2.5} />
                 {texto}
               </li>
             ))}
           </ul>
         </div>
-        <BordeBrillante className={estilos.marcoEdificio}>
-          <div className={estilos.tarjetaEdificio}>
-            <EdificioLlanero />
-          </div>
-        </BordeBrillante>
+        <div className={estilos.ilustracion}>
+          <EdificioLlanero />
+        </div>
       </section>
 
-      <section className={estilos.seccion} aria-labelledby="titulo-orientacion">
-        <div className={estilos.cabeceraSeccion}>
-          <p className={estilos.antetitulo}>Orientación</p>
-          <h2 id="titulo-orientacion">¿Qué información buscas hoy?</h2>
-          <p>
-            No necesitas iniciar sesión. Aquí no hay preguntas sobre ti ni resultados: solo
-            información de instituciones.
-          </p>
-        </div>
-        <div className={estilos.orientacion}>
+      <Aparecer>
+        <section className={estilos.seccion} aria-labelledby="titulo-orientacion">
+          <div className={estilos.cabeceraSeccion}>
+            <h2 id="titulo-orientacion">¿Qué información buscas hoy?</h2>
+            <p>
+              No necesitas iniciar sesión. Aquí no hay preguntas sobre ti ni resultados: solo
+              información de instituciones.
+            </p>
+          </div>
           <AtajosOrientacion />
-          <Link href="/ayuda" className={estilos.tarjetaAyuda}>
+          <Link href="/ayuda" className={estilos.ayuda}>
             <span className={estilos.iconoAyuda} aria-hidden="true">
-              <LifeBuoy size={26} />
+              <LifeBuoy size={22} />
             </span>
             <span className={estilos.textoAyuda}>
               <strong>¿Necesitas hablar con alguien ahora?</strong>
@@ -100,42 +88,44 @@ export default function Inicio() {
               <ArrowRight aria-hidden="true" size={18} />
             </span>
           </Link>
-        </div>
-      </section>
+        </section>
+      </Aparecer>
 
-      <FondoAurora className={estilos.cuidado}>
-        <section aria-labelledby="titulo-capas" className={estilos.interiorCuidado}>
+      <Aparecer>
+        <section className={`${estilos.seccion} ${estilos.cuidado}`} aria-labelledby="titulo-capas">
           <div className={estilos.cabeceraSeccion}>
-            <p className={`${estilos.antetitulo} ${estilos.antetituloClaro}`}>Protección</p>
             <h2 id="titulo-capas">Cómo te cuidamos</h2>
             <p>
-              Tres capas que trabajan juntas, todas aplicadas por el sistema y no solo en pantalla.
+              Tres capas que trabajan juntas. El sistema las aplica siempre, no solo la pantalla.
             </p>
           </div>
-          <ol className={estilos.capas}>
-            {CAPAS.map(({ icono: Icono, titulo, texto }, i) => (
-              <li key={titulo} className={estilos.capa}>
-                <span className={estilos.numeroCapa} aria-hidden="true">
-                  0{i + 1}
-                </span>
-                <span className={estilos.iconoCapa} aria-hidden="true">
-                  <Icono size={24} strokeWidth={1.9} />
-                </span>
+          <ListaEscalonada al="scroll" className={estilos.capas}>
+            {CAPAS.map(({ icono: Icono, titulo, texto }) => (
+              <ElementoEscalonado key={titulo} className={estilos.capa}>
+                <Icono
+                  aria-hidden="true"
+                  size={24}
+                  strokeWidth={1.75}
+                  className={estilos.iconoCapa}
+                />
                 <h3>{titulo}</h3>
                 <p>{texto}</p>
-              </li>
+              </ElementoEscalonado>
             ))}
-          </ol>
-          <Link href="/reglas" className={estilos.enlaceClaro}>
+          </ListaEscalonada>
+          <Link href="/reglas" className={estilos.enlace}>
             Leer las reglas de la comunidad
-            <ArrowRight aria-hidden="true" size={18} />
+            <ArrowRight aria-hidden="true" size={16} />
           </Link>
         </section>
-      </FondoAurora>
+      </Aparecer>
 
-      <section className={estilos.seccionEstado} aria-label="Estado del prototipo">
-        <EstadoSistema />
-      </section>
+      <details className={estilos.estado}>
+        <summary>Estado del prototipo</summary>
+        <div className={estilos.cuerpoEstado}>
+          <EstadoSistema />
+        </div>
+      </details>
     </div>
   );
 }

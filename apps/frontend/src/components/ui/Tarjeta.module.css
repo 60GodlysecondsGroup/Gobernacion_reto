@@ -3,10 +3,10 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  border: 1px solid var(--color-borde);
+  border: 1px solid var(--cristal-borde);
   border-radius: var(--radio-lg);
-  background: var(--color-superficie);
-  box-shadow: var(--sombra-2);
+  background: var(--cristal-lectura);
+  box-shadow: var(--cristal-brillo), var(--sombra-2);
 }
 
 .cabecera {
@@ -37,5 +37,5 @@
   padding: var(--espacio-3) var(--espacio-5);
   border-top: 1px solid var(--color-borde);
   border-radius: 0 0 var(--radio-lg) var(--radio-lg);
-  background: var(--indigo-50);
+  background: rgb(241 245 255 / 0.6);
 }

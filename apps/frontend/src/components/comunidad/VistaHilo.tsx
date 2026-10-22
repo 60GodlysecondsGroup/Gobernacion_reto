@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState, type FormEvent } from 'react';
+import { useBorrador } from '@/lib/hooks/useBorrador';
 import { useSesion } from '@/components/sesion/ProveedorSesion';
 import {
   Aviso,
@@ -10,6 +11,7 @@ import {
   CampoTexto,
   CargandoLista,
   EnlaceVolver,
+  ErrorDePagina,
   Insignia,
   Tarjeta,
 } from '@/components/ui';
@@ -57,7 +59,15 @@ export function VistaHilo() {
   );
 
   if (estado.tipo === 'cargando') return <CargandoLista etiqueta="Cargando el hilo…" />;
-  if (estado.tipo === 'error') return <Aviso tono="peligro">{estado.mensaje}</Aviso>;
+  if (estado.tipo === 'error') {
+    return (
+      <ErrorDePagina
+        mensaje={estado.mensaje}
+        volverA="/comunidad"
+        textoVolver="Volver a la comunidad"
+      />
+    );
+  }
   if (estado.tipo === 'no_encontrado') {
     return (
       <div className={comun.pagina}>
@@ -134,17 +144,26 @@ function FormularioRespuesta({
   idHilo: string;
   alResponder: (detalle: DetalleHilo) => void;
 }) {
-  const [texto, setTexto] = useState('');
+  const [borrador, setBorrador, descartarBorrador] = useBorrador(`respuesta-${idHilo}`, {
+    texto: '',
+  });
+  const texto = borrador.texto;
+  const setTexto = (valor: string) => setBorrador({ texto: valor });
+  const [errorCampo, setErrorCampo] = useState<string | undefined>();
   const [enviando, setEnviando] = useState(false);
   const [aviso, setAviso] = useState<{ tono: 'exito' | 'peligro'; mensaje: string } | null>(null);
 
   async function alEnviar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
+    if (!texto.trim()) {
+      setErrorCampo('Escribe tu respuesta antes de publicarla.');
+      return;
+    }
     setEnviando(true);
     setAviso(null);
     try {
       alResponder(await responderHilo(idHilo, texto));
-      setTexto('');
+      descartarBorrador();
       setAviso({ tono: 'exito', mensaje: 'Respuesta publicada.' });
     } catch (e) {
       // Si el DLP la bloquea, el texto se conserva para poder corregirlo.
@@ -160,6 +179,8 @@ function FormularioRespuesta({
         {aviso && <Aviso tono={aviso.tono}>{aviso.mensaje}</Aviso>}
         <CampoTexto
           etiqueta="Tu respuesta"
+          obligatorio
+          error={errorCampo}
           ayuda="Se revisa antes de publicarse. No compartas datos personales ni de contacto."
           multilinea
           rows={3}
@@ -168,11 +189,12 @@ function FormularioRespuesta({
           onChange={(e) => {
             setTexto(e.target.value);
             setAviso(null);
+            setErrorCampo(undefined);
           }}
         />
         <div className={comun.fila}>
           <Boton type="submit" cargando={enviando}>
-            Publicar respuesta
+            {enviando ? 'Publicando…' : 'Publicar respuesta'}
           </Boton>
         </div>
       </form>

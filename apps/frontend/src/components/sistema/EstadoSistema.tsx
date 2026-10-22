@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Contador } from '@/components/efectos/Contador';
 import { Boton, Insignia, Tarjeta, type TonoInsignia } from '@/components/ui';
 import { ErrorApi, URL_API } from '@/lib/api/cliente';
 import { obtenerEstadoSalud, type EstadoSalud } from '@/lib/api/sistema';
@@ -120,7 +119,7 @@ export function EstadoSistema() {
             <ul className={estilos.conteos}>
               {ETIQUETAS_DATOS.map(({ clave, etiqueta }) => (
                 <li key={clave} className={estilos.conteo}>
-                  <Contador className={estilos.numero} valor={vista.salud.datosDemo![clave]} />
+                  <span className={estilos.numero}>{vista.salud.datosDemo![clave]}</span>
                   <span className={estilos.etiquetaConteo}>{etiqueta}</span>
                 </li>
               ))}

@@ -1,5 +1,6 @@
 'use client';
 
+import { PildoraActiva } from '@/components/movimiento/PildoraActiva';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
 import { GraficoPorDia } from '@/components/panel/GraficoPorDia';
@@ -65,6 +66,7 @@ export function PanelIncidencias() {
             aria-pressed={periodo.dias === dias}
             onClick={() => elegirPeriodo(periodo.dias)}
           >
+            {periodo.dias === dias && <PildoraActiva grupo="periodo-incidencias" />}
             Últimos {periodo.etiqueta}
           </button>
         ))}

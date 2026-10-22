@@ -122,6 +122,7 @@ export function EditorPerfil() {
 
             <CampoTexto
               etiqueta="Alias"
+              obligatorio
               ayuda="Entre 3 y 30 caracteres, sin espacios. No uses tu nombre real."
               value={formulario.alias}
               onChange={(e) => cambiar('alias', e.target.value)}

@@ -19,6 +19,7 @@ body {
   background: var(--color-fondo);
   color: var(--color-texto);
   font-family: var(--fuente-base);
+  font-feature-settings: 'kern', 'liga';
   font-size: var(--texto-md);
   line-height: var(--interlineado);
   -webkit-font-smoothing: antialiased;
@@ -26,19 +27,15 @@ body {
 }
 
 /*
- * Luz ambiental de marca: dos halos suaves (índigo y ámbar) detrás del encabezado.
- * Es decorativa, fija y sin animación, así que no cuesta rendimiento.
+ * Atmósfera: luz ambiental azul, violeta y cian detrás de todo. Va en una capa fija propia
+ * (no en `background-attachment: fixed`, que obliga a repintar al hacer scroll).
  */
 body::before {
   content: '';
-  position: absolute;
-  inset: 0 0 auto;
+  position: fixed;
+  inset: 0;
   z-index: -1;
-  height: 46rem;
-  background:
-    radial-gradient(42rem 26rem at 12% -6%, rgb(91 79 232 / 0.16), transparent 70%),
-    radial-gradient(34rem 22rem at 92% 2%, rgb(255 200 87 / 0.18), transparent 70%),
-    radial-gradient(30rem 20rem at 60% 30%, rgb(125 227 195 / 0.1), transparent 70%);
+  background: var(--atmosfera);
   pointer-events: none;
 }
 
@@ -77,7 +74,7 @@ a:hover {
 }
 
 ::selection {
-  background: rgb(255 200 87 / 0.45);
+  background: rgb(61 111 245 / 0.25);
 }
 
 code {
@@ -128,6 +125,38 @@ svg {
   transform: none;
 }
 
+/*
+ * Liquid Glass: superficies de cristal reutilizables. El grosor marca la jerarquía:
+ * fino para barras que flotan, medio para menús y diálogos, oscuro para paneles destacados.
+ */
+.cristal,
+.cristal-medio,
+.cristal-oscuro {
+  -webkit-backdrop-filter: var(--cristal-desenfoque);
+  backdrop-filter: var(--cristal-desenfoque);
+}
+
+.cristal {
+  border: 1px solid var(--cristal-borde);
+  background: var(--cristal-fino);
+  box-shadow: var(--cristal-brillo), var(--cristal-sombra);
+}
+
+.cristal-medio {
+  border: 1px solid var(--cristal-borde);
+  background: var(--cristal-medio);
+  box-shadow: var(--cristal-brillo), var(--sombra-3);
+}
+
+.cristal-oscuro {
+  border: 1px solid var(--cristal-borde-oscuro);
+  background: var(--cristal-oscuro);
+  color: #fff;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    var(--sombra-3);
+}
+
 /* Texto con el degradado de las cuatro ventanas (solo en títulos grandes sobre fondo oscuro). */
 .texto-ventanas {
   background: var(--degradado-ventanas);
@@ -153,10 +182,12 @@ svg {
   border-radius: var(--radio-sm);
   background: linear-gradient(
     90deg,
-    var(--color-superficie-suave) 0%,
-    #fafaff 50%,
-    var(--color-superficie-suave) 100%
+    rgb(255 255 255 / 0.45) 0%,
+    rgb(227 235 255 / 0.95) 45%,
+    rgb(255 255 255 / 0.9) 55%,
+    rgb(255 255 255 / 0.45) 100%
   );
+  box-shadow: inset 0 0 0 1px var(--color-borde);
   background-size: 200% 100%;
   animation: esqueleto 1.4s ease-in-out infinite;
 }
@@ -170,11 +201,14 @@ svg {
   }
 }
 
-/* Aparición suave del contenido de cada página (solo opacidad y un desplazamiento corto). */
+/*
+ * La entrada de cada página la hace `app/template.tsx` (Motion). Aquí quedan las animaciones
+ * de apoyo que comparten varios componentes.
+ */
 @keyframes aparecer {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(4px);
   }
   to {
     opacity: 1;
@@ -182,8 +216,44 @@ svg {
   }
 }
 
-.contenedor-principal > * {
-  animation: aparecer 420ms var(--curva-salida) both;
+/* Mensajes de error y avisos que aparecen junto a un campo: entran deslizándose poco. */
+@keyframes deslizar-aviso {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+/*
+ * Luz ambiental en movimiento lento: dos focos de color que derivan detrás del contenido
+ * (solo `transform`, en una capa fija propia; 40–60 s por ciclo, imperceptible al leer).
+ */
+body::after {
+  content: '';
+  position: fixed;
+  inset: -20%;
+  z-index: -1;
+  background:
+    radial-gradient(30rem 22rem at 30% 30%, rgb(94 211 243 / 0.1), transparent 70%),
+    radial-gradient(34rem 24rem at 75% 70%, rgb(139 124 246 / 0.1), transparent 70%);
+  pointer-events: none;
+  animation: derivar 48s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes derivar {
+  from {
+    transform: translate3d(-3%, -2%, 0) rotate(0deg);
+  }
+  to {
+    transform: translate3d(3%, 2%, 0) rotate(8deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::after {
+    animation: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -194,5 +264,43 @@ svg {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * Reflejo que sigue al puntero en las tarjetas interactivas (`con-luz`, ver LuzPuntero).
+ * Una luz blanca muy suave bajo el contenido; solo aparece al pasar el puntero.
+ */
+.con-luz {
+  position: relative;
+  isolation: isolate;
+}
+
+.con-luz::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(
+    16rem circle at var(--luz-x, 50%) var(--luz-y, 0%),
+    rgb(255 255 255 / 0.75),
+    rgb(107 147 255 / 0.13) 40%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 320ms var(--curva-salida);
+  pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .con-luz:hover::before {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .con-luz::before {
+    display: none;
   }
 }

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
 import { useSesion } from '@/components/sesion/ProveedorSesion';
-import { Aviso, BotonEnlace } from '@/components/ui';
+import { Aviso, BotonEnlace, ErrorDePagina } from '@/components/ui';
 import { mensajeDeError } from '@/lib/api/cliente';
 import { obtenerComunidadPropia, type Comunidad } from '@/lib/api/comunidad';
 import comun from '../comun.module.css';
@@ -29,7 +29,7 @@ export function VistaComunidad() {
     };
   }, []);
 
-  if (error) return <Aviso tono="peligro">{error}</Aviso>;
+  if (error) return <ErrorDePagina mensaje={error} volverA="/" textoVolver="Volver al inicio" />;
   if (!comunidad) {
     return (
       <div className={comun.pagina} aria-busy="true">

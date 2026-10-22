@@ -16,19 +16,19 @@
   display: grid;
   grid-template-rows: auto 1fr auto;
   overflow: hidden;
-  border: 1px solid var(--color-borde);
+  border: 1px solid var(--cristal-borde);
   border-radius: var(--radio-lg);
-  background: var(--color-superficie);
-  box-shadow: var(--sombra-1);
+  background: var(--cristal-lectura);
+  box-shadow: var(--cristal-brillo), var(--sombra-2);
   transition:
     border-color var(--transicion),
-    box-shadow var(--transicion),
-    transform var(--transicion);
+    box-shadow var(--transicion-lenta),
+    transform var(--transicion-lenta);
 }
 
 .tarjetaSala:hover {
-  border-color: #cfcbf7;
-  box-shadow: var(--sombra-2);
+  border-color: rgb(36 87 230 / 0.28);
+  box-shadow: var(--cristal-brillo), var(--sombra-3);
   transform: translateY(-2px);
 }
 
@@ -52,7 +52,7 @@
   left: 50%;
   width: 3.25rem;
   height: 2rem;
-  border: 3px solid rgb(21 23 61 / 0.55);
+  border: 3px solid rgb(11 27 63 / 0.55);
   border-radius: 4px;
   background: linear-gradient(180deg, #8fd3ff, #c4bdff);
   transform: translateX(-50%);
@@ -64,7 +64,7 @@
   gap: 4px;
   padding: 4px 6px;
   border-radius: 6px;
-  background: rgb(21 23 61 / 0.18);
+  background: rgb(11 27 63 / 0.18);
 }
 
 .puestos span {
@@ -371,4 +371,26 @@
 
 .formularioChat > button {
   justify-self: end;
+}
+
+/* Cada mensaje nuevo llega con un fundido y un pequeño impulso desde su lado del chat. */
+.mensaje,
+.mensajePropio,
+.avisoChat {
+  animation: llegarMensaje 280ms var(--curva-salida);
+}
+
+.mensaje {
+  transform-origin: bottom left;
+}
+
+.mensajePropio {
+  transform-origin: bottom right;
+}
+
+@keyframes llegarMensaje {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
 }

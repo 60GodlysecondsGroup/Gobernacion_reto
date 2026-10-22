@@ -1,9 +1,9 @@
 'use client';
 
+import { ElementoEscalonado, ListaEscalonada } from '@/components/movimiento/Escalonado';
 import { ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Destello } from '@/components/efectos/Destello';
 import { EstadoError } from '@/components/ui';
 import { iconoNecesidad, tonoNecesidad } from '@/config/necesidades';
 import { mensajeDeError } from '@/lib/api/cliente';
@@ -43,38 +43,40 @@ export function AtajosOrientacion() {
   }
 
   return (
-    <ul className={estilos.lista} aria-busy={!necesidades}>
+    <ListaEscalonada
+      key={necesidades ? 'datos' : 'carga'}
+      className={estilos.lista}
+      aria-busy={!necesidades}
+    >
       {(necesidades ?? Array.from({ length: 6 }, () => null)).map((necesidad, i) => {
         if (!necesidad) {
           return (
-            <li key={i}>
+            <ElementoEscalonado key={i}>
               <span className={`esqueleto ${estilos.esqueleto}`} />
-            </li>
+            </ElementoEscalonado>
           );
         }
         const Icono = iconoNecesidad(necesidad.codigo);
         return (
-          <li key={necesidad.codigo}>
-            <Destello className={estilos.marco}>
-              <Link href={`/orientacion/${necesidad.codigo}`} className={estilos.atajo}>
-                <span
-                  className={`${ventanas.ficha} ${ventanas[tonoNecesidad(necesidad.codigo)]}`}
-                  aria-hidden="true"
-                >
-                  <Icono size={22} strokeWidth={1.9} />
+          <ElementoEscalonado key={necesidad.codigo}>
+            <Link href={`/orientacion/${necesidad.codigo}`} className={`${estilos.atajo} con-luz`}>
+              <span
+                className={`${ventanas.ficha} ${ventanas[tonoNecesidad(necesidad.codigo)]}`}
+                aria-hidden="true"
+              >
+                <Icono size={22} strokeWidth={1.9} />
+              </span>
+              <span className={estilos.textos}>
+                <span className={estilos.nombre}>{necesidad.nombre}</span>
+                <span className={estilos.cuenta}>
+                  {necesidad.servicios === 1 ? '1 servicio' : `${necesidad.servicios} servicios`}
                 </span>
-                <span className={estilos.textos}>
-                  <span className={estilos.nombre}>{necesidad.nombre}</span>
-                  <span className={estilos.cuenta}>
-                    {necesidad.servicios === 1 ? '1 servicio' : `${necesidad.servicios} servicios`}
-                  </span>
-                </span>
-                <ArrowUpRight aria-hidden="true" size={20} className={estilos.flecha} />
-              </Link>
-            </Destello>
-          </li>
+              </span>
+              <ArrowUpRight aria-hidden="true" size={20} className={estilos.flecha} />
+            </Link>
+          </ElementoEscalonado>
         );
       })}
-    </ul>
+    </ListaEscalonada>
   );
 }

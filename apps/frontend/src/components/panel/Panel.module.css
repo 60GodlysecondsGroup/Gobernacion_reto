@@ -12,25 +12,25 @@
   top: calc(var(--alto-encabezado) + var(--espacio-4));
   display: grid;
   gap: var(--espacio-4);
-  padding: var(--espacio-4);
+  padding: var(--espacio-3);
+  border: 1px solid var(--cristal-borde);
   border-radius: var(--radio-xl);
-  background:
-    radial-gradient(16rem 12rem at 0% 0%, rgb(91 79 232 / 0.45), transparent 70%),
-    var(--degradado-noche);
-  color: #fff;
-  box-shadow: var(--sombra-3);
+  background: var(--cristal-fino);
+  box-shadow: var(--cristal-brillo), var(--cristal-sombra);
+  -webkit-backdrop-filter: var(--cristal-desenfoque);
+  backdrop-filter: var(--cristal-desenfoque);
 }
 
 .quien {
   display: flex;
   align-items: center;
   gap: var(--espacio-3);
-  padding: var(--espacio-1) var(--espacio-2) var(--espacio-2);
+  padding: var(--espacio-2) var(--espacio-2) var(--espacio-1);
 }
 
 .quien > span {
   display: grid;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .tituloPanel {
@@ -40,7 +40,7 @@
 }
 
 .rolPanel {
-  color: rgb(255 255 255 / 0.68);
+  color: var(--color-texto-tenue);
   font-size: var(--texto-xs);
 }
 
@@ -56,11 +56,9 @@
 
 .tituloGrupo {
   padding: 0 var(--espacio-3);
-  color: rgb(255 255 255 / 0.5);
-  font-size: 0.6875rem;
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
   font-weight: var(--peso-fuerte);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
 }
 
 .secciones {
@@ -80,7 +78,7 @@
   min-height: 2.5rem;
   padding: 0 var(--espacio-3);
   border-radius: var(--radio-sm);
-  color: rgb(255 255 255 / 0.8);
+  color: var(--color-texto-suave);
   font-size: var(--texto-sm);
   font-weight: var(--peso-fuerte);
   text-decoration: none;
@@ -91,17 +89,17 @@
 
 .seccion svg {
   flex-shrink: 0;
-  color: rgb(255 255 255 / 0.6);
+  color: var(--color-texto-tenue);
 }
 
 .seccion:hover {
-  background: rgb(255 255 255 / 0.08);
-  color: #fff;
+  background: var(--color-superficie-suave);
+  color: var(--color-texto);
   text-decoration: none;
 }
 
 .seccion[aria-current='page'] {
-  color: var(--tinta);
+  color: var(--color-primario);
 }
 
 .seccion[aria-current='page'] svg {
@@ -114,17 +112,15 @@
   z-index: -1;
   border-radius: inherit;
   background: #fff;
-  box-shadow: 0 8px 18px -10px rgb(0 0 0 / 0.6);
-}
-
-.seccion:focus-visible {
-  outline-color: var(--ventana-ambar);
+  box-shadow:
+    0 1px 2px rgb(11 27 63 / 0.08),
+    0 4px 12px -4px rgb(19 48 110 / 0.18);
 }
 
 .notaLateral {
-  padding: var(--espacio-3) var(--espacio-2) 0;
-  border-top: 1px solid rgb(255 255 255 / 0.12);
-  color: rgb(255 255 255 / 0.62);
+  padding: var(--espacio-3) var(--espacio-2) var(--espacio-1);
+  border-top: 1px solid var(--color-borde);
+  color: var(--color-texto-tenue);
   font-size: var(--texto-xs);
 }
 
@@ -193,57 +189,33 @@
   gap: var(--espacio-1);
   overflow: hidden;
   padding: var(--espacio-5);
-  border: 1px solid var(--color-borde);
+  border: 1px solid var(--cristal-borde);
   border-radius: var(--radio-lg);
-  background: var(--color-superficie);
+  background: var(--cristal-lectura);
   color: var(--color-texto);
   text-decoration: none;
-  box-shadow: var(--sombra-1);
+  box-shadow: var(--cristal-brillo), var(--sombra-2);
   transition:
     border-color var(--transicion),
-    box-shadow var(--transicion),
-    transform var(--transicion);
-}
-
-/* Franja superior con la luz de una ventana: cada indicador se distingue de un vistazo. */
-.indicador::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: 3px;
-  background: var(--ventana-lila);
-}
-
-.indicador:nth-child(2)::before {
-  background: var(--ventana-ambar);
-}
-
-.indicador:nth-child(3)::before {
-  background: var(--ventana-cielo);
-}
-
-.indicador:nth-child(4)::before {
-  background: var(--ventana-menta);
+    box-shadow var(--transicion-lenta),
+    transform var(--transicion-lenta);
 }
 
 a.indicador:hover {
-  border-color: #cfcbf7;
+  border-color: rgb(36 87 230 / 0.28);
   color: var(--color-texto);
   text-decoration: none;
-  box-shadow: var(--sombra-2);
+  box-shadow: var(--cristal-brillo), var(--sombra-3);
   transform: translateY(-2px);
 }
 
 .indicadorDestacado {
-  border-color: transparent;
-  background:
-    radial-gradient(16rem 10rem at 100% 0%, rgb(255 200 87 / 0.25), transparent 70%),
-    var(--degradado-noche);
+  border-color: var(--cristal-borde-oscuro);
+  background: var(--fondo-profundo);
   color: #fff;
-}
-
-.indicadorDestacado::before {
-  background: var(--degradado-ventanas);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    var(--sombra-3);
 }
 
 a.indicadorDestacado:hover {
@@ -301,7 +273,7 @@ a.indicadorDestacado:hover {
 .barra {
   min-height: 2px;
   border-radius: 6px 6px 2px 2px;
-  background: linear-gradient(180deg, var(--indigo-500), var(--indigo-700));
+  background: var(--color-primario);
 }
 
 .barraVacia {
@@ -339,6 +311,8 @@ a.indicadorDestacado:hover {
 }
 
 .filtro {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   gap: var(--espacio-2);
@@ -359,8 +333,9 @@ a.indicadorDestacado:hover {
 }
 
 .filtro[aria-pressed='true'] {
-  border-color: var(--anil-noche);
-  background: var(--anil-noche);
+  /* El fondo oscuro lo pone la pastilla que se desliza (PildoraActiva). */
+  border-color: transparent;
+  background: transparent;
   color: #fff;
 }
 
@@ -381,10 +356,10 @@ a.indicadorDestacado:hover {
 
 .tablaContenedor {
   overflow-x: auto;
-  border: 1px solid var(--color-borde);
+  border: 1px solid var(--cristal-borde);
   border-radius: var(--radio-lg);
-  background: var(--color-superficie);
-  box-shadow: var(--sombra-1);
+  background: var(--cristal-lectura);
+  box-shadow: var(--cristal-brillo), var(--sombra-2);
 }
 
 .tabla {
@@ -532,4 +507,36 @@ a.indicadorDestacado:hover {
   color: var(--color-texto-suave);
   font-size: var(--texto-sm);
   text-align: center;
+}
+
+/* Indicadores del resumen: entran uno tras otro al llegar los datos (después del esqueleto). */
+.indicador {
+  animation: llegarIndicador 460ms var(--curva-salida) backwards;
+}
+
+.indicador:nth-child(2) {
+  animation-delay: 40ms;
+}
+
+.indicador:nth-child(3) {
+  animation-delay: 80ms;
+}
+
+.indicador:nth-child(4) {
+  animation-delay: 120ms;
+}
+
+.indicador:nth-child(5) {
+  animation-delay: 160ms;
+}
+
+.indicador:nth-child(n + 6) {
+  animation-delay: 200ms;
+}
+
+@keyframes llegarIndicador {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
 }

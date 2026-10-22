@@ -27,7 +27,6 @@
 }
 
 .lanzador:hover {
-  transform: translateY(-1px);
 }
 
 .lanzador:focus-visible {
@@ -43,7 +42,7 @@
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-lg);
   background: var(--color-superficie);
-  box-shadow: 0 24px 60px -20px rgb(30 33 82 / 0.45);
+  box-shadow: 0 24px 60px -20px rgb(11 27 63 / 0.4);
 }
 
 .cabecera {
@@ -62,7 +61,7 @@
 }
 
 .subtitulo {
-  color: #b9bce3;
+  color: rgb(255 255 255 / 0.72);
   font-size: var(--texto-xs);
 }
 
@@ -169,5 +168,15 @@
 
   .lanzador {
     padding: var(--espacio-2);
+  }
+}
+
+/*
+ * En móvil y tableta la guía se abre desde la barra inferior («Guía») o el menú de la cuenta
+ * («Cómo funciona»): el botón flotante taparía contenido y botones.
+ */
+@media (max-width: 63.99rem) {
+  .flotante {
+    display: none;
   }
 }

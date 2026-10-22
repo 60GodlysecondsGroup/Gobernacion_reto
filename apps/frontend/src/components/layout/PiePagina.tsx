@@ -28,7 +28,6 @@ const COLUMNAS = [
 export function PiePagina() {
   return (
     <footer className={estilos.pie}>
-      <div className={estilos.ventanas} aria-hidden="true" />
       <div className={`contenedor ${estilos.contenido}`}>
         <div className={estilos.marca}>
           <MarcaCompleta

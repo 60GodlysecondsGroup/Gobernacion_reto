@@ -1,8 +1,8 @@
 'use client';
 
+import { Cifra } from '@/components/movimiento/Cifra';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Contador } from '@/components/efectos/Contador';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
 import { useSesion } from '@/components/sesion/ProveedorSesion';
 import { Aviso, Insignia, Tarjeta } from '@/components/ui';
@@ -110,7 +110,7 @@ export function ResumenPanel() {
           const contenido = (
             <>
               <span className={estilos.etiquetaIndicador}>{etiqueta}</span>
-              <Contador className={estilos.valor} valor={valor} />
+              <Cifra valor={valor} className={estilos.valor} />
               <span className={estilos.detalleIndicador}>{detalle}</span>
             </>
           );

@@ -7,6 +7,7 @@ import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
 import { Aviso, Boton, CampoSeleccion, CampoTexto, EnlaceVolver, Tarjeta } from '@/components/ui';
 import { campoDelError, ErrorApi, erroresPorCampo, mensajeDeError } from '@/lib/api/cliente';
 import { crearHilo, obtenerCategorias, type CategoriaForo } from '@/lib/api/hilos';
+import { useBorrador } from '@/lib/hooks/useBorrador';
 import comun from '../comun.module.css';
 
 type Formulario = { categoria: string; titulo: string; contenido: string };
@@ -15,7 +16,11 @@ type Formulario = { categoria: string; titulo: string; contenido: string };
 export function NuevoHilo() {
   const router = useRouter();
   const [categorias, setCategorias] = useState<CategoriaForo[]>([]);
-  const [datos, setDatos] = useState<Formulario>({ categoria: '', titulo: '', contenido: '' });
+  const [datos, setDatos, descartarBorrador] = useBorrador<Formulario>('nuevo-hilo', {
+    categoria: '',
+    titulo: '',
+    contenido: '',
+  });
   const [errores, setErrores] = useState<Record<string, string>>({});
   const [bloqueo, setBloqueo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +50,7 @@ export function NuevoHilo() {
     setError(null);
     try {
       const { hilo } = await crearHilo(datos);
+      descartarBorrador();
       router.push(`/comunidad/hilos/${hilo.id}?publicado=1`);
     } catch (e) {
       if (e instanceof ErrorApi && e.codigo === 'CONTENIDO_BLOQUEADO') {
@@ -83,12 +89,15 @@ export function NuevoHilo() {
               { valor: '', etiqueta: 'Elige una categoría' },
               ...categorias.map((c) => ({ valor: c.codigo, etiqueta: c.nombre })),
             ]}
+            obligatorio
             value={datos.categoria}
             onChange={(e) => cambiar('categoria', e.target.value)}
             error={errores.categoria || undefined}
           />
           <CampoTexto
             etiqueta="Título"
+            obligatorio
+            ayuda="Una frase que resuma de qué quieres hablar."
             maxLength={120}
             value={datos.titulo}
             onChange={(e) => cambiar('titulo', e.target.value)}
@@ -96,6 +105,7 @@ export function NuevoHilo() {
           />
           <CampoTexto
             etiqueta="Contenido"
+            obligatorio
             ayuda="No compartas datos personales, de contacto, ubicaciones ni redes sociales. El texto se revisa antes de publicarse."
             multilinea
             rows={6}
@@ -106,10 +116,13 @@ export function NuevoHilo() {
           />
           <div className={comun.fila}>
             <Boton type="submit" cargando={publicando}>
-              Publicar hilo
+              {publicando ? 'Publicando…' : 'Publicar hilo'}
             </Boton>
             <Link href="/reglas">Ver las reglas</Link>
           </div>
+          <p className={comun.suave}>
+            Si sales de esta página, tu borrador se conserva mientras no cierres la pestaña.
+          </p>
         </form>
       </Tarjeta>
     </div>

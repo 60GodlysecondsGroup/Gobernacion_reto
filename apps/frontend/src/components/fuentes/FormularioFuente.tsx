@@ -139,13 +139,24 @@ export function FormularioFuente(props: Props) {
       {mensaje && <Aviso tono={mensaje.tono}>{mensaje.texto}</Aviso>}
 
       <div className={estilos.dosColumnas}>
-        <CampoTexto etiqueta="Institución responsable" maxLength={120} {...texto('institucion')} />
-        <CampoTexto etiqueta="Servicio o canal" maxLength={120} {...texto('servicio')} />
+        <CampoTexto
+          etiqueta="Institución responsable"
+          obligatorio
+          maxLength={120}
+          {...texto('institucion')}
+        />
+        <CampoTexto
+          etiqueta="Servicio o canal"
+          obligatorio
+          maxLength={120}
+          {...texto('servicio')}
+        />
       </div>
 
       <CampoTexto
         etiqueta="Descripción"
-        ayuda="Qué ofrece, con las palabras de la fuente oficial. Sin diagnósticos ni recomendaciones clínicas."
+        obligatorio
+        ayuda="Al menos 10 caracteres. Qué ofrece, con las palabras de la fuente oficial. Sin diagnósticos ni recomendaciones clínicas."
         multilinea
         rows={3}
         maxLength={1000}
@@ -157,6 +168,7 @@ export function FormularioFuente(props: Props) {
       <div className={estilos.dosColumnas}>
         <CampoSeleccion
           etiqueta="Tipo de canal"
+          obligatorio
           opciones={OPCIONES_CANAL}
           value={datos.tipoCanal}
           onChange={(e) => cambiar('tipoCanal', e.target.value as TipoCanal)}
@@ -178,13 +190,17 @@ export function FormularioFuente(props: Props) {
 
       <CampoTexto
         etiqueta="Fuente original"
+        obligatorio
         ayuda="Sitio o documento oficial de donde sale esta información."
         maxLength={300}
         {...texto('fuenteOriginal')}
       />
 
       <fieldset className={estilos.grupo}>
-        <legend className={estilos.leyenda}>Temas de orientación donde aparece</legend>
+        <legend className={estilos.leyenda}>
+          Temas de orientación donde aparece{' '}
+          <span className={estilos.notaLeyenda}>Elige al menos uno</span>
+        </legend>
         <div className={estilos.casillas}>
           {necesidades.map((necesidad) => (
             <label key={necesidad.codigo} className={estilos.casilla}>
@@ -197,7 +213,11 @@ export function FormularioFuente(props: Props) {
             </label>
           ))}
         </div>
-        {errores.necesidades && <p className={estilos.error}>{errores.necesidades}</p>}
+        {errores.necesidades && (
+          <p className={estilos.error} role="alert">
+            {errores.necesidades}
+          </p>
+        )}
       </fieldset>
 
       {props.modo === 'crear' && (
@@ -210,6 +230,7 @@ export function FormularioFuente(props: Props) {
           />
           <CampoTexto
             etiqueta="Fecha de verificación"
+            obligatorio
             ayuda="Cuándo se comprobó en la fuente original."
             type="date"
             max={hoyEnColombia()}

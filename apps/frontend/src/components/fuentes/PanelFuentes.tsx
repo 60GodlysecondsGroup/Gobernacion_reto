@@ -108,7 +108,7 @@ export function PanelFuentes() {
                         </td>
                         <td>{TIPOS_CANAL[fuente.tipoCanal]}</td>
                         <td>
-                          {formatearFecha(fuente.fechaVerificacion)}
+                          <span>{formatearFecha(fuente.fechaVerificacion)}</span>
                           <span className={comun.suave}>
                             {haceDias(fuente.diasDesdeVerificacion)}
                           </span>

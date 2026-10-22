@@ -8,34 +8,29 @@
   list-style: none;
 }
 
-.marcoNecesidad {
-  height: 100%;
-  border-radius: var(--radio-lg);
-}
-
 .necesidad {
   display: grid;
   grid-template-rows: auto auto 1fr auto;
   gap: var(--espacio-2);
   height: 100%;
   padding: var(--espacio-5);
-  border: 1px solid var(--color-borde);
+  border: 1px solid var(--cristal-borde);
   border-radius: var(--radio-lg);
-  background: rgb(255 255 255 / 0.88);
+  background: var(--cristal-lectura);
   color: var(--color-texto);
   text-decoration: none;
-  box-shadow: var(--sombra-1);
+  box-shadow: var(--cristal-brillo), var(--sombra-2);
   transition:
     border-color var(--transicion),
-    box-shadow var(--transicion),
-    transform var(--transicion);
+    box-shadow var(--transicion-lenta),
+    transform var(--transicion-lenta);
 }
 
 .necesidad:hover {
-  border-color: #cfcbf7;
-  box-shadow: var(--sombra-2);
+  border-color: rgb(36 87 230 / 0.28);
   color: var(--color-texto);
   text-decoration: none;
+  box-shadow: var(--cristal-brillo), var(--sombra-3);
   transform: translateY(-2px);
 }
 
@@ -81,18 +76,20 @@
   display: grid;
   gap: var(--espacio-3);
   padding: var(--espacio-5);
-  border: 1px solid var(--color-borde);
+  border: 1px solid var(--cristal-borde);
   border-radius: var(--radio-lg);
-  background: var(--color-superficie);
-  box-shadow: var(--sombra-1);
+  background: var(--cristal-lectura);
+  box-shadow: var(--cristal-brillo), var(--sombra-2);
   transition:
     border-color var(--transicion),
-    box-shadow var(--transicion);
+    box-shadow var(--transicion-lenta),
+    transform var(--transicion-lenta);
 }
 
 .tarjeta:hover {
-  border-color: #cfcbf7;
-  box-shadow: var(--sombra-2);
+  border-color: rgb(36 87 230 / 0.28);
+  box-shadow: var(--cristal-brillo), var(--sombra-3);
+  transform: translateY(-2px);
 }
 
 .cabeceraTarjeta {
@@ -111,7 +108,7 @@
   border-radius: var(--radio-md);
   background: var(--indigo-50);
   color: var(--color-primario);
-  box-shadow: inset 0 0 0 1px #dcd8fb;
+  box-shadow: inset 0 0 0 1px rgb(36 87 230 / 0.18);
 }
 
 .insignias {

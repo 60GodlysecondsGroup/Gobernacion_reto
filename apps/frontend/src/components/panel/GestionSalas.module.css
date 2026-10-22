@@ -17,7 +17,7 @@
 
 .sala[data-deshabilitada='true'] {
   border-style: dashed;
-  background: #fafafd;
+  background: rgb(255 255 255 / 0.7);
 }
 
 .fila {

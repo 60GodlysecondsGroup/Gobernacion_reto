@@ -10,11 +10,10 @@ import estilos from './Encabezado.module.css';
 import { MenuCuenta } from './MenuCuenta';
 
 /**
- * Navegación principal. En escritorio: enlaces en una cápsula, «Necesito ayuda» y el menú de la
- * cuenta. En móvil: barra inferior al alcance del pulgar y la ayuda siempre arriba.
- * Solo se muestran las secciones que el rol puede usar (el backend lo vuelve a comprobar).
+ * Secciones visibles para el rol actual. Solo se muestran las que el rol puede usar (el backend
+ * lo vuelve a comprobar en cada llamada).
  */
-export function Navegacion() {
+function useSecciones() {
   const ruta = usePathname();
   const { cargando, usuario, puede } = useSesion();
 
@@ -38,6 +37,17 @@ export function Navegacion() {
   const entrar: EnlaceNavegacion = { href: '/acceso', etiqueta: 'Entrar', icono: LogIn };
   const inferiores = [inicio, ...visibles, ...(!cargando && !usuario ? [entrar] : [])].slice(-5);
 
+  return { ruta, cargando, usuario, activo, principales, inferiores };
+}
+
+/**
+ * Navegación del encabezado. En escritorio: control segmentado con las secciones, «Necesito
+ * ayuda» y el menú de la cuenta. En móvil solo quedan la ayuda y la cuenta: las secciones van en
+ * la barra inferior (`BarraInferior`).
+ */
+export function Navegacion() {
+  const { ruta, cargando, usuario, activo, principales } = useSecciones();
+
   return (
     <>
       <nav aria-label="Principal" className={estilos.navEscritorio}>
@@ -55,7 +65,7 @@ export function Navegacion() {
                     <motion.span
                       layoutId="indicador-nav"
                       className={estilos.indicador}
-                      transition={{ type: 'spring', stiffness: 500, damping: 38 }}
+                      transition={{ type: 'spring', stiffness: 520, damping: 40 }}
                     />
                   )}
                   <Icono aria-hidden="true" size={18} strokeWidth={2} />
@@ -74,7 +84,6 @@ export function Navegacion() {
           className={estilos.ayuda}
           aria-current={ruta === '/ayuda' ? 'page' : undefined}
         >
-          <span className={estilos.pulso} aria-hidden="true" />
           <LifeBuoy aria-hidden="true" size={18} strokeWidth={2.25} />
           Necesito ayuda
         </Link>
@@ -88,35 +97,45 @@ export function Navegacion() {
             </Link>
           ))}
       </div>
-
-      <nav aria-label="Secciones" className={estilos.barraInferior}>
-        <ul>
-          {inferiores.map(({ href, etiqueta, etiquetaCorta, icono: Icono, tambienActivoEn }) => {
-            const actual = activo(href, tambienActivoEn);
-            return (
-              <li key={href}>
-                <Link
-                  href={href}
-                  className={estilos.pestana}
-                  aria-current={actual ? 'page' : undefined}
-                >
-                  <span className={estilos.iconoPestana}>
-                    {actual && (
-                      <motion.span
-                        layoutId="indicador-inferior"
-                        className={estilos.fondoPestana}
-                        transition={{ type: 'spring', stiffness: 500, damping: 38 }}
-                      />
-                    )}
-                    <Icono aria-hidden="true" size={21} strokeWidth={actual ? 2.4 : 2} />
-                  </span>
-                  <span className={estilos.textoPestana}>{etiquetaCorta ?? etiqueta}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
     </>
+  );
+}
+
+/**
+ * Barra inferior flotante de cristal (móvil y tableta), al alcance del pulgar. Va fuera del
+ * encabezado: el desenfoque de la barra superior convertiría `position: fixed` en relativo a ella.
+ */
+export function BarraInferior() {
+  const { activo, inferiores } = useSecciones();
+
+  return (
+    <nav aria-label="Secciones" className={estilos.barraInferior}>
+      <ul>
+        {inferiores.map(({ href, etiqueta, etiquetaCorta, icono: Icono, tambienActivoEn }) => {
+          const actual = activo(href, tambienActivoEn);
+          return (
+            <li key={href}>
+              <Link
+                href={href}
+                className={estilos.pestana}
+                aria-current={actual ? 'page' : undefined}
+              >
+                {actual && (
+                  <motion.span
+                    layoutId="indicador-inferior"
+                    className={estilos.fondoPestana}
+                    transition={{ type: 'spring', stiffness: 520, damping: 40 }}
+                  />
+                )}
+                <span className={estilos.iconoPestana}>
+                  <Icono aria-hidden="true" size={22} strokeWidth={actual ? 2.3 : 1.9} />
+                </span>
+                <span className={estilos.textoPestana}>{etiquetaCorta ?? etiqueta}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
   );
 }

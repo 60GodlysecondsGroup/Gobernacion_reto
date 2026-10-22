@@ -1,5 +1,6 @@
 'use client';
 
+import { ElementoEscalonado, ListaEscalonada } from '@/components/movimiento/Escalonado';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
 import { Aviso, BotonEnlace, CargandoLista } from '@/components/ui';
@@ -51,13 +52,13 @@ export function CanalesDeAyuda() {
         </Aviso>
       )}
       {canales && canales.length > 0 && (
-        <ul className={estilos.rejillaServicios} aria-label="Canales institucionales">
+        <ListaEscalonada className={estilos.rejillaServicios} aria-label="Canales institucionales">
           {canales.map((canal) => (
-            <li key={canal.id}>
+            <ElementoEscalonado key={canal.id}>
               <TarjetaServicio servicio={canal} />
-            </li>
+            </ElementoEscalonado>
           ))}
-        </ul>
+        </ListaEscalonada>
       )}
 
       <div className={comun.fila}>

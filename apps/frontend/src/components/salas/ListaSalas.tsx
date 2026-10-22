@@ -1,5 +1,6 @@
 'use client';
 
+import { ElementoEscalonado, ListaEscalonada } from '@/components/movimiento/Escalonado';
 import { ArrowRight, DoorClosed } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -59,11 +60,11 @@ export function ListaSalas() {
         </EstadoVacio>
       )}
       {salas && salas.length > 0 && (
-        <ul className={estilos.listaSalas} aria-label="Salas de tu comunidad">
+        <ListaEscalonada className={estilos.listaSalas} aria-label="Salas de tu comunidad">
           {salas.map((sala) => (
-            <li
+            <ElementoEscalonado
               key={sala.id}
-              className={estilos.tarjetaSala}
+              className={`${estilos.tarjetaSala} con-luz`}
               style={
                 {
                   '--pared': paletaDeSala(sala.nombre).pared,
@@ -88,7 +89,7 @@ export function ListaSalas() {
                 <OcupacionSala sala={sala} />
                 <BotonEnlace
                   href={`/salas/${sala.id}`}
-                  variante={sala.estado === 'llena' ? 'secundario' : 'primario'}
+                  variante="secundario"
                   tamano="sm"
                   aria-label={`Ver la sala ${sala.nombre}`}
                 >
@@ -96,9 +97,9 @@ export function ListaSalas() {
                   <ArrowRight aria-hidden="true" size={16} />
                 </BotonEnlace>
               </div>
-            </li>
+            </ElementoEscalonado>
           ))}
-        </ul>
+        </ListaEscalonada>
       )}
     </div>
   );

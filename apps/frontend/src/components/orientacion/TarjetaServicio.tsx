@@ -22,7 +22,7 @@ export function TarjetaServicio({
   const href = `/orientacion/servicios/${servicio.id}`;
 
   return (
-    <article className={estilos.tarjeta}>
+    <article className={`${estilos.tarjeta} con-luz`}>
       <div className={estilos.cabeceraTarjeta}>
         <span className={estilos.iconoCanal} aria-hidden="true">
           <IconoCanal tipo={servicio.tipoCanal} />

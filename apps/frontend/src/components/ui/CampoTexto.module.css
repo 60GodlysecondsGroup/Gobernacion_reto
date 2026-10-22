@@ -4,18 +4,47 @@
 }
 
 .etiqueta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espacio-2);
   font-weight: var(--peso-fuerte);
   font-size: var(--texto-sm);
+}
+
+.obligatorio {
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-normal);
+}
+
+.pie {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+}
+
+.contador {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.contadorCerca {
+  color: var(--color-advertencia);
+  font-weight: var(--peso-fuerte);
 }
 
 .control {
   width: 100%;
   min-height: 3rem;
   padding: var(--espacio-2) var(--espacio-4);
-  border: 1.5px solid var(--color-borde);
+  border: 1px solid var(--color-borde-fuerte);
   border-radius: var(--radio-md);
-  background: var(--color-superficie);
-  box-shadow: inset 0 1px 2px rgb(21 23 61 / 0.04);
+  background: rgb(255 255 255 / 0.9);
   color: var(--color-texto);
   font: inherit;
   transition:
@@ -43,7 +72,7 @@ textarea.control {
 }
 
 .control::placeholder {
-  color: #8487a8;
+  color: #7a849c;
 }
 
 .control:hover {
@@ -71,7 +100,57 @@ textarea.control {
 }
 
 .error {
+  display: flex;
+  gap: var(--espacio-2);
   color: var(--color-peligro);
   font-size: var(--texto-sm);
   font-weight: var(--peso-fuerte);
+}
+
+/* Icono de error: el estado no depende solo del color. */
+.error::before {
+  content: '!';
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.1rem;
+  border-radius: 50%;
+  background: var(--color-peligro);
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+/* El mensaje de error aparece deslizándose poco desde el campo; el borde avisa con un destello. */
+.error {
+  animation: aparecerError 240ms var(--curva-salida);
+}
+
+.control[aria-invalid='true'] {
+  animation: marcarError 600ms ease-out;
+}
+
+.control:focus-visible {
+  transition:
+    border-color var(--transicion),
+    box-shadow 240ms var(--curva-salida);
+}
+
+.contador {
+  transition: color var(--transicion);
+}
+
+@keyframes aparecerError {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes marcarError {
+  from {
+    box-shadow: 0 0 0 4px rgb(180 35 24 / 0.22);
+  }
 }

@@ -15,11 +15,15 @@
   gap: var(--espacio-3);
   align-items: start;
   padding: var(--espacio-3) var(--espacio-3) var(--espacio-3) var(--espacio-4);
-  border: 1px solid rgb(255 255 255 / 0.08);
-  border-radius: var(--radio-md);
-  background: var(--tinta);
+  border: 1px solid var(--cristal-borde-oscuro);
+  border-radius: var(--radio-lg);
+  background: var(--cristal-oscuro);
   color: #fff;
-  box-shadow: var(--sombra-3);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    var(--sombra-3);
+  -webkit-backdrop-filter: var(--cristal-desenfoque);
+  backdrop-filter: var(--cristal-desenfoque);
   pointer-events: auto;
 }
 

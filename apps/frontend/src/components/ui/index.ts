@@ -8,3 +8,4 @@ export { Insignia, type TonoInsignia } from './Insignia';
 export { ProveedorNotificaciones, useNotificar } from './Notificaciones';
 export { Tarjeta } from './Tarjeta';
 export { EnlaceVolver } from './EnlaceVolver';
+export { ErrorDePagina } from './ErrorDePagina';

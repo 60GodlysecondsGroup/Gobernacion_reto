@@ -34,7 +34,7 @@
 }
 
 .info {
-  border-color: #d6d3fb;
+  border-color: rgb(36 87 230 / 0.18);
   background: var(--color-info-suave);
   color: var(--color-info);
 }
@@ -55,4 +55,16 @@
   border-color: #f4bcb7;
   background: var(--color-peligro-suave);
   color: var(--color-peligro);
+}
+
+/* Los avisos aparecen con un fundido corto: se notan sin empujar el contenido. */
+.aviso {
+  animation: aparecerAviso 280ms var(--curva-salida);
+}
+
+@keyframes aparecerAviso {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
 }

@@ -3,9 +3,10 @@
   justify-items: center;
   gap: var(--espacio-2);
   padding: var(--espacio-6) var(--espacio-5);
-  border: 1.5px dashed var(--color-borde);
+  border: 1px solid var(--cristal-borde);
   border-radius: var(--radio-lg);
-  background: linear-gradient(180deg, var(--indigo-50), transparent);
+  background: var(--cristal-lectura);
+  box-shadow: var(--cristal-brillo), var(--sombra-1);
   text-align: center;
 }
 
@@ -16,9 +17,8 @@
   height: 3rem;
   margin-bottom: var(--espacio-1);
   border-radius: var(--radio-md);
-  background: var(--color-superficie);
+  background: var(--color-primario-suave);
   color: var(--color-primario);
-  box-shadow: var(--sombra-2);
 }
 
 .titulo {
@@ -34,15 +34,19 @@
 }
 
 .accion {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--espacio-3);
   margin-top: var(--espacio-2);
 }
 
 .error {
-  border-color: #f4bcb7;
-  background: linear-gradient(180deg, var(--color-peligro-suave), transparent);
+  border-color: rgb(180 35 24 / 0.2);
 }
 
 .error .icono {
+  background: var(--color-peligro-suave);
   color: var(--color-peligro);
 }
 
@@ -51,7 +55,7 @@
   padding: var(--espacio-2) var(--espacio-5);
   border: 1px solid var(--color-borde-fuerte);
   border-radius: var(--radio-total);
-  background: var(--color-superficie);
+  background: #fff;
   color: var(--color-texto);
   font: inherit;
   font-weight: var(--peso-fuerte);
@@ -65,4 +69,41 @@
 .cargando {
   display: grid;
   gap: var(--espacio-3);
+}
+
+/* Estados vacío y de error: la tarjeta se asienta y el icono llega con un pequeño impulso. */
+.estado {
+  animation: asentarEstado 360ms var(--curva-salida);
+}
+
+.estado .icono {
+  animation: impulsoIcono 520ms var(--curva-resorte) 80ms backwards;
+}
+
+@keyframes asentarEstado {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes impulsoIcono {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+
+/*
+ * Sin parpadeo: si los datos llegan en menos de ~150 ms el esqueleto ni siquiera se ve; si
+ * tardan, aparece con un fundido. Ocupa su sitio desde el principio, así que nada salta.
+ */
+.cargando {
+  animation: aparecerCarga 220ms ease-out 140ms backwards;
+}
+
+@keyframes aparecerCarga {
+  from {
+    opacity: 0;
+  }
 }

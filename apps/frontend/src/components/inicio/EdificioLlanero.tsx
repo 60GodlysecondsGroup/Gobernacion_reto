@@ -132,13 +132,21 @@ export function EdificioLlanero() {
                   width="6"
                   height="6"
                   fill={encendida || activo ? '#f2a93b' : '#1b1e55'}
-                  initial={reducir ? false : { opacity: 0 }}
+                  // El estado inicial es el mismo en servidor y cliente (sin desajustes de
+                  // hidratación); con «reducir movimiento» las luces se encienden al instante.
+                  initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{
-                    delay:
-                      0.25 + (3 - PISOS.findIndex((p) => p.codigo === codigo)) * 0.18 + i * 0.05,
-                    duration: 0.4,
-                  }}
+                  transition={
+                    reducir
+                      ? { duration: 0 }
+                      : {
+                          delay:
+                            0.25 +
+                            (3 - PISOS.findIndex((p) => p.codigo === codigo)) * 0.18 +
+                            i * 0.05,
+                          duration: 0.4,
+                        }
+                  }
                 />
               ))}
               <text

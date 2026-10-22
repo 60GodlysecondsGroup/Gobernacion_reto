@@ -6,7 +6,14 @@ import { Avatar } from '@/components/avatar/Avatar';
 import { BotonReportar } from '@/components/comunidad/BotonReportar';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
 import { useSesion } from '@/components/sesion/ProveedorSesion';
-import { Aviso, BotonEnlace, CargandoLista, Insignia, Tarjeta } from '@/components/ui';
+import {
+  Aviso,
+  BotonEnlace,
+  CargandoLista,
+  ErrorDePagina,
+  Insignia,
+  Tarjeta,
+} from '@/components/ui';
 import { ErrorApi, mensajeDeError } from '@/lib/api/cliente';
 import { obtenerPerfilPublico, type PerfilPublico } from '@/lib/api/comunidad';
 import comun from '../comun.module.css';
@@ -40,7 +47,15 @@ export function VistaPerfilPublico() {
   }, [id]);
 
   if (estado.tipo === 'cargando') return <CargandoLista etiqueta="Cargando perfil…" />;
-  if (estado.tipo === 'error') return <Aviso tono="peligro">{estado.mensaje}</Aviso>;
+  if (estado.tipo === 'error') {
+    return (
+      <ErrorDePagina
+        mensaje={estado.mensaje}
+        volverA="/comunidad"
+        textoVolver="Volver a mi comunidad"
+      />
+    );
+  }
 
   return (
     <div className={comun.pagina}>

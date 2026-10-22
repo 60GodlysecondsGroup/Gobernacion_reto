@@ -29,10 +29,10 @@
   display: grid;
   gap: var(--espacio-3);
   padding: var(--espacio-3);
-  border: 1px solid var(--color-borde);
+  border: 1px solid var(--cristal-borde);
   border-radius: var(--radio-lg);
-  background: rgb(255 255 255 / 0.7);
-  box-shadow: var(--sombra-1);
+  background: var(--cristal-lectura);
+  box-shadow: var(--cristal-brillo), var(--sombra-2);
 }
 
 .busqueda {
@@ -75,6 +75,12 @@
   border-color: var(--color-peligro);
 }
 
+@media (max-width: 29.99rem) {
+  .busqueda > button {
+    padding-inline: var(--espacio-4);
+  }
+}
+
 .errorBusqueda {
   grid-column: 1 / -1;
   padding-left: var(--espacio-4);
@@ -94,6 +100,8 @@
 }
 
 .categoria {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
@@ -121,8 +129,9 @@
 }
 
 .categoria[aria-pressed='true'] {
-  border-color: var(--tinta);
-  background: var(--tinta);
+  /* El fondo oscuro lo pone la pastilla que se desliza (PildoraActiva). */
+  border-color: transparent;
+  background: transparent;
   color: #fff;
 }
 
@@ -155,19 +164,19 @@
   display: grid;
   gap: var(--espacio-2);
   padding: var(--espacio-5);
-  border: 1px solid var(--color-borde);
+  border: 1px solid var(--cristal-borde);
   border-radius: var(--radio-lg);
-  background: var(--color-superficie);
-  box-shadow: var(--sombra-1);
+  background: var(--cristal-lectura);
+  box-shadow: var(--cristal-brillo), var(--sombra-2);
   transition:
     border-color var(--transicion),
-    box-shadow var(--transicion),
-    transform var(--transicion);
+    box-shadow var(--transicion-lenta),
+    transform var(--transicion-lenta);
 }
 
 .hilo:hover {
-  border-color: #cfcbf7;
-  box-shadow: var(--sombra-2);
+  border-color: rgb(36 87 230 / 0.28);
+  box-shadow: var(--cristal-brillo), var(--sombra-3);
   transform: translateY(-2px);
 }
 
@@ -253,11 +262,11 @@
   display: grid;
   gap: var(--espacio-2);
   padding: var(--espacio-4) var(--espacio-5);
-  border: 1px solid var(--color-borde);
+  border: 1px solid var(--cristal-borde);
   border-left: 3px solid var(--ventana-lila);
   border-radius: var(--radio-md);
-  background: var(--color-superficie);
-  box-shadow: var(--sombra-1);
+  background: var(--cristal-lectura);
+  box-shadow: var(--cristal-brillo), var(--sombra-2);
 }
 
 .respuestaPie {
@@ -349,10 +358,12 @@
   display: flex;
   gap: var(--espacio-3);
   padding: var(--espacio-5);
+  border: 1px solid var(--cristal-borde-oscuro);
   border-radius: var(--radio-lg);
-  background:
-    radial-gradient(18rem 10rem at 100% 0%, rgb(255 200 87 / 0.22), transparent 70%),
-    var(--degradado-noche);
+  background: var(--fondo-profundo);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    var(--sombra-2);
   color: #fff;
   text-decoration: none;
   box-shadow: var(--sombra-2);
@@ -364,8 +375,6 @@
 .atajoSalas:hover {
   color: #fff;
   text-decoration: none;
-  box-shadow: var(--sombra-3);
-  transform: translateY(-2px);
 }
 
 .atajoSalas svg {
@@ -399,5 +408,33 @@
     margin: 0;
     padding: 0;
     overflow: visible;
+  }
+}
+
+/* Respuestas: entran escalonadas al abrir el hilo; la que publicas llega sola. */
+.respuesta {
+  animation: llegarRespuesta 420ms var(--curva-salida) backwards;
+}
+
+.respuesta:nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.respuesta:nth-child(3) {
+  animation-delay: 100ms;
+}
+
+.respuesta:nth-child(4) {
+  animation-delay: 150ms;
+}
+
+.respuesta:nth-child(n + 5) {
+  animation-delay: 200ms;
+}
+
+@keyframes llegarRespuesta {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
 }

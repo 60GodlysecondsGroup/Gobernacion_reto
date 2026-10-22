@@ -4,52 +4,28 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: var(--espacio-4) var(--espacio-6);
-  padding-bottom: var(--espacio-3);
+  padding-bottom: var(--espacio-2);
 }
 
 .textos {
   display: grid;
-  justify-items: start;
-  gap: var(--espacio-3);
+  gap: var(--espacio-2);
   min-width: 0;
 }
 
+/* Contexto breve encima del título (sección o comunidad): responde «¿dónde estoy?». */
 .antetitulo {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--espacio-2);
-  padding: 0.25rem 0.75rem 0.25rem 0.6rem;
-  border: 1px solid #dcd8fb;
-  border-radius: var(--radio-total);
-  background: var(--indigo-50);
   color: var(--color-primario);
-  font-size: var(--texto-xs);
+  font-size: var(--texto-sm);
   font-weight: var(--peso-fuerte);
-  letter-spacing: 0.02em;
-}
-
-.antetitulo::before {
-  content: '';
-  width: 0.45rem;
-  height: 0.45rem;
-  border-radius: 2px;
-  background: var(--ventana-ambar);
-  box-shadow: 0 0 0 2px rgb(255 200 87 / 0.25);
 }
 
 .antetituloAyuda {
-  border-color: #f6c7c2;
-  background: var(--color-acento-suave);
   color: var(--color-acento);
 }
 
-.antetituloAyuda::before {
-  background: var(--color-acento);
-  box-shadow: 0 0 0 2px rgb(201 58 47 / 0.2);
-}
-
 .titulo {
-  font-size: clamp(2rem, 1.55rem + 1.6vw, 2.75rem);
+  font-size: clamp(1.875rem, 1.6rem + 1.1vw, 2.5rem);
   letter-spacing: -0.03em;
 }
 
@@ -63,4 +39,12 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--espacio-3);
+}
+
+@media (max-width: 39.99rem) {
+  /* En móvil la acción principal ocupa todo el ancho: fácil de alcanzar con el pulgar. */
+  .acciones,
+  .acciones > * {
+    flex: 1 1 100%;
+  }
 }

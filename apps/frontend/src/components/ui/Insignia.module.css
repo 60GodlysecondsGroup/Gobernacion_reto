@@ -3,7 +3,7 @@
   align-items: center;
   gap: var(--espacio-2);
   padding: 0.2rem 0.65rem;
-  border: 1px solid rgb(21 23 61 / 0.06);
+  border: 1px solid rgb(11 27 63 / 0.06);
   border-radius: var(--radio-total);
   font-size: var(--texto-xs);
   font-weight: var(--peso-fuerte);

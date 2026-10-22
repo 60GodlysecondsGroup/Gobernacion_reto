@@ -61,8 +61,8 @@
   border-radius: var(--radio-md);
   background:
     linear-gradient(#c9bfa6, #c9bfa6) bottom / 100% 22% no-repeat,
-    linear-gradient(180deg, #e9e6ff, #d6d1ff);
-  box-shadow: inset 0 0 0 1px rgb(21 23 61 / 0.06);
+    linear-gradient(180deg, #e7eeff, #d3defd);
+  box-shadow: inset 0 0 0 1px rgb(11 27 63 / 0.06);
 }
 
 .alias {
@@ -116,7 +116,6 @@
 
 .opcion:hover {
   border-color: var(--color-borde-fuerte);
-  transform: translateY(-1px);
 }
 
 .opcion:has(input:checked) {

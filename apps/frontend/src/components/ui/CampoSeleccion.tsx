@@ -8,6 +8,7 @@ type PropsCampoSeleccion = ComponentProps<'select'> & {
   opciones: { valor: string; etiqueta: string }[];
   ayuda?: string;
   error?: string;
+  obligatorio?: boolean;
 };
 
 /** Lista desplegable con etiqueta, ayuda y error; mismo aspecto que CampoTexto. */
@@ -16,6 +17,7 @@ export function CampoSeleccion({
   opciones,
   ayuda,
   error,
+  obligatorio,
   id: idPropio,
   className,
   ...resto
@@ -29,12 +31,14 @@ export function CampoSeleccion({
     <div className={[estilos.campo, className].filter(Boolean).join(' ')}>
       <label htmlFor={id} className={estilos.etiqueta}>
         {etiqueta}
+        {obligatorio && <span className={estilos.obligatorio}>Obligatorio</span>}
       </label>
       <select
         {...resto}
         id={id}
         className={estilos.control}
         aria-invalid={error ? true : undefined}
+        aria-required={obligatorio || undefined}
         aria-describedby={[idAyuda, idError].filter(Boolean).join(' ') || undefined}
       >
         {opciones.map((opcion) => (

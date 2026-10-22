@@ -1,5 +1,7 @@
 'use client';
 
+import { PildoraActiva } from '@/components/movimiento/PildoraActiva';
+import { ElementoEscalonado, ListaEscalonada } from '@/components/movimiento/Escalonado';
 import { MessageSquare, MessagesSquare, PenLine, Search, SearchX } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useId, useState, type FormEvent } from 'react';
@@ -125,8 +127,12 @@ export function ListaHilos() {
             type="button"
             className={estilos.categoria}
             aria-pressed={!filtro.categoria}
-            onClick={() => aplicar({ buscar: filtro.buscar })}
+            onClick={(evento) => {
+              centrarFiltro(evento.currentTarget);
+              aplicar({ buscar: filtro.buscar });
+            }}
           >
+            {!filtro.categoria && <PildoraActiva grupo="categorias" />}
             Todas
           </button>
           {categorias.map((categoria) => (
@@ -135,8 +141,12 @@ export function ListaHilos() {
               type="button"
               className={estilos.categoria}
               aria-pressed={filtro.categoria === categoria.codigo}
-              onClick={() => aplicar({ categoria: categoria.codigo, buscar: filtro.buscar })}
+              onClick={(evento) => {
+                centrarFiltro(evento.currentTarget);
+                aplicar({ categoria: categoria.codigo, buscar: filtro.buscar });
+              }}
             >
+              {filtro.categoria === categoria.codigo && <PildoraActiva grupo="categorias" />}
               {categoria.nombre}
               <span className={estilos.cuentaCategoria}>{categoria.hilos}</span>
             </button>
@@ -184,10 +194,13 @@ export function ListaHilos() {
       )}
 
       {hilos && hilos.length > 0 && (
-        <ul className={estilos.listaHilos}>
+        <ListaEscalonada
+          key={`${filtro.categoria ?? ''}|${filtro.buscar ?? ''}`}
+          className={estilos.listaHilos}
+        >
           {hilos.map((hilo) => (
-            <li key={hilo.id}>
-              <article className={estilos.hilo}>
+            <ElementoEscalonado key={hilo.id}>
+              <article className={`${estilos.hilo} con-luz`}>
                 <div className={comun.fila}>
                   <Insignia tono="info">{hilo.categoria.nombre}</Insignia>
                   {hilo.estado === 'cerrado' && <Insignia>Cerrado</Insignia>}
@@ -206,9 +219,9 @@ export function ListaHilos() {
                   </span>
                 </div>
               </article>
-            </li>
+            </ElementoEscalonado>
           ))}
-        </ul>
+        </ListaEscalonada>
       )}
 
       {hayMas && (
@@ -223,4 +236,14 @@ export function ListaHilos() {
       )}
     </section>
   );
+}
+
+/** En móvil los filtros se desplazan en horizontal: el elegido se centra para que se vea entero. */
+function centrarFiltro(boton: HTMLElement) {
+  const reducir = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  boton.scrollIntoView({
+    behavior: reducir ? 'auto' : 'smooth',
+    block: 'nearest',
+    inline: 'center',
+  });
 }

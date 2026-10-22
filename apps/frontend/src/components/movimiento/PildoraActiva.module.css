@@ -1,0 +1,21 @@
+.pildora {
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.oscuro {
+  background: var(--tinta);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.14),
+    0 6px 16px -8px rgb(11 27 63 / 0.55);
+}
+
+.claro {
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgb(11 27 63 / 0.08),
+    0 4px 12px -4px rgb(19 48 110 / 0.18);
+}

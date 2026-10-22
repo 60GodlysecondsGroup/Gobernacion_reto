@@ -1,16 +1,11 @@
 .pie {
   position: relative;
   margin-top: auto;
+  border-radius: var(--radio-xl) var(--radio-xl) 0 0;
   overflow: hidden;
-  background: var(--degradado-noche);
+  background: var(--fondo-profundo);
   color: rgb(255 255 255 / 0.78);
   font-size: var(--texto-sm);
-}
-
-/* Las cuatro ventanas de la marca como una franja de luz en el borde superior. */
-.ventanas {
-  height: 4px;
-  background: var(--degradado-ventanas);
 }
 
 .contenido {
@@ -29,9 +24,10 @@
   display: grid;
   gap: var(--espacio-2);
   padding: var(--espacio-4) var(--espacio-5);
-  border: 1px solid rgb(255 255 255 / 0.12);
+  border: 1px solid var(--cristal-borde-oscuro);
   border-radius: var(--radio-lg);
-  background: rgb(255 255 255 / 0.05);
+  background: rgb(255 255 255 / 0.06);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1);
 }
 
 .tituloLimites {

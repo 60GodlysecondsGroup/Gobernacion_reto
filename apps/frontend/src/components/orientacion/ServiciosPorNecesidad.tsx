@@ -1,9 +1,16 @@
 'use client';
 
+import { ElementoEscalonado, ListaEscalonada } from '@/components/movimiento/Escalonado';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
-import { Aviso, BotonEnlace, CargandoLista, EnlaceVolver, EstadoVacio } from '@/components/ui';
+import {
+  BotonEnlace,
+  CargandoLista,
+  EnlaceVolver,
+  ErrorDePagina,
+  EstadoVacio,
+} from '@/components/ui';
 import { ErrorApi, mensajeDeError } from '@/lib/api/cliente';
 import { obtenerServiciosDe, type FichaServicio, type Necesidad } from '@/lib/api/orientacion';
 import comun from '../comun.module.css';
@@ -41,7 +48,13 @@ export function ServiciosPorNecesidad() {
       </nav>
 
       {estado.tipo === 'cargando' && <CargandoLista etiqueta="Cargando servicios…" />}
-      {estado.tipo === 'error' && <Aviso tono="peligro">{estado.mensaje}</Aviso>}
+      {estado.tipo === 'error' && (
+        <ErrorDePagina
+          mensaje={estado.mensaje}
+          volverA="/orientacion"
+          textoVolver="Ver todos los temas"
+        />
+      )}
 
       {estado.tipo === 'listo' && (
         <>
@@ -60,13 +73,13 @@ export function ServiciosPorNecesidad() {
               Mientras tanto, «Necesito ayuda» muestra los canales institucionales disponibles.
             </EstadoVacio>
           ) : (
-            <ul className={estilos.rejillaServicios}>
+            <ListaEscalonada className={estilos.rejillaServicios}>
               {estado.servicios.map((servicio) => (
-                <li key={servicio.id}>
+                <ElementoEscalonado key={servicio.id}>
                   <TarjetaServicio servicio={servicio} />
-                </li>
+                </ElementoEscalonado>
               ))}
-            </ul>
+            </ListaEscalonada>
           )}
         </>
       )}

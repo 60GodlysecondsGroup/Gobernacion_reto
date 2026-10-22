@@ -10,7 +10,7 @@
   justify-items: start;
   gap: var(--espacio-2);
   padding: var(--espacio-4) var(--espacio-5);
-  border: 1px solid var(--color-borde);
+  border: 1px solid var(--cristal-borde);
   border-left-width: 6px;
   border-radius: var(--radio-lg);
   background: var(--color-superficie);
@@ -18,15 +18,13 @@
   font: inherit;
   text-align: left;
   cursor: pointer;
-  box-shadow: var(--sombra-1);
   transition:
     box-shadow var(--transicion),
     transform var(--transicion);
+  box-shadow: var(--cristal-brillo), var(--sombra-2);
 }
 
 .luz:hover {
-  box-shadow: var(--sombra-2);
-  transform: translateY(-2px);
 }
 
 .luz[aria-pressed='true'] {
@@ -114,7 +112,15 @@
 .leyenda {
   margin-bottom: var(--espacio-1);
   padding: 0;
+  font-size: var(--texto-sm);
   font-weight: var(--peso-fuerte);
+}
+
+.notaLeyenda {
+  margin-left: var(--espacio-1);
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-normal);
 }
 
 .casillas {
@@ -183,4 +189,28 @@
   padding-left: var(--espacio-5);
   font-size: var(--texto-sm);
   overflow-wrap: anywhere;
+}
+
+/* Bitácora: cada cambio entra desde la línea de tiempo, uno tras otro. */
+.entrada {
+  animation: entrarBitacora 420ms var(--curva-salida) backwards;
+}
+
+.entrada:nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.entrada:nth-child(3) {
+  animation-delay: 100ms;
+}
+
+.entrada:nth-child(n + 4) {
+  animation-delay: 150ms;
+}
+
+@keyframes entrarBitacora {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
 }

@@ -98,7 +98,7 @@ export function MarcoPanel({ children }: { children: React.ReactNode }) {
     <div className={estilos.marco}>
       <aside className={estilos.lateral}>
         <div className={estilos.quien}>
-          <Logo variante="simbolo" tono="oscuro" tamano={30} />
+          <Logo tamano={32} />
           <span>
             <span className={estilos.tituloPanel}>Panel</span>
             {usuario && (

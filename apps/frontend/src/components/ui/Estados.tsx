@@ -31,10 +31,13 @@ export function EstadoError({
   titulo = 'No pudimos cargar esta información',
   children,
   alReintentar,
+  accion,
 }: {
   titulo?: string;
   children?: ReactNode;
   alReintentar?: () => void;
+  /** Camino alternativo (p. ej. volver a la lista) además de reintentar. */
+  accion?: ReactNode;
 }) {
   return (
     <div className={`${estilos.estado} ${estilos.error}`} role="alert">
@@ -43,11 +46,14 @@ export function EstadoError({
       </span>
       <p className={estilos.titulo}>{titulo}</p>
       {children && <div className={estilos.texto}>{children}</div>}
-      {alReintentar && (
+      {(alReintentar || accion) && (
         <div className={estilos.accion}>
-          <button type="button" className={estilos.reintentar} onClick={alReintentar}>
-            Intentar de nuevo
-          </button>
+          {alReintentar && (
+            <button type="button" className={estilos.reintentar} onClick={alReintentar}>
+              Intentar de nuevo
+            </button>
+          )}
+          {accion}
         </div>
       )}
     </div>

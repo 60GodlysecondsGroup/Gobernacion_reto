@@ -1,10 +1,10 @@
 .boton {
   position: relative;
-  isolation: isolate;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--espacio-2);
+  max-width: 100%;
   border: 1px solid transparent;
   border-radius: var(--radio-total);
   font: inherit;
@@ -12,7 +12,6 @@
   line-height: 1.2;
   text-align: center;
   white-space: nowrap;
-  max-width: 100%;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition:
@@ -20,15 +19,17 @@
     border-color var(--transicion),
     color var(--transicion),
     box-shadow var(--transicion),
-    transform var(--transicion);
+    transform 220ms var(--curva-resorte);
 }
 
-.boton:not(:disabled):hover {
-  transform: translateY(-1px);
-}
-
+/* Respuesta inmediata al pulsar, sin desplazar el diseño. */
 .boton:not(:disabled):active {
-  transform: translateY(0) scale(0.98);
+  transform: scale(0.97);
+}
+
+.boton:focus-visible {
+  outline: none;
+  box-shadow: var(--sombra-foco);
 }
 
 .boton svg {
@@ -62,7 +63,14 @@
 
 .boton:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 0.45;
+  box-shadow: none;
+}
+
+/* Mientras una operación está en curso el botón no admite otro clic, pero no se ve «apagado». */
+.boton[aria-busy='true'] {
+  cursor: progress;
+  opacity: 0.85;
 }
 
 .sm {
@@ -72,47 +80,42 @@
 }
 
 .md {
-  min-height: 2.875rem;
+  min-height: 2.75rem;
   padding: var(--espacio-2) var(--espacio-5);
 }
 
 .lg {
-  min-height: 3.375rem;
-  white-space: normal;
+  min-height: 3.25rem;
   padding: var(--espacio-3) var(--espacio-6);
-  font-size: var(--texto-md);
+  white-space: normal;
 }
 
-/* Principal: degradado de marca con un brillo superior sutil (volumen sin sombras duras). */
+/*
+ * Jerarquía: principal azul sólido con un reflejo líquido arriba; secundario de cristal claro;
+ * fantasma sin fondo; destructivo rojo y siempre con un verbo claro.
+ */
 .primario {
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0) 55%),
-    var(--color-primario);
+  background: linear-gradient(180deg, var(--azul-500), var(--azul-600));
   color: var(--color-sobre-primario);
   box-shadow:
-    var(--sombra-primario),
-    inset 0 1px 0 rgb(255 255 255 / 0.22);
+    inset 0 1px 0 rgb(255 255 255 / 0.28),
+    var(--sombra-primario);
 }
 
 .primario:not(:disabled):hover {
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0) 55%),
-    var(--color-primario-hover);
-  box-shadow:
-    0 14px 28px -12px rgb(74 63 214 / 0.85),
-    inset 0 1px 0 rgb(255 255 255 / 0.22);
+  background: linear-gradient(180deg, var(--azul-600), var(--azul-700));
 }
 
 .secundario {
-  background: var(--color-superficie);
+  background: rgb(255 255 255 / 0.72);
   border-color: var(--color-borde-fuerte);
   color: var(--color-texto);
-  box-shadow: var(--sombra-1);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.9);
 }
 
 .secundario:not(:disabled):hover {
   border-color: var(--color-texto-suave);
-  background: var(--indigo-50);
+  background: #fff;
 }
 
 .fantasma {
@@ -125,15 +128,16 @@
 }
 
 .oscuro {
-  background: var(--tinta);
+  background: var(--azul-noche);
   color: #fff;
-  box-shadow: 0 10px 24px -12px rgb(21 23 61 / 0.8);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.14);
 }
 
 .oscuro:not(:disabled):hover {
   background: var(--indigo-950);
 }
 
+/* Destructivo: siempre explícito en su texto («Ocultar», «Suspender»), nunca solo por color. */
 .peligro {
   background: var(--color-peligro);
   color: #fff;
@@ -144,12 +148,9 @@
 }
 
 .ayuda {
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0) 55%), var(--color-acento);
+  background: var(--color-acento);
   color: var(--color-sobre-primario);
-  box-shadow:
-    0 10px 22px -12px rgb(201 58 47 / 0.9),
-    inset 0 1px 0 rgb(255 255 255 / 0.2);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25);
 }
 
 .ayuda:not(:disabled):hover {
@@ -168,5 +169,60 @@
 @keyframes girar {
   to {
     transform: rotate(1turn);
+  }
+}
+
+/*
+ * Reflejo de cristal: al pasar el puntero por la acción principal, una franja de luz la cruza
+ * una sola vez (solo `transform`, recortada por el propio botón).
+ */
+.primario,
+.ayuda,
+.oscuro {
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.primario::after,
+.ayuda::after,
+.oscuro::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgb(255 255 255 / 0.28) 50%,
+    transparent 70%
+  );
+  transform: translateX(-110%);
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .primario:not(:disabled):hover::after,
+  .ayuda:not(:disabled):hover::after,
+  .oscuro:not(:disabled):hover::after {
+    transform: translateX(110%);
+    transition: transform 700ms var(--curva-salida);
+  }
+
+  .primario:not(:disabled):hover,
+  .ayuda:not(:disabled):hover {
+    transform: translateY(-1px);
+  }
+}
+
+.boton[aria-busy='true'] .indicador {
+  animation:
+    girar 0.8s linear infinite,
+    aparecerIndicador 180ms var(--curva-salida);
+}
+
+@keyframes aparecerIndicador {
+  from {
+    opacity: 0;
+    scale: 0.6;
   }
 }

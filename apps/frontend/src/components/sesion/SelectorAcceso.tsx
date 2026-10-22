@@ -1,10 +1,11 @@
 'use client';
 
+import { ElementoEscalonado, ListaEscalonada } from '@/components/movimiento/Escalonado';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowRight, Library, ShieldCheck, UserCog } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
-import { Aviso, Boton, BotonEnlace, CargandoLista } from '@/components/ui';
+import { Aviso, Boton, BotonEnlace, CargandoLista, EstadoError } from '@/components/ui';
 import { ErrorApi, mensajeDeError } from '@/lib/api/cliente';
 import {
   listarUsuariosDemo,
@@ -103,7 +104,9 @@ export function SelectorAcceso() {
       {carga.estado === 'cargando' && (
         <CargandoLista filas={2} etiqueta="Cargando usuarios de prueba…" alto="5.5rem" />
       )}
-      {carga.estado === 'error' && <Aviso tono="peligro">{carga.mensaje}</Aviso>}
+      {carga.estado === 'error' && (
+        <EstadoError alReintentar={() => window.location.reload()}>{carga.mensaje}</EstadoError>
+      )}
       {carga.estado === 'deshabilitado' && (
         <Aviso tono="info">El acceso de demostración está deshabilitado en este entorno.</Aviso>
       )}
@@ -155,12 +158,12 @@ function GrupoUsuarios({
         <h2 className={estilos.tituloGrupo}>{titulo}</h2>
         <p className={estilos.detalle}>{descripcion}</p>
       </div>
-      <ul className={estilos.usuarios}>
+      <ListaEscalonada className={estilos.usuarios}>
         {usuarios.map((u) => (
-          <li key={u.codigo}>
+          <ElementoEscalonado key={u.codigo}>
             <button
               type="button"
-              className={estilos.usuario}
+              className={`${estilos.usuario} con-luz`}
               onClick={() => alElegir(u.codigo)}
               disabled={entrando !== null}
               aria-busy={entrando === u.codigo || undefined}
@@ -191,9 +194,9 @@ function GrupoUsuarios({
                 <ArrowRight aria-hidden="true" size={20} className={estilos.flecha} />
               )}
             </button>
-          </li>
+          </ElementoEscalonado>
         ))}
-      </ul>
+      </ListaEscalonada>
     </section>
   );
 }

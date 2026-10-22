@@ -98,7 +98,7 @@
   padding: var(--espacio-3);
   border: 1px solid var(--color-borde-fuerte);
   border-radius: var(--radio-md);
-  background: #fafaff;
+  background: rgb(255 255 255 / 0.7);
   font-size: var(--texto-sm);
 }
 

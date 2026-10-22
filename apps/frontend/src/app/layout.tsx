@@ -1,7 +1,11 @@
 import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
+import { Suspense } from 'react';
 import { GuiaVirtual } from '@/components/guia/GuiaVirtual';
 import { Encabezado } from '@/components/layout/Encabezado';
+import { BarraInferior } from '@/components/layout/Navegacion';
+import { BarraProgreso } from '@/components/movimiento/BarraProgreso';
+import { LuzPuntero } from '@/components/movimiento/LuzPuntero';
 import { PiePagina } from '@/components/layout/PiePagina';
 import { ProveedorMovimiento } from '@/components/layout/ProveedorMovimiento';
 import { ProveedorSesion } from '@/components/sesion/ProveedorSesion';
@@ -43,7 +47,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#f6f6fb',
+  themeColor: '#eef2fa',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -53,6 +57,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <a href="#contenido" className="saltar-contenido">
           Saltar al contenido
         </a>
+        <Suspense fallback={null}>
+          <BarraProgreso />
+        </Suspense>
+        <LuzPuntero />
         <ProveedorMovimiento>
           <ProveedorSesion>
             <ProveedorNotificaciones>
@@ -61,6 +69,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 {children}
               </main>
               <PiePagina />
+              <BarraInferior />
               <GuiaVirtual />
             </ProveedorNotificaciones>
           </ProveedorSesion>

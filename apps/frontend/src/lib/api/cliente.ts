@@ -50,7 +50,11 @@ async function solicitar<T>(
     });
   } catch (error) {
     if (opciones.signal?.aborted) throw error;
-    throw new ErrorApi(0, 'SIN_CONEXION', 'No se pudo conectar con el servidor.');
+    throw new ErrorApi(
+      0,
+      'SIN_CONEXION',
+      'No pudimos conectar con la plataforma. Revisa tu conexión e inténtalo de nuevo.',
+    );
   }
 
   const datos: unknown = await respuesta.json().catch(() => null);
@@ -66,9 +70,22 @@ async function solicitar<T>(
   return datos as T;
 }
 
-/** Mensaje para mostrar al usuario a partir de cualquier error de una llamada. */
-export const mensajeDeError = (error: unknown) =>
-  error instanceof ErrorApi ? error.message : 'Ocurrió un error inesperado.';
+/**
+ * Mensaje para mostrar al usuario a partir de cualquier error de una llamada. Los errores de
+ * validación con detalle por campo se resumen en lenguaje natural: el detalle aparece junto a
+ * cada campo.
+ */
+export const mensajeDeError = (error: unknown) => {
+  if (!(error instanceof ErrorApi)) return 'Ocurrió un error inesperado. Inténtalo de nuevo.';
+  if (
+    error.codigo === 'SOLICITUD_INVALIDA' &&
+    Array.isArray(error.detalles) &&
+    error.detalles.length
+  ) {
+    return 'Revisa los campos marcados y vuelve a intentarlo.';
+  }
+  return error.message;
+};
 
 /** Campo señalado por el backend en `detalles.campo` (p. ej. un bloqueo DLP), si lo hay. */
 export const campoDelError = (error: unknown): string | undefined => {

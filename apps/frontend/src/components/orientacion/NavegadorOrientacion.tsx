@@ -1,10 +1,10 @@
 'use client';
 
+import { ElementoEscalonado, ListaEscalonada } from '@/components/movimiento/Escalonado';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
-import { Destello } from '@/components/efectos/Destello';
 import { Aviso, CargandoLista, EstadoError } from '@/components/ui';
 import { iconoNecesidad, tonoNecesidad } from '@/config/necesidades';
 import { AVISO_LIMITES } from '@/config/textos';
@@ -55,33 +55,32 @@ export function NavegadorOrientacion() {
       )}
 
       {necesidades && (
-        <ul className={estilos.necesidades}>
+        <ListaEscalonada className={estilos.necesidades}>
           {necesidades.map((necesidad) => {
             const Icono = iconoNecesidad(necesidad.codigo);
             return (
-              <li key={necesidad.codigo}>
-                <Destello className={estilos.marcoNecesidad}>
-                  <Link href={`/orientacion/${necesidad.codigo}`} className={estilos.necesidad}>
-                    <span
-                      className={`${ventanas.ficha} ${ventanas[tonoNecesidad(necesidad.codigo)]}`}
-                      aria-hidden="true"
-                    >
-                      <Icono size={22} strokeWidth={1.9} />
-                    </span>
-                    <span className={estilos.nombreNecesidad}>{necesidad.nombre}</span>
-                    <span className={estilos.descripcionNecesidad}>{necesidad.descripcion}</span>
-                    <span className={estilos.pieNecesidad}>
-                      {necesidad.servicios === 1
-                        ? '1 servicio'
-                        : `${necesidad.servicios} servicios`}
-                      <ArrowRight aria-hidden="true" size={18} />
-                    </span>
-                  </Link>
-                </Destello>
-              </li>
+              <ElementoEscalonado key={necesidad.codigo}>
+                <Link
+                  href={`/orientacion/${necesidad.codigo}`}
+                  className={`${estilos.necesidad} con-luz`}
+                >
+                  <span
+                    className={`${ventanas.ficha} ${ventanas[tonoNecesidad(necesidad.codigo)]}`}
+                    aria-hidden="true"
+                  >
+                    <Icono size={22} strokeWidth={1.9} />
+                  </span>
+                  <span className={estilos.nombreNecesidad}>{necesidad.nombre}</span>
+                  <span className={estilos.descripcionNecesidad}>{necesidad.descripcion}</span>
+                  <span className={estilos.pieNecesidad}>
+                    {necesidad.servicios === 1 ? '1 servicio' : `${necesidad.servicios} servicios`}
+                    <ArrowRight aria-hidden="true" size={18} />
+                  </span>
+                </Link>
+              </ElementoEscalonado>
             );
           })}
-        </ul>
+        </ListaEscalonada>
       )}
 
       <Aviso tono="info" titulo="Qué hace y qué no hace esta plataforma">

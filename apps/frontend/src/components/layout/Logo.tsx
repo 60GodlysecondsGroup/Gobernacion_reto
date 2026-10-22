@@ -27,7 +27,7 @@ export function Logo({
     variante === 'simbolo' && tono === 'claro'
       ? ['#2f9be0', '#f2a623', '#17a97e', '#7c6cf2']
       : ['#8fd3ff', '#ffc857', '#7de3c3', '#c4bdff'];
-  const colorArco = variante === 'simbolo' && tono === 'claro' ? '#2a2478' : '#fff';
+  const colorArco = variante === 'simbolo' && tono === 'claro' ? '#13306e' : '#fff';
 
   return (
     <svg
@@ -42,8 +42,8 @@ export function Logo({
         <>
           <defs>
             <linearGradient id="cp-logo-fondo" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="#5b4fe8" />
-              <stop offset="1" stopColor="#2a2478" />
+              <stop offset="0" stopColor="#3d6ff5" />
+              <stop offset="1" stopColor="#13306e" />
             </linearGradient>
           </defs>
           <rect width="48" height="48" rx="13" fill="url(#cp-logo-fondo)" />

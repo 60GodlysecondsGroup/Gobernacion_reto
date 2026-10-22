@@ -1,5 +1,6 @@
 'use client';
 
+import { PildoraActiva } from '@/components/movimiento/PildoraActiva';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
@@ -72,6 +73,7 @@ export function ListaReportes() {
             aria-pressed={estado === valor}
             onClick={() => elegir(valor)}
           >
+            {estado === valor && <PildoraActiva grupo="estados-reporte" />}
             {etiqueta}
             {lista && <span className={estilos.cuentaFiltro}>{lista.conteo[valor]}</span>}
           </button>
@@ -82,6 +84,7 @@ export function ListaReportes() {
           aria-pressed={estado === null}
           onClick={() => elegir(null)}
         >
+          {estado === null && <PildoraActiva grupo="estados-reporte" />}
           Todos
           {lista && <span className={estilos.cuentaFiltro}>{total}</span>}
         </button>

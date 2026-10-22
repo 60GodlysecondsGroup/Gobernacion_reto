@@ -10,12 +10,13 @@
 }
 
 .dialogo::backdrop {
-  background: rgb(21 23 61 / 0.45);
-  backdrop-filter: blur(4px);
+  background: rgb(11 27 63 / 0.32);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  backdrop-filter: blur(10px) saturate(140%);
 }
 
 .dialogo[open] {
-  animation: entrar 260ms var(--curva-salida);
+  animation: entrar 320ms var(--curva-resorte);
 }
 
 .dialogo[open]::backdrop {
@@ -27,10 +28,12 @@
   display: grid;
   gap: var(--espacio-3);
   padding: var(--espacio-6);
-  border: 1px solid var(--color-borde);
+  border: 1px solid var(--cristal-borde);
   border-radius: var(--radio-xl);
-  background: var(--color-superficie);
-  box-shadow: var(--sombra-3);
+  background: var(--cristal-medio);
+  box-shadow: var(--cristal-brillo), var(--sombra-3);
+  -webkit-backdrop-filter: var(--cristal-desenfoque);
+  backdrop-filter: var(--cristal-desenfoque);
 }
 
 .cerrar {
@@ -80,10 +83,31 @@
   margin-top: var(--espacio-3);
 }
 
+.dialogo[data-cerrando] {
+  animation: salir 170ms var(--curva-entrada) forwards;
+}
+
+.dialogo[data-cerrando]::backdrop {
+  animation: desvanecer 170ms ease-in forwards;
+}
+
+@keyframes salir {
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}
+
+@keyframes desvanecer {
+  to {
+    opacity: 0;
+  }
+}
+
 @keyframes entrar {
   from {
     opacity: 0;
-    transform: translateY(12px) scale(0.97);
+    transform: translateY(10px) scale(0.96);
   }
 }
 
