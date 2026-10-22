@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOpen, ChevronDown, LogOut, Shirt, UserRound } from 'lucide-react';
+import { BookOpen, Bot, ChevronDown, LogOut, Shirt, UserRound } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -142,6 +142,17 @@ export function MenuCuenta() {
               <BookOpen aria-hidden="true" size={18} />
               Cómo funciona
             </Link>
+            {puede('usar_asistente_usuario') && (
+              <Link
+                href="/asistente"
+                role="menuitem"
+                className={estilos.itemMenu}
+                onClick={() => cerrar()}
+              >
+                <Bot aria-hidden="true" size={18} />
+                Asistente de orientación
+              </Link>
+            )}
             <hr className={estilos.separador} />
             <button
               type="button"

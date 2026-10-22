@@ -33,6 +33,7 @@ const MATRIZ = {
   configurar_comunidades: ['admin_plataforma'],
   consultar_registros_administrativos: ['moderador', 'admin_plataforma', 'gestor_fuentes'],
   usar_asistente_admin: ['admin_plataforma'],
+  usar_asistente_usuario: ['usuario'],
 } as const satisfies Record<string, readonly Rol[]>;
 
 export type Permiso = keyof typeof MATRIZ;

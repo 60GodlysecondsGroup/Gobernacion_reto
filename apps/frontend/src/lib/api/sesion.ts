@@ -21,7 +21,8 @@ export type Permiso =
   | 'gestionar_fuentes'
   | 'configurar_comunidades'
   | 'consultar_registros_administrativos'
-  | 'usar_asistente_admin';
+  | 'usar_asistente_admin'
+  | 'usar_asistente_usuario';
 
 export type SesionPublica = {
   id: string;

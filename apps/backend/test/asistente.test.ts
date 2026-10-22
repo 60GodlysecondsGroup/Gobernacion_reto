@@ -85,9 +85,11 @@ describe('asistente admin: herramientas agregadas y OpenAI', () => {
       ayer: 1,
     });
     expect(salida).toMatchObject({
-      respuesta: respuestaFinal.choices[0]!.message.content,
+      respuesta: expect.stringContaining(respuestaFinal.choices[0]!.message.content!),
       actualizado: '2026-10-22T12:00:00.000Z',
     });
+    expect(salida.respuesta).toContain('**Fuente:** `app.reporte`');
+    expect(salida.respuesta).toContain('**Alcance:**');
     expect(JSON.stringify(salida)).not.toContain('clave-falsa-de-prueba');
   });
 
