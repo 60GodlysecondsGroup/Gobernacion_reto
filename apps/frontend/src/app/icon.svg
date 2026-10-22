@@ -1,10 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" shape-rendering="crispEdges">
-  <rect x="4" y="0" width="4" height="1" fill="#1f4f66"/>
-  <rect x="3" y="1" width="6" height="1" fill="#1f4f66"/>
-  <rect x="2" y="2" width="8" height="1" fill="#1f4f66"/>
-  <rect x="1" y="3" width="10" height="1" fill="#1f4f66"/>
-  <rect x="2" y="4" width="8" height="8" fill="#2f6f8f"/>
-  <rect x="3" y="5" width="2" height="2" fill="#f4d58d"/>
-  <rect x="7" y="5" width="2" height="2" fill="#f4d58d"/>
-  <rect x="5" y="8" width="2" height="4" fill="#b9472f"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img"><title>Comunidad Protegida</title><rect width="48" height="48" rx="12" fill="#3F37C9"/><path d="M9.5 37V23.5a14.5 14.5 0 0 1 29 0V37" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><rect x="16.5" y="21" width="6.8" height="6.8" rx="2" fill="#8FD3FF"/><rect x="24.7" y="21" width="6.8" height="6.8" rx="2" fill="#FFC857"/><rect x="16.5" y="29.2" width="6.8" height="6.8" rx="2" fill="#7DE3C3"/><rect x="24.7" y="29.2" width="6.8" height="6.8" rx="2" fill="#C4BDFF"/></svg>

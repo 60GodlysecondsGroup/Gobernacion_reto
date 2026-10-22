@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
-import { Aviso, BotonEnlace, Insignia, Tarjeta } from '@/components/ui';
+import { Aviso, BotonEnlace, CargandoLista, Insignia, Tarjeta } from '@/components/ui';
 import { ESTADOS_FUENTE } from '@/config/fuentes';
 import { ErrorApi, mensajeDeError } from '@/lib/api/cliente';
 import { obtenerServicio, type FichaServicio } from '@/lib/api/orientacion';
@@ -43,7 +43,7 @@ export function FichaCompleta() {
     };
   }, [id]);
 
-  if (estado.tipo === 'cargando') return <p className={comun.cargando}>Cargando el servicio…</p>;
+  if (estado.tipo === 'cargando') return <CargandoLista etiqueta="Cargando el servicio…" />;
   if (estado.tipo === 'error') return <Aviso tono="peligro">{estado.mensaje}</Aviso>;
   if (estado.tipo === 'no_disponible') {
     return (

@@ -1,10 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useId, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
 import { useSesion } from '@/components/sesion/ProveedorSesion';
-import { Aviso, Boton } from '@/components/ui';
+import { Aviso, Boton, CargandoLista, EnlaceVolver, useNotificar } from '@/components/ui';
 import {
   guardarMiAvatar,
   obtenerMiAvatar,
@@ -71,6 +70,7 @@ export function EditorAvatar() {
   const [errorCarga, setErrorCarga] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState<Mensaje>(null);
+  const notificar = useNotificar();
 
   useEffect(() => {
     let vigente = true;
@@ -90,7 +90,7 @@ export function EditorAvatar() {
 
   if (errorCarga) return <Aviso tono="peligro">{errorCarga}</Aviso>;
   if (!catalogo || !guardada || !borrador) {
-    return <p className={comun.cargando}>Cargando tu avatar…</p>;
+    return <CargandoLista etiqueta="Cargando tu avatar…" />;
   }
 
   const puedePersonalizar = puede('personalizar_avatar_propio');
@@ -109,7 +109,7 @@ export function EditorAvatar() {
       const { configuracion } = await guardarMiAvatar(borrador);
       setGuardada(configuracion);
       setBorrador(configuracion);
-      setMensaje({ tono: 'exito', texto: 'Avatar guardado.' });
+      notificar('exito', 'Avatar guardado', 'Se verá en tus hilos y al entrar a una sala.');
     } catch (e) {
       setMensaje({ tono: 'peligro', texto: mensajeDeError(e) });
     } finally {
@@ -119,8 +119,8 @@ export function EditorAvatar() {
 
   return (
     <div className={estilos.pagina}>
-      <nav aria-label="Ruta" className={comun.suave}>
-        <Link href="/perfil">← Volver a mi perfil</Link>
+      <nav aria-label="Ruta">
+        <EnlaceVolver href="/perfil">Volver a mi perfil</EnlaceVolver>
       </nav>
       <EncabezadoPagina antetitulo="Identidad protegida" titulo="Mi avatar">
         Tu avatar te representa junto a tu alias en tu perfil, en los hilos, en las respuestas y en

@@ -4,7 +4,15 @@ import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState, type FormEvent } from 'react';
 import { useSesion } from '@/components/sesion/ProveedorSesion';
-import { Aviso, Boton, CampoTexto, Insignia, Tarjeta } from '@/components/ui';
+import {
+  Aviso,
+  Boton,
+  CampoTexto,
+  CargandoLista,
+  EnlaceVolver,
+  Insignia,
+  Tarjeta,
+} from '@/components/ui';
 import { ErrorApi, mensajeDeError } from '@/lib/api/cliente';
 import { obtenerHilo, responderHilo, type DetalleHilo } from '@/lib/api/hilos';
 import comun from '../comun.module.css';
@@ -43,12 +51,12 @@ export function VistaHilo() {
   }, [id]);
 
   const volver = (
-    <nav aria-label="Ruta" className={comun.suave}>
-      <Link href="/comunidad">← Volver a la comunidad</Link>
+    <nav aria-label="Ruta">
+      <EnlaceVolver href="/comunidad">Volver a la comunidad</EnlaceVolver>
     </nav>
   );
 
-  if (estado.tipo === 'cargando') return <p className={comun.cargando}>Cargando el hilo…</p>;
+  if (estado.tipo === 'cargando') return <CargandoLista etiqueta="Cargando el hilo…" />;
   if (estado.tipo === 'error') return <Aviso tono="peligro">{estado.mensaje}</Aviso>;
   if (estado.tipo === 'no_encontrado') {
     return (
@@ -73,9 +81,9 @@ export function VistaHilo() {
             <Insignia tono="info">{hilo.categoria.nombre}</Insignia>
             {hilo.estado === 'cerrado' && <Insignia>Cerrado</Insignia>}
           </div>
-          <h1 className={estilos.tituloHilo}>{hilo.titulo}</h1>
+          <h1 className={estilos.tituloDetalle}>{hilo.titulo}</h1>
           <AutorContenido autor={hilo.autor} fecha={hilo.fecha} />
-          <p className={estilos.contenido}>{hilo.contenido}</p>
+          <p className={`${estilos.contenido} ${estilos.contenidoDetalle}`}>{hilo.contenido}</p>
           {!esPropio(hilo.autor.id) && <BotonReportar tipoContenido="hilo" idContenido={hilo.id} />}
         </article>
       </Tarjeta>

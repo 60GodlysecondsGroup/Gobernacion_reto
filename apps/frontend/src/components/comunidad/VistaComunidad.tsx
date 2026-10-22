@@ -1,13 +1,15 @@
 'use client';
 
+import { Building2, PenLine } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
 import { useSesion } from '@/components/sesion/ProveedorSesion';
-import { Aviso, BotonEnlace, Insignia } from '@/components/ui';
+import { Aviso, BotonEnlace } from '@/components/ui';
 import { mensajeDeError } from '@/lib/api/cliente';
 import { obtenerComunidadPropia, type Comunidad } from '@/lib/api/comunidad';
 import comun from '../comun.module.css';
+import estilos from './Comunidad.module.css';
 import { BuscadorPersonas } from './BuscadorPersonas';
 import { ListaHilos } from './ListaHilos';
 
@@ -28,38 +30,56 @@ export function VistaComunidad() {
   }, []);
 
   if (error) return <Aviso tono="peligro">{error}</Aviso>;
-  if (!comunidad) return <p className={comun.cargando}>Cargando tu comunidad…</p>;
+  if (!comunidad) {
+    return (
+      <div className={comun.pagina} aria-busy="true">
+        <span className="esqueleto" style={{ height: '6rem' }} />
+        <span className="esqueleto" style={{ height: '20rem' }} />
+      </div>
+    );
+  }
 
   return (
-    <div className={comun.pagina}>
-      <EncabezadoPagina antetitulo="Tu comunidad" titulo={comunidad.nombre}>
-        <div className={comun.fila}>
-          <span>{comunidad.descripcion}</span>
-          <Insignia tono="info">Rango {comunidad.rango}</Insignia>
-        </div>
+    <div className={estilos.inicio}>
+      <EncabezadoPagina
+        antetitulo={`Tu comunidad, ${comunidad.rango}`}
+        titulo={comunidad.nombre}
+        acciones={
+          puede('crear_hilo') && (
+            <BotonEnlace href="/comunidad/hilos/nuevo">
+              <PenLine aria-hidden="true" size={18} />
+              Crear hilo
+            </BotonEnlace>
+          )
+        }
+      >
+        {comunidad.descripcion} Aquí conversas con tu alias con personas de tu mismo rango de edad;
+        nadie de otra comunidad puede ver este espacio.
       </EncabezadoPagina>
 
-      <Aviso tono="info" titulo="Te damos la bienvenida">
-        Aquí conversas con tu alias con personas de tu mismo rango de edad; nadie de otra comunidad
-        puede ver este espacio. Antes de publicar, revisa las{' '}
-        <Link href="/reglas">reglas de la comunidad</Link>. Si buscas información o un canal de
-        apoyo, tienes <Link href="/orientacion">Orientación</Link> y el botón «Necesito ayuda».
-      </Aviso>
+      <div className={estilos.columnas}>
+        <div className={estilos.principal}>
+          <ListaHilos />
+        </div>
 
-      <div className={comun.fila}>
-        {puede('crear_hilo') && <BotonEnlace href="/comunidad/hilos/nuevo">Crear hilo</BotonEnlace>}
-        {puede('acceder_salas') && (
-          <BotonEnlace href="/salas" variante="secundario">
-            Salas temáticas
-          </BotonEnlace>
-        )}
-        <BotonEnlace href="/reglas" variante="secundario">
-          Ver las reglas
-        </BotonEnlace>
+        <aside className={estilos.lateral} aria-label="Más de tu comunidad">
+          {puede('acceder_salas') && (
+            <Link href="/salas" className={estilos.atajoSalas}>
+              <Building2 aria-hidden="true" size={22} />
+              <span>
+                <strong>Salas temáticas</strong>
+                <span>Conversa en tiempo real con tu avatar, hasta 10 personas por sala.</span>
+              </span>
+            </Link>
+          )}
+          <Aviso tono="info" titulo="Antes de publicar">
+            Revisa las <Link href="/reglas">reglas de la comunidad</Link>. Si buscas información o
+            un canal de apoyo, tienes <Link href="/orientacion">Orientación</Link> y el botón
+            «Necesito ayuda».
+          </Aviso>
+          <BuscadorPersonas />
+        </aside>
       </div>
-
-      <ListaHilos />
-      <BuscadorPersonas />
     </div>
   );
 }

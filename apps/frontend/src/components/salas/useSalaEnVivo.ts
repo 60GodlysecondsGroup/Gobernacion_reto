@@ -6,6 +6,7 @@ import {
   urlTiempoRealSala,
   type MensajeCliente,
   type MensajeServidor,
+  type MotivoRechazo,
   type Obstaculo,
   type ParticipanteEnSala,
 } from '@/lib/api/salas';
@@ -29,7 +30,7 @@ export type EstadoSalaEnVivo = {
   ocupacion: number;
   chat: EntradaChat[];
   /** Último movimiento rechazado; `vez` cambia en cada rechazo para volver a anunciarlo. */
-  rechazo: { motivo: 'limite' | 'obstaculo'; vez: number } | null;
+  rechazo: { motivo: MotivoRechazo; vez: number } | null;
   /** Aviso del DLP: solo lo recibe quien escribió el mensaje. */
   bloqueo: string | null;
   errorChat: string | null;
@@ -66,6 +67,7 @@ const MENSAJES_CIERRE: Record<number, string> = {
   [CIERRE.PROHIBIDO]: 'Tu usuario no puede entrar a salas.',
   [CIERRE.NO_ENCONTRADA]: 'La sala no existe.',
   [CIERRE.CERRADA]: 'Esta sala se cerró. Vuelve a la lista de salas.',
+  [CIERRE.RETIRADA]: 'Esta sala no está disponible en este momento.',
   [CIERRE.LLENA]: 'La sala está llena.',
 };
 
@@ -146,6 +148,10 @@ function alRecibir(estado: EstadoSalaEnVivo, mensaje: MensajeServidor): EstadoSa
       return { ...estado, bloqueo: mensaje.mensaje, errorChat: null };
     case 'error':
       // Dentro de la sala, un error es de un mensaje de chat; antes de entrar, explica el cierre.
+      // Que la administración retire a alguien de la sala explica el cierre, no el chat.
+      if (mensaje.codigo === 'SALA_NO_DISPONIBLE' || mensaje.codigo === 'RETIRADO') {
+        return { ...estado, ultimoError: mensaje.mensaje };
+      }
       return estado.fase === 'dentro'
         ? { ...estado, errorChat: mensaje.mensaje, bloqueo: null }
         : { ...estado, ultimoError: mensaje.mensaje };

@@ -1,12 +1,16 @@
 'use client';
 
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
-import { Aviso } from '@/components/ui';
+import { Destello } from '@/components/efectos/Destello';
+import { Aviso, CargandoLista, EstadoError } from '@/components/ui';
+import { iconoNecesidad, tonoNecesidad } from '@/config/necesidades';
 import { AVISO_LIMITES } from '@/config/textos';
 import { mensajeDeError } from '@/lib/api/cliente';
 import { obtenerNecesidades, type Necesidad } from '@/lib/api/orientacion';
+import ventanas from '@/styles/ventanas.module.css';
 import comun from '../comun.module.css';
 import estilos from './Orientacion.module.css';
 
@@ -17,6 +21,7 @@ import estilos from './Orientacion.module.css';
 export function NavegadorOrientacion() {
   const [necesidades, setNecesidades] = useState<Necesidad[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [intento, setIntento] = useState(0);
 
   useEffect(() => {
     let vigente = true;
@@ -26,31 +31,56 @@ export function NavegadorOrientacion() {
     return () => {
       vigente = false;
     };
-  }, []);
+  }, [intento]);
 
   return (
-    <div className={comun.pagina}>
+    <div className={comun.paginaAncha}>
       <EncabezadoPagina antetitulo="Orientación" titulo="¿Qué información buscas?">
         Elige un tema para ver servicios y canales de instituciones, siempre con su fuente y la
         fecha en que se verificaron.
       </EncabezadoPagina>
 
-      {error && <Aviso tono="peligro">{error}</Aviso>}
-      {!necesidades && !error && <p className={comun.cargando}>Cargando temas…</p>}
+      {error && (
+        <EstadoError
+          alReintentar={() => {
+            setError(null);
+            setIntento((n) => n + 1);
+          }}
+        >
+          {error}
+        </EstadoError>
+      )}
+      {!necesidades && !error && (
+        <CargandoLista filas={2} alto="11rem" etiqueta="Cargando temas…" />
+      )}
 
       {necesidades && (
         <ul className={estilos.necesidades}>
-          {necesidades.map((necesidad) => (
-            <li key={necesidad.codigo}>
-              <Link href={`/orientacion/${necesidad.codigo}`} className={estilos.necesidad}>
-                <span className={estilos.nombreNecesidad}>{necesidad.nombre}</span>
-                <span className={comun.suave}>{necesidad.descripcion}</span>
-                <span className={comun.suave}>
-                  {necesidad.servicios === 1 ? '1 servicio' : `${necesidad.servicios} servicios`}
-                </span>
-              </Link>
-            </li>
-          ))}
+          {necesidades.map((necesidad) => {
+            const Icono = iconoNecesidad(necesidad.codigo);
+            return (
+              <li key={necesidad.codigo}>
+                <Destello className={estilos.marcoNecesidad}>
+                  <Link href={`/orientacion/${necesidad.codigo}`} className={estilos.necesidad}>
+                    <span
+                      className={`${ventanas.ficha} ${ventanas[tonoNecesidad(necesidad.codigo)]}`}
+                      aria-hidden="true"
+                    >
+                      <Icono size={22} strokeWidth={1.9} />
+                    </span>
+                    <span className={estilos.nombreNecesidad}>{necesidad.nombre}</span>
+                    <span className={estilos.descripcionNecesidad}>{necesidad.descripcion}</span>
+                    <span className={estilos.pieNecesidad}>
+                      {necesidad.servicios === 1
+                        ? '1 servicio'
+                        : `${necesidad.servicios} servicios`}
+                      <ArrowRight aria-hidden="true" size={18} />
+                    </span>
+                  </Link>
+                </Destello>
+              </li>
+            );
+          })}
         </ul>
       )}
 

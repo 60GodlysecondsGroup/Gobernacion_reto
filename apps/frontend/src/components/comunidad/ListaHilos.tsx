@@ -1,8 +1,17 @@
 'use client';
 
+import { MessageSquare, MessagesSquare, PenLine, Search, SearchX } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState, type FormEvent } from 'react';
-import { Aviso, Boton, CampoTexto, Insignia, Tarjeta } from '@/components/ui';
+import { useEffect, useId, useState, type FormEvent } from 'react';
+import { useSesion } from '@/components/sesion/ProveedorSesion';
+import {
+  Boton,
+  BotonEnlace,
+  CargandoLista,
+  EstadoError,
+  EstadoVacio,
+  Insignia,
+} from '@/components/ui';
 import { mensajeDeError } from '@/lib/api/cliente';
 import {
   listarHilos,
@@ -25,6 +34,8 @@ export function ListaHilos() {
   const [hayMas, setHayMas] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorBusqueda, setErrorBusqueda] = useState<string | undefined>();
+  const { puede } = useSesion();
+  const idBusqueda = useId();
 
   useEffect(() => {
     let vigente = true;
@@ -69,9 +80,46 @@ export function ListaHilos() {
     aplicar({ categoria: filtro.categoria, buscar: consulta || undefined });
   }
 
+  const filtrando = Boolean(filtro.buscar || filtro.categoria);
+
   return (
-    <Tarjeta titulo="Hilos de tu comunidad" descripcion="Los más activos primero.">
-      <div className={comun.formulario}>
+    <section className={estilos.hilos} aria-labelledby="titulo-hilos">
+      <div className={estilos.cabeceraHilos}>
+        <h2 id="titulo-hilos" className={estilos.tituloSeccion}>
+          Hilos de tu comunidad
+        </h2>
+        <p className={comun.suave}>Los más activos primero.</p>
+      </div>
+
+      <div className={estilos.herramientas}>
+        <form className={estilos.busqueda} onSubmit={alBuscar} role="search">
+          <label htmlFor={idBusqueda} className="visualmente-oculto">
+            Buscar en los hilos
+          </label>
+          <span className={estilos.campoBusqueda}>
+            <Search aria-hidden="true" size={18} />
+            <input
+              id={idBusqueda}
+              type="search"
+              placeholder="Buscar en los hilos…"
+              value={texto}
+              onChange={(e) => setTexto(e.target.value)}
+              maxLength={60}
+              autoComplete="off"
+              aria-invalid={errorBusqueda ? true : undefined}
+              aria-describedby={errorBusqueda ? `${idBusqueda}-error` : undefined}
+            />
+          </span>
+          <Boton type="submit" variante="oscuro">
+            Buscar
+          </Boton>
+          {errorBusqueda && (
+            <p id={`${idBusqueda}-error`} className={estilos.errorBusqueda} role="alert">
+              {errorBusqueda}
+            </p>
+          )}
+        </form>
+
         <div className={estilos.categorias} role="group" aria-label="Filtrar por categoría">
           <button
             type="button"
@@ -89,71 +137,90 @@ export function ListaHilos() {
               aria-pressed={filtro.categoria === categoria.codigo}
               onClick={() => aplicar({ categoria: categoria.codigo, buscar: filtro.buscar })}
             >
-              {categoria.nombre} ({categoria.hilos})
+              {categoria.nombre}
+              <span className={estilos.cuentaCategoria}>{categoria.hilos}</span>
             </button>
           ))}
         </div>
-
-        <form className={estilos.busqueda} onSubmit={alBuscar} role="search">
-          <CampoTexto
-            etiqueta="Buscar en los hilos"
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-            error={errorBusqueda}
-            maxLength={60}
-            autoComplete="off"
-          />
-          <Boton type="submit" variante="secundario">
-            Buscar
-          </Boton>
-        </form>
-
-        {error && <Aviso tono="peligro">{error}</Aviso>}
-        {!hilos && !error && <p className={comun.cargando}>Cargando hilos…</p>}
-        {hilos && hilos.length === 0 && (
-          <Aviso tono="info">
-            {filtro.buscar || filtro.categoria
-              ? 'No hay hilos que coincidan.'
-              : 'Todavía no hay hilos. ¡Puedes empezar el primero!'}
-          </Aviso>
-        )}
-
-        {hilos && hilos.length > 0 && (
-          <ul className={comun.lista}>
-            {hilos.map((hilo) => (
-              <li key={hilo.id}>
-                <article className={estilos.hilo}>
-                  <div className={comun.fila}>
-                    <Insignia tono="info">{hilo.categoria.nombre}</Insignia>
-                    {hilo.estado === 'cerrado' && <Insignia>Cerrado</Insignia>}
-                  </div>
-                  <h3 className={estilos.tituloHilo}>
-                    <Link href={`/comunidad/hilos/${hilo.id}`}>{hilo.titulo}</Link>
-                  </h3>
-                  <p className={estilos.extracto}>{hilo.extracto}</p>
-                  <div className={estilos.pieHilo}>
-                    <AutorContenido autor={hilo.autor} fecha={hilo.fecha} />
-                    <span className={comun.suave}>
-                      {hilo.respuestas === 1 ? '1 respuesta' : `${hilo.respuestas} respuestas`}
-                    </span>
-                  </div>
-                </article>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {hayMas && (
-          <div className={comun.fila}>
-            <Boton
-              variante="secundario"
-              onClick={() => setFiltro((actual) => ({ ...actual, pagina: actual.pagina + 1 }))}
-            >
-              Ver más hilos
-            </Boton>
-          </div>
-        )}
       </div>
-    </Tarjeta>
+
+      {error && (
+        <EstadoError
+          alReintentar={() => aplicar({ categoria: filtro.categoria, buscar: filtro.buscar })}
+        >
+          {error}
+        </EstadoError>
+      )}
+      {!hilos && !error && <CargandoLista filas={3} etiqueta="Cargando hilos…" alto="8.5rem" />}
+      {hilos && hilos.length === 0 && (
+        <EstadoVacio
+          icono={filtrando ? SearchX : MessagesSquare}
+          titulo={filtrando ? 'No hay hilos que coincidan' : 'Todavía no hay hilos'}
+          accion={
+            filtrando ? (
+              <Boton
+                variante="secundario"
+                onClick={() => {
+                  setTexto('');
+                  aplicar({});
+                }}
+              >
+                Quitar filtros
+              </Boton>
+            ) : (
+              puede('crear_hilo') && (
+                <BotonEnlace href="/comunidad/hilos/nuevo">
+                  <PenLine aria-hidden="true" size={18} />
+                  Crear el primer hilo
+                </BotonEnlace>
+              )
+            )
+          }
+        >
+          {filtrando
+            ? 'Prueba con otra palabra o con otra categoría.'
+            : 'Puedes empezar la primera conversación de tu comunidad.'}
+        </EstadoVacio>
+      )}
+
+      {hilos && hilos.length > 0 && (
+        <ul className={estilos.listaHilos}>
+          {hilos.map((hilo) => (
+            <li key={hilo.id}>
+              <article className={estilos.hilo}>
+                <div className={comun.fila}>
+                  <Insignia tono="info">{hilo.categoria.nombre}</Insignia>
+                  {hilo.estado === 'cerrado' && <Insignia>Cerrado</Insignia>}
+                </div>
+                <h3 className={estilos.tituloHilo}>
+                  <Link href={`/comunidad/hilos/${hilo.id}`} className={estilos.enlaceHilo}>
+                    {hilo.titulo}
+                  </Link>
+                </h3>
+                <p className={estilos.extracto}>{hilo.extracto}</p>
+                <div className={estilos.pieHilo}>
+                  <AutorContenido autor={hilo.autor} fecha={hilo.fecha} />
+                  <span className={estilos.respuestas}>
+                    <MessageSquare aria-hidden="true" size={16} />
+                    {hilo.respuestas === 1 ? '1 respuesta' : `${hilo.respuestas} respuestas`}
+                  </span>
+                </div>
+              </article>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {hayMas && (
+        <div className={estilos.verMas}>
+          <Boton
+            variante="secundario"
+            onClick={() => setFiltro((actual) => ({ ...actual, pagina: actual.pagina + 1 }))}
+          >
+            Ver más hilos
+          </Boton>
+        </div>
+      )}
+    </section>
   );
 }

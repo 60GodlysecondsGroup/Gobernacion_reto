@@ -1,0 +1,139 @@
+
+ RUN  v5.0.5 /home/claude/proyecto/apps/backend
+
+ ✓ test/integracion/salas.test.ts > AV-12 · Aislamiento de salas por comunidad > cada comunidad lista solo sus cinco salas y no ve las ajenas 52ms
+ ✓ test/integracion/salas.test.ts > AV-12 · Aislamiento de salas por comunidad > el WebSocket rechaza otra comunidad, sin sesión y sin permiso, sin enviar nada de la sala 18ms
+ ✓ test/integracion/salas.test.ts > AV-12 · Aislamiento de salas por comunidad > rechaza el handshake desde un origen ajeno 5ms
+ ✓ test/integracion/salas.test.ts > TRL-07 y AV-09 · Capacidad de 10 > con 11 entradas simultáneas entran 10 y la 11.ª recibe «La sala está llena» 187ms
+ ✓ test/integracion/salas.test.ts > AV-04, AV-06, AV-07 y AV-08 · Movimiento compartido > W, A, S, D mueven en el servidor, todos lo ven, y no se cruzan límites ni obstáculos 239ms
+ ✓ test/integracion/salas.test.ts > AV-05 · Movimiento por clic (Fase 8) > el avatar llega al destino rodeando obstáculos, los demás lo ven y un destino inválido se rechaza 150ms
+ ✓ test/integracion/salas.test.ts > Fase 7 · La administración deshabilita una sala con gente dentro > quien está dentro sale con un aviso, el cupo se libera y no se puede volver a entrar 49ms
+ ✓ test/integracion/salas.test.ts > F14 · Chat de sala con DLP > un mensaje con teléfono no llega a los demás; el autor ve el aviso 89ms
+ ✓ test/integracion/salas.test.ts > Conexión perdida > si se corta la conexión, la persona sale y los demás lo ven 68ms
+ ✓ test/integracion/salas.test.ts > TRL-08 y AV-10 · Cierre automático > vacía durante 2 s, la instancia se cierra y se habilita otra 2374ms
+ ✓ test/integracion/salas.test.ts > TRL-08 y AV-10 · Cierre automático > si alguien entra antes del tiempo, no se cierra 3750ms
+ ✓ test/integracion/salas.test.ts > Reconciliación al arrancar > cierra participaciones abiertas y deja vacías las salas que tenían gente 6ms
+ ✓ test/integracion/salas.test.ts > Concurrencia real en la base > 12 entradas en paralelo por conexiones distintas: solo 10 ocupan cupo 45ms
+ ✓ test/integracion/comunidad.test.ts > TRL-02 · Crear hilo > el hilo queda solo en la comunidad del autor y otros del mismo rango lo ven 98ms
+ ✓ test/integracion/comunidad.test.ts > TRL-02 · Crear hilo > nunca muestra edad, rango ni datos de contacto del autor 10ms
+ ✓ test/integracion/comunidad.test.ts > TRL-02 · Crear hilo > rechaza categorías inexistentes y campos que no son del hilo 13ms
+ ✓ test/integracion/comunidad.test.ts > TRL-03 · Responder > la respuesta pasa por el DLP y aparece en el hilo con su autor 19ms
+ ✓ test/integracion/comunidad.test.ts > TRL-03 · Responder > no se puede responder un hilo cerrado 11ms
+ ✓ test/integracion/comunidad.test.ts > DLP en hilos y respuestas > bloquea un hilo con teléfono en el contenido y no lo guarda 13ms
+ ✓ test/integracion/comunidad.test.ts > DLP en hilos y respuestas > bloquea un hilo con red social en el título y no lo guarda 10ms
+ ✓ test/integracion/comunidad.test.ts > DLP en hilos y respuestas > bloquea un hilo con ubicación en el contenido y no lo guarda 10ms
+ ✓ test/integracion/comunidad.test.ts > DLP en hilos y respuestas > bloquea una respuesta con un teléfono y no la guarda 12ms
+ ✓ test/integracion/comunidad.test.ts > Aislamiento: otro rango no ve, no responde, no lista ni busca el hilo > Usuario_003 (otro rango) 34ms
+ ✓ test/integracion/comunidad.test.ts > Aislamiento: otro rango no ve, no responde, no lista ni busca el hilo > Usuario_004 (otro rango) 35ms
+ ✓ test/integracion/comunidad.test.ts > Aislamiento: otro rango no ve, no responde, no lista ni busca el hilo > Usuario_005 (otro rango) 36ms
+ ✓ test/integracion/comunidad.test.ts > Aislamiento: otro rango no ve, no responde, no lista ni busca el hilo > cada comunidad ve solo sus propios hilos 18ms
+ ✓ test/integracion/comunidad.test.ts > Aislamiento: otro rango no ve, no responde, no lista ni busca el hilo > un hilo oculto por moderación deja de verse 17ms
+ ✓ test/integracion/comunidad.test.ts > Listado > filtra por categoría, busca dentro de la comunidad y cuenta respuestas 13ms
+ ✓ test/integracion/comunidad.test.ts > Listado > pagina de 10 en 10 117ms
+ ✓ test/integracion/comunidad.test.ts > Listado > ofrece las cinco categorías con su número de hilos 8ms
+ ✓ test/integracion/comunidad.test.ts > Reportes (F19, F20) > registra el reporte con su motivo y el contenido asociado 25ms
+ ✓ test/integracion/comunidad.test.ts > Reportes (F19, F20) > permite reportar hilos y perfiles de la propia comunidad 14ms
+ ✓ test/integracion/comunidad.test.ts > Reportes (F19, F20) > valida el motivo y pasa la descripción por el DLP 14ms
+ ✓ test/integracion/comunidad.test.ts > Permisos > sin sesión: 401 en hilos y reportes 3ms
+ ✓ test/integracion/comunidad.test.ts > Permisos > el personal sin comunidad no publica ni lee foros; el gestor no tiene acceso 10ms
+ ✓ test/integracion/moderacion.test.ts > TRL-11 · reporte de contenido y revisión del moderador > el reporte llega al panel con motivo, fecha y contenido, y el moderador cambia su estado 114ms
+ ✓ test/integracion/moderacion.test.ts > TRL-11 · reporte de contenido y revisión del moderador > rechaza transiciones no permitidas y estados inexistentes 30ms
+ ✓ test/integracion/moderacion.test.ts > Acciones administrativas sobre el contenido > un contenido oculto por el moderador deja de mostrarse en la comunidad 37ms
+ ✓ test/integracion/moderacion.test.ts > Acciones administrativas sobre el contenido > ocultar un hilo lo saca del listado y su URL responde 404 37ms
+ ✓ test/integracion/moderacion.test.ts > Acciones administrativas sobre el contenido > suspender a la persona autora le quita la sesión de inmediato y queda registrado 28ms
+ ✓ test/integracion/moderacion.test.ts > Acciones administrativas sobre el contenido > la moderación no aplica medidas sobre personal ni sobre sí misma 13ms
+ ✓ test/integracion/moderacion.test.ts > Permisos del panel (verificados en el backend) > sin sesión: 401 en todas las rutas del panel 13ms
+ ✓ test/integracion/moderacion.test.ts > Permisos del panel (verificados en el backend) > un usuario común no accede al panel ni a sus rutas de API (403) 18ms
+ ✓ test/integracion/moderacion.test.ts > Permisos del panel (verificados en el backend) > el gestor de fuentes no revisa reportes ni administra usuarios 6ms
+ ✓ test/integracion/moderacion.test.ts > Permisos del panel (verificados en el backend) > un moderador no modifica fuentes institucionales, reglas DLP, salas ni comunidades 19ms
+ ✓ test/integracion/moderacion.test.ts > Permisos del panel (verificados en el backend) > no existe forma de cambiar el rango de edad de una comunidad ni de una persona 21ms
+ ✓ test/integracion/moderacion.test.ts > Permisos del panel (verificados en el backend) > el registro de acciones solo muestra a la moderación lo que gestiona 31ms
+ ✓ test/integracion/moderacion.test.ts > Administración > desactivar una sala la saca de la lista de la comunidad y no admite entradas 20ms
+ ✓ test/integracion/moderacion.test.ts > Administración > la capacidad nunca supera 10 y el escenario se valida 27ms
+ ✓ test/integracion/moderacion.test.ts > Administración > desactivar una regla DLP cambia lo que se bloquea y queda registrado 31ms
+ ✓ test/integracion/moderacion.test.ts > Administración > crea categorías y habilita su sala temática, sin duplicar 25ms
+ ✓ test/integracion/moderacion.test.ts > Administración > lista usuarios con datos mínimos: sin edad, intereses ni código de acceso 6ms
+ ✓ test/integracion/moderacion.test.ts > Administración > el resumen y las incidencias DLP traen datos reales, sin texto ni autor 15ms
+ ✓ test/integracion/seguridad.test.ts > Acceso de demostración > ofrece al menos un usuario por rango y uno por rol 26ms
+ ✓ test/integracion/seguridad.test.ts > Acceso de demostración > LunaDemo entra a su comunidad 13–15, con cookie HttpOnly y sin datos de edad 17ms
+ ✓ test/integracion/seguridad.test.ts > Acceso de demostración > rechaza un usuario de prueba inexistente o campos extra 8ms
+ ✓ test/integracion/seguridad.test.ts > Acceso de demostración > cerrar sesión borra la cookie 9ms
+ ✓ test/integracion/seguridad.test.ts > TRL-01 · Segmentación por edad > el usuario del rango B solo ve su comunidad 11ms
+ ✓ test/integracion/seguridad.test.ts > TRL-01 · Segmentación por edad > por identificador directo, otra comunidad responde igual que una inexistente 29ms
+ ✓ test/integracion/seguridad.test.ts > TRL-01 · Segmentación por edad > la búsqueda solo encuentra personas del mismo rango 21ms
+ ✓ test/integracion/seguridad.test.ts > TRL-01 · Segmentación por edad > el perfil de alguien de otro rango responde igual que uno inexistente 24ms
+ ✓ test/integracion/seguridad.test.ts > TRL-01 · Segmentación por edad > el personal sin comunidad asignada no entra a contenido comunitario 6ms
+ ✓ test/integracion/seguridad.test.ts > Permisos por rol en rutas de moderación > Usuario_001 → GET /api/moderacion/incidencias-dlp responde 403 8ms
+ ✓ test/integracion/seguridad.test.ts > Permisos por rol en rutas de moderación > Gestor_001 → GET /api/moderacion/incidencias-dlp responde 403 7ms
+ ✓ test/integracion/seguridad.test.ts > Permisos por rol en rutas de moderación > Moderador_001 → GET /api/moderacion/incidencias-dlp responde 200 16ms
+ ✓ test/integracion/seguridad.test.ts > Permisos por rol en rutas de moderación > Admin_001 → GET /api/moderacion/incidencias-dlp responde 200 8ms
+ ✓ test/integracion/seguridad.test.ts > Perfil protegido con DLP > muestra el perfil propio con alias, intereses y avatar, nunca la edad 4ms
+ ✓ test/integracion/seguridad.test.ts > Perfil protegido con DLP > bloquea TRL-04 · teléfono con el mensaje estándar y no guarda nada 20ms
+ ✓ test/integracion/seguridad.test.ts > Perfil protegido con DLP > bloquea TRL-05 · red social con el mensaje estándar y no guarda nada 13ms
+ ✓ test/integracion/seguridad.test.ts > Perfil protegido con DLP > bloquea TRL-06 · dirección con el mensaje estándar y no guarda nada 10ms
+ ✓ test/integracion/seguridad.test.ts > Perfil protegido con DLP > bloquea teléfono en el alias con el mensaje estándar y no guarda nada 9ms
+ ✓ test/integracion/seguridad.test.ts > Perfil protegido con DLP > registra el evento DLP sin guardar el texto bloqueado 7ms
+ ✓ test/integracion/seguridad.test.ts > Perfil protegido con DLP > el moderador ve las incidencias por categoría, sin texto ni autor 7ms
+ ✓ test/integracion/seguridad.test.ts > Perfil protegido con DLP > guarda un perfil válido 11ms
+ ✓ test/integracion/seguridad.test.ts > Perfil protegido con DLP > rechaza campos que no son del perfil (no se puede cambiar el rango) 6ms
+ ✓ test/integracion/seguridad.test.ts > Perfil protegido con DLP > no permite usar el alias de otra persona 7ms
+ ✓ test/integracion/seguridad.test.ts > Perfil protegido con DLP > el avatar ya no se cambia desde el perfil: tiene su propia sección (Fase 6) 4ms
+ ✓ test/integracion/seguridad.test.ts > Reglas DLP en datos (app.regla_dlp) > la base tiene activas las mismas reglas del seed 2ms
+ ✓ test/integracion/seguridad.test.ts > Reglas DLP en datos (app.regla_dlp) > desactivar una regla en la base cambia el comportamiento sin tocar código 7ms
+ ✓ test/integracion/avatar.test.ts > Catálogo del avatar (F36, RF21, RF27, RF28) > AV-01 · ofrece entre 2 y 4 opciones por capa, gratuitas y sin relación con la edad 55ms
+ ✓ test/integracion/avatar.test.ts > Catálogo del avatar (F36, RF21, RF27, RF28) > cada elemento registra su origen y su licencia (RF28) 3ms
+ ✓ test/integracion/avatar.test.ts > Catálogo del avatar (F36, RF21, RF27, RF28) > la base no admite un recurso gráfico que no sea una clave de dibujo (p. ej. una URL) 7ms
+ ✓ test/integracion/avatar.test.ts > Catálogo del avatar (F36, RF21, RF27, RF28) > la base no admite un elemento de otra capa en la configuración 4ms
+ ✓ test/integracion/avatar.test.ts > Mi avatar (F36, F37) > AV-02 · guarda la apariencia y la recupera al volver a entrar 25ms
+ ✓ test/integracion/avatar.test.ts > Mi avatar (F36, F37) > cabello y accesorio se pueden quitar 11ms
+ ✓ test/integracion/avatar.test.ts > Mi avatar (F36, F37) > AV-03 · la misma apariencia aparece en el perfil, en hilos, en respuestas y en la sala 64ms
+ ✓ test/integracion/avatar.test.ts > Mi avatar (F36, F37) > AV-11 · rechaza una URL y no cambia nada 14ms
+ ✓ test/integracion/avatar.test.ts > Mi avatar (F36, F37) > AV-11 · rechaza texto libre y no cambia nada 16ms
+ ✓ test/integracion/avatar.test.ts > Mi avatar (F36, F37) > AV-11 · rechaza un teléfono y no cambia nada 18ms
+ ✓ test/integracion/avatar.test.ts > Mi avatar (F36, F37) > AV-11 · rechaza una imagen y no cambia nada 11ms
+ ✓ test/integracion/avatar.test.ts > Mi avatar (F36, F37) > AV-11 · rechaza un campo de foto y no cambia nada 11ms
+ ✓ test/integracion/avatar.test.ts > Mi avatar (F36, F37) > AV-11 · rechaza un texto con contacto y no cambia nada 11ms
+ ✓ test/integracion/avatar.test.ts > Mi avatar (F36, F37) > AV-11 · rechaza un elemento de otra capa y no cambia nada 9ms
+ ✓ test/integracion/avatar.test.ts > Mi avatar (F36, F37) > AV-11 · no hay forma de subir una foto: no existe ninguna ruta de carga 19ms
+ ✓ test/integracion/avatar.test.ts > Mi avatar (F36, F37) > un usuario no puede modificar el avatar de otro 14ms
+ ✓ test/integracion/avatar.test.ts > Mi avatar (F36, F37) > un elemento desactivado ya no se ofrece ni se puede elegir 13ms
+ ✓ test/integracion/avatar.test.ts > Mi avatar (F36, F37) > sin sesión no se ve ni se cambia; el moderador lo ve pero no lo personaliza (A.2) 12ms
+ ✓ test/integracion/orientacion.test.ts > TRL-09 · Orientación institucional > ofrece las seis necesidades, sin sesión y sin preguntas de evaluación 28ms
+ ✓ test/integracion/orientacion.test.ts > TRL-09 · Orientación institucional > la ficha muestra institución, canal, fuente, fecha de verificación y estado 15ms
+ ✓ test/integracion/orientacion.test.ts > TRL-09 · Orientación institucional > una fuente en revisión se muestra con su estado 6ms
+ ✓ test/integracion/orientacion.test.ts > TRL-09 · Orientación institucional > una necesidad o un servicio inexistente responde 404 7ms
+ ✓ test/integracion/orientacion.test.ts > TRL-10 · «Necesito ayuda» > lista canales institucionales con fuente y fecha, sin necesidad de sesión 5ms
+ ✓ test/integracion/orientacion.test.ts > Fuentes inactivas > una fuente inactiva no aparece como opción vigente ni se puede abrir 15ms
+ ✓ test/integracion/orientacion.test.ts > Fuentes inactivas > al desactivar una fuente, deja de mostrarse de inmediato 31ms
+ ✓ test/integracion/orientacion.test.ts > TRL-12 · Actualización de fuente trazable > revisión → verificación queda en la bitácora con fecha, motivo y responsable 39ms
+ ✓ test/integracion/orientacion.test.ts > TRL-12 · Actualización de fuente trazable > rechaza transiciones no permitidas, motivos vacíos y fechas futuras 17ms
+ ✓ test/integracion/orientacion.test.ts > TRL-12 · Actualización de fuente trazable > editar datos registra qué cambió; guardar sin cambios no agrega entradas 23ms
+ ✓ test/integracion/orientacion.test.ts > TRL-12 · Actualización de fuente trazable > crea una fuente con su bitácora y valida el canal 31ms
+ ✓ test/integracion/orientacion.test.ts > Permisos del panel de fuentes > sin sesión responde 401 3ms
+ ✓ test/integracion/orientacion.test.ts > Permisos del panel de fuentes > Usuario_001 → GET /api/gestion/fuentes responde 403 6ms
+ ✓ test/integracion/orientacion.test.ts > Permisos del panel de fuentes > Moderador_001 → GET /api/gestion/fuentes responde 403 7ms
+ ✓ test/integracion/orientacion.test.ts > Permisos del panel de fuentes > Gestor_001 → GET /api/gestion/fuentes responde 200 14ms
+ ✓ test/integracion/orientacion.test.ts > Permisos del panel de fuentes > Admin_001 → GET /api/gestion/fuentes responde 200 8ms
+ ✓ test/integracion/orientacion.test.ts > Permisos del panel de fuentes > un usuario común no puede crear ni cambiar fuentes 7ms
+ ✓ test/integracion/orientacion.test.ts > Permisos del panel de fuentes > el gestor ve el semáforo por estado (F34) 5ms
+ ✓ test/integracion/orientacion.test.ts > Archivo de carga > sincroniza: desactiva lo que ya no figura y es idempotente 12ms
+ ✓ test/integracion/db.test.ts > Esquema y datos sintéticos > tiene aplicada la migración inicial 26ms
+ ✓ test/integracion/db.test.ts > Esquema y datos sintéticos > tiene una comunidad por cada rango de edad 2ms
+ ✓ test/integracion/db.test.ts > Esquema y datos sintéticos > carga Usuario_001 (LunaDemo) en la comunidad 13–15, sin edad exacta 7ms
+ ✓ test/integracion/db.test.ts > Esquema y datos sintéticos > carga la sala «Bienestar cotidiano» de la comunidad B (B.7) con capacidad 10 2ms
+ ✓ test/integracion/db.test.ts > Esquema y datos sintéticos > tiene las cinco salas temáticas en cada comunidad, cada una con su escenario 1ms
+ ✓ test/integracion/db.test.ts > Esquema y datos sintéticos > carga InstituciónDemo · CanalDemo marcada como demostración y con su bitácora 1ms
+ ✓ test/integracion/db.test.ts > Reglas de seguridad reforzadas en la base > rechaza un hilo de un usuario del rango B en la comunidad C 5ms
+ ✓ test/integracion/db.test.ts > Reglas de seguridad reforzadas en la base > acepta el mismo hilo en la comunidad propia 2ms
+ ✓ test/integracion/db.test.ts > Reglas de seguridad reforzadas en la base > impide que una sala supere 10 participantes 2ms
+ ✓ test/integracion/db.test.ts > Reglas de seguridad reforzadas en la base > impide modificar la bitácora de fuentes 1ms
+ ✓ test/integracion/db.test.ts > Reglas de seguridad reforzadas en la base > no da acceso al esquema a los roles públicos de Supabase 1ms
+
+ Test Files  7 passed (7)
+      Tests  127 passed (127)
+   Start at  00:27:18
+   Duration  11.92s (tests 83%, import 15%, transform 1%)
+
+    Isolate  7 workers spawned · ~111ms startup each (spawn + environment, per file)
+             at least ~668ms faster with isolate: false — reuses workers across files instead of one per file
+

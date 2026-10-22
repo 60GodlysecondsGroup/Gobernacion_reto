@@ -1,10 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
-import { Aviso } from '@/components/ui';
+import { Aviso, BotonEnlace, CargandoLista, EnlaceVolver, EstadoVacio } from '@/components/ui';
 import { ErrorApi, mensajeDeError } from '@/lib/api/cliente';
 import { obtenerServiciosDe, type FichaServicio, type Necesidad } from '@/lib/api/orientacion';
 import comun from '../comun.module.css';
@@ -36,12 +35,12 @@ export function ServiciosPorNecesidad() {
   }, [codigo]);
 
   return (
-    <div className={comun.pagina}>
+    <div className={comun.paginaAncha}>
       <nav aria-label="Ruta" className={estilos.migas}>
-        <Link href="/orientacion">← Todos los temas</Link>
+        <EnlaceVolver href="/orientacion">Todos los temas</EnlaceVolver>
       </nav>
 
-      {estado.tipo === 'cargando' && <p className={comun.cargando}>Cargando servicios…</p>}
+      {estado.tipo === 'cargando' && <CargandoLista etiqueta="Cargando servicios…" />}
       {estado.tipo === 'error' && <Aviso tono="peligro">{estado.mensaje}</Aviso>}
 
       {estado.tipo === 'listo' && (
@@ -50,9 +49,18 @@ export function ServiciosPorNecesidad() {
             {estado.necesidad.descripcion}
           </EncabezadoPagina>
           {estado.servicios.length === 0 ? (
-            <Aviso tono="info">Aún no hay servicios registrados para este tema.</Aviso>
+            <EstadoVacio
+              titulo="Aún no hay servicios para este tema"
+              accion={
+                <BotonEnlace href="/orientacion" variante="secundario">
+                  Ver otros temas
+                </BotonEnlace>
+              }
+            >
+              Mientras tanto, «Necesito ayuda» muestra los canales institucionales disponibles.
+            </EstadoVacio>
           ) : (
-            <ul className={comun.lista}>
+            <ul className={estilos.rejillaServicios}>
               {estado.servicios.map((servicio) => (
                 <li key={servicio.id}>
                   <TarjetaServicio servicio={servicio} />

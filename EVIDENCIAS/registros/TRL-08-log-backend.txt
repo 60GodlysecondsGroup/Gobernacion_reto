@@ -1,0 +1,1 @@
+2026-10-22T05:26:42.480Z INFO  Sala cerrada por inactividad {"sala":"a03e8380-ed27-4e42-8c84-13429dc70f7e","nuevaInstancia":"58bd4580-13d0-411d-89f4-93b0968a11dc"}

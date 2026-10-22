@@ -1,36 +1,347 @@
 .pagina {
   display: grid;
-  gap: var(--espacio-6);
-  max-width: 48rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-9);
 }
 
-.presentacion {
+/* ── Héroe ───────────────────────────────────────────── */
+.heroe {
   display: grid;
-  gap: var(--espacio-3);
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espacio-7);
+  padding-top: var(--espacio-4);
 }
 
-.antetitulo {
-  color: var(--color-primario);
+.textoHeroe {
+  display: grid;
+  justify-items: start;
+  gap: var(--espacio-5);
+}
+
+.etiquetaHeroe {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  padding: 0.35rem 0.85rem 0.35rem 0.5rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-total);
+  background: rgb(255 255 255 / 0.75);
+  color: var(--color-texto-suave);
   font-size: var(--texto-sm);
   font-weight: var(--peso-fuerte);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  box-shadow: var(--sombra-1);
+}
+
+.puntos {
+  display: inline-grid;
+  grid-template-columns: repeat(2, 7px);
+  gap: 2px;
+  padding: 3px;
+  border-radius: 6px;
+  background: var(--indigo-900);
+}
+
+.puntos span {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+}
+
+.puntos span:nth-child(1) {
+  background: var(--ventana-cielo);
+}
+
+.puntos span:nth-child(2) {
+  background: var(--ventana-ambar);
+}
+
+.puntos span:nth-child(3) {
+  background: var(--ventana-menta);
+}
+
+.puntos span:nth-child(4) {
+  background: var(--ventana-lila);
 }
 
 .titulo {
+  max-width: 17ch;
   font-size: var(--texto-3xl);
-  letter-spacing: -0.02em;
+  font-weight: 760;
+  letter-spacing: -0.04em;
+  line-height: 1.02;
 }
 
 .entradilla {
+  max-width: 34rem;
   color: var(--color-texto-suave);
   font-size: var(--texto-lg);
-  max-width: 40rem;
 }
 
 .acciones {
   display: flex;
   flex-wrap: wrap;
   gap: var(--espacio-3);
-  margin-top: var(--espacio-2);
+}
+
+.garantias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2) var(--espacio-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.garantias li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+}
+
+.garantias svg {
+  color: var(--color-exito);
+}
+
+.marcoEdificio {
+  box-shadow: var(--sombra-3);
+}
+
+.tarjetaEdificio {
+  padding: var(--espacio-4);
+  background: rgb(255 255 255 / 0.92);
+}
+
+/* ── Secciones ───────────────────────────────────────── */
+.seccion {
+  display: grid;
+  gap: var(--espacio-6);
+}
+
+.cabeceraSeccion {
+  display: grid;
+  gap: var(--espacio-3);
+  max-width: 44rem;
+}
+
+.cabeceraSeccion h2 {
+  font-size: var(--texto-2xl);
+}
+
+.cabeceraSeccion p:last-child {
+  color: var(--color-texto-suave);
+}
+
+.antetitulo {
+  color: var(--color-primario);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.antetituloClaro {
+  color: var(--ventana-ambar);
+}
+
+.orientacion {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+/* Acceso directo a la ayuda: tarjeta oscura con acento coral, imposible de pasar por alto. */
+.tarjetaAyuda {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espacio-4);
+  padding: var(--espacio-5);
+  border-radius: var(--radio-lg);
+  background:
+    radial-gradient(28rem 12rem at 100% 0%, rgb(201 58 47 / 0.35), transparent 70%), var(--tinta);
+  color: #fff;
+  text-decoration: none;
+  box-shadow: var(--sombra-2);
+  transition:
+    transform var(--transicion),
+    box-shadow var(--transicion);
+}
+
+.tarjetaAyuda:hover {
+  color: #fff;
+  box-shadow: var(--sombra-3);
+  transform: translateY(-2px);
+}
+
+.iconoAyuda {
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: var(--radio-md);
+  background: var(--color-acento);
+  box-shadow: 0 10px 24px -10px rgb(201 58 47 / 0.9);
+}
+
+.textoAyuda {
+  display: grid;
+  gap: 2px;
+}
+
+.textoAyuda strong {
+  font-family: var(--fuente-titulos);
+  font-size: var(--texto-lg);
+}
+
+.textoAyuda span {
+  color: rgb(255 255 255 / 0.75);
+  font-size: var(--texto-sm);
+}
+
+.irAyuda {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: var(--espacio-2);
+  min-height: 2.75rem;
+  padding: 0 var(--espacio-5);
+  border-radius: var(--radio-total);
+  background: #fff;
+  color: var(--tinta);
+  font-weight: var(--peso-fuerte);
+  font-size: var(--texto-sm);
+  transition: gap var(--transicion);
+}
+
+.tarjetaAyuda:hover .irAyuda {
+  gap: var(--espacio-3);
+}
+
+/* ── Cómo te cuidamos (panel oscuro con aurora) ──────── */
+.cuidado {
+  border-radius: var(--radio-xl);
+  box-shadow: var(--sombra-3);
+}
+
+.interiorCuidado {
+  display: grid;
+  gap: var(--espacio-6);
+  padding: var(--espacio-7) var(--espacio-5);
+}
+
+.interiorCuidado .cabeceraSeccion p:last-child {
+  color: rgb(255 255 255 / 0.75);
+}
+
+.capas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--espacio-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.capa {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-3);
+  padding: var(--espacio-5);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: var(--radio-lg);
+  background: rgb(255 255 255 / 0.06);
+  backdrop-filter: blur(6px);
+}
+
+.capa h3 {
+  font-size: var(--texto-lg);
+}
+
+.capa p {
+  color: rgb(255 255 255 / 0.78);
+  font-size: var(--texto-sm);
+}
+
+.numeroCapa {
+  position: absolute;
+  top: var(--espacio-4);
+  right: var(--espacio-5);
+  color: rgb(255 255 255 / 0.28);
+  font-family: var(--fuente-titulos);
+  font-size: var(--texto-xl);
+  font-weight: var(--peso-titulo);
+}
+
+.iconoCapa {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--radio-md);
+  background: rgb(255 255 255 / 0.1);
+  color: var(--ventana-menta);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+}
+
+.capa:nth-child(2) .iconoCapa {
+  color: var(--ventana-ambar);
+}
+
+.capa:nth-child(3) .iconoCapa {
+  color: var(--ventana-cielo);
+}
+
+.enlaceClaro {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: var(--espacio-2);
+  color: #fff;
+  font-weight: var(--peso-fuerte);
+  text-underline-offset: 0.25em;
+}
+
+.enlaceClaro:hover {
+  color: var(--ventana-ambar);
+}
+
+.enlaceClaro:focus-visible {
+  outline-color: var(--ventana-cielo);
+}
+
+.seccionEstado {
+  max-width: 44rem;
+}
+
+@media (max-width: 47.99rem) {
+  .acciones > * {
+    flex: 1 1 100%;
+  }
+}
+
+@media (min-width: 48rem) {
+  .tarjetaAyuda {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: var(--espacio-5) var(--espacio-6);
+  }
+
+  .irAyuda {
+    grid-column: auto;
+  }
+
+  .interiorCuidado {
+    padding: var(--espacio-8) var(--espacio-7);
+  }
+}
+
+@media (min-width: 64rem) {
+  .heroe {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: var(--espacio-8);
+    padding-top: var(--espacio-6);
+  }
 }

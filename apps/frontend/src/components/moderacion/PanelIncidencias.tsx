@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
-import { Aviso, Boton, Insignia, Tarjeta } from '@/components/ui';
+import { GraficoPorDia } from '@/components/panel/GraficoPorDia';
+import panel from '@/components/panel/Panel.module.css';
+import { Aviso, Insignia, Tarjeta } from '@/components/ui';
 import { mensajeDeError } from '@/lib/api/cliente';
+import { formatearFechaHora } from '@/lib/fechas';
 import { obtenerIncidenciasDlp, type IncidenciasDlp } from '@/lib/api/moderacion';
-import comun from '../comun.module.css';
 import estilos from './PanelIncidencias.module.css';
 
 const PERIODOS = [
@@ -21,8 +23,6 @@ const TIPO_CONTENIDO: Record<string, string> = {
   sala: 'Chat de sala',
   reporte: 'Detalle de un reporte',
 };
-
-const formatoFecha = new Intl.DateTimeFormat('es-CO', { dateStyle: 'short', timeStyle: 'short' });
 
 /** Incidencias DLP (F35). Por minimización no hay texto ni autor: el backend nunca los entrega. */
 export function PanelIncidencias() {
@@ -46,47 +46,80 @@ export function PanelIncidencias() {
     setDias(nuevo);
   };
 
+  const total = datos?.resumen.reduce((suma, c) => suma + c.total, 0) ?? 0;
+  const maximo = Math.max(1, ...(datos?.resumen.map((c) => c.total) ?? [0]));
+
   return (
-    <div className={comun.pagina}>
-      <EncabezadoPagina antetitulo="Moderación" titulo="Incidencias del DLP">
-        Bloqueos del sistema de protección de contenido. No se muestra el texto bloqueado (nunca se
+    <>
+      <EncabezadoPagina antetitulo="Panel administrativo" titulo="Incidencias del DLP">
+        Bloqueos del filtro automático de contenido. No se muestra el texto bloqueado (nunca se
         guarda) ni quién lo escribió.
       </EncabezadoPagina>
 
-      <div className={comun.fila} role="group" aria-label="Periodo">
+      <div className={panel.filtros} role="group" aria-label="Periodo">
         {PERIODOS.map((periodo) => (
-          <Boton
+          <button
             key={periodo.dias}
-            tamano="sm"
-            variante={periodo.dias === dias ? 'primario' : 'secundario'}
+            type="button"
+            className={panel.filtro}
             aria-pressed={periodo.dias === dias}
             onClick={() => elegirPeriodo(periodo.dias)}
           >
-            {periodo.etiqueta}
-          </Boton>
+            Últimos {periodo.etiqueta}
+          </button>
         ))}
       </div>
 
       {error && <Aviso tono="peligro">{error}</Aviso>}
-      {!datos && !error && <p className={comun.cargando}>Cargando incidencias…</p>}
+      {!datos && !error && <span className="esqueleto" style={{ height: '16rem' }} />}
 
       {datos && (
         <>
-          <ul className={estilos.resumen} aria-label="Bloqueos por categoría">
-            {datos.resumen.map((categoria) => (
-              <li key={categoria.categoria} className={estilos.categoria}>
-                <span className={estilos.total}>{categoria.total}</span>
-                <span className={comun.suave}>{categoria.nombre}</span>
-              </li>
-            ))}
-          </ul>
+          <div className={panel.dosColumnas}>
+            <Tarjeta
+              titulo={`${total} ${total === 1 ? 'bloqueo' : 'bloqueos'} por categoría`}
+              descripcion="Las seis categorías de protección de la sección 16.1."
+            >
+              <ul className={estilos.categorias}>
+                {datos.resumen.map((categoria) => (
+                  <li key={categoria.categoria} className={estilos.categoria}>
+                    <span className={estilos.nombreCategoria}>{categoria.nombre}</span>
+                    <span className={estilos.pista} aria-hidden="true">
+                      <span
+                        className={estilos.relleno}
+                        style={{ width: `${(categoria.total / maximo) * 100}%` }}
+                      />
+                    </span>
+                    <span className={estilos.total}>{categoria.total}</span>
+                  </li>
+                ))}
+              </ul>
+            </Tarjeta>
+            <Tarjeta
+              titulo="Por día"
+              descripcion={
+                datos.porTipo.length
+                  ? `Dónde ocurrieron: ${datos.porTipo
+                      .map(
+                        (t) => `${TIPO_CONTENIDO[t.tipoContenido] ?? t.tipoContenido} (${t.total})`,
+                      )
+                      .join(', ')}.`
+                  : 'Sin bloqueos en el periodo.'
+              }
+            >
+              <GraficoPorDia datos={datos.porDia} />
+            </Tarjeta>
+          </div>
 
           <Tarjeta titulo="Más recientes" descripcion="Hasta 50 eventos del periodo elegido.">
             {datos.recientes.length === 0 ? (
-              <p className={comun.suave}>No hay incidencias en este periodo.</p>
+              <p className={panel.detalleIndicador}>
+                No hay incidencias en este periodo. Prueba publicar «escríbeme al 3000000000» con un
+                usuario de prueba para ver una.
+              </p>
             ) : (
-              <div className={estilos.tablaContenedor}>
-                <table className={estilos.tabla}>
+              <div className={panel.tablaContenedor}>
+                <table className={panel.tabla}>
                   <thead>
                     <tr>
                       <th scope="col">Fecha</th>
@@ -99,7 +132,7 @@ export function PanelIncidencias() {
                   <tbody>
                     {datos.recientes.map((evento, i) => (
                       <tr key={`${evento.fecha}-${i}`}>
-                        <td>{formatoFecha.format(new Date(evento.fecha))}</td>
+                        <td>{formatearFechaHora(evento.fecha)}</td>
                         <td>{evento.nombreCategoria}</td>
                         <td>{TIPO_CONTENIDO[evento.tipoContenido] ?? evento.tipoContenido}</td>
                         <td>
@@ -121,6 +154,6 @@ export function PanelIncidencias() {
           </Tarjeta>
         </>
       )}
-    </div>
+    </>
   );
 }

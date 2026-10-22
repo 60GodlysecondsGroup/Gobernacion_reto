@@ -2,21 +2,88 @@
 .listaSalas {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
-  gap: var(--espacio-3);
+  gap: var(--espacio-4);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+.paginaSalas {
+  max-width: none;
+}
+
 .tarjetaSala {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  gap: var(--espacio-2);
-  padding: var(--espacio-4) var(--espacio-5);
+  overflow: hidden;
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-lg);
   background: var(--color-superficie);
   box-shadow: var(--sombra-1);
+  transition:
+    border-color var(--transicion),
+    box-shadow var(--transicion),
+    transform var(--transicion);
+}
+
+.tarjetaSala:hover {
+  border-color: #cfcbf7;
+  box-shadow: var(--sombra-2);
+  transform: translateY(-2px);
+}
+
+/* Miniatura: la pared de la sala con su zócalo y una fila de puestos (uno por cupo). */
+.miniaturaSala {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 5.5rem;
+  padding-bottom: 10px;
+  background:
+    linear-gradient(var(--zocalo, #a9853f), var(--zocalo, #a9853f)) bottom / 100% 14px no-repeat,
+    repeating-linear-gradient(90deg, transparent 0 22px, rgb(0 0 0 / 0.04) 22px 24px),
+    var(--pared, #d8b46a);
+}
+
+.ventanaSala {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  width: 3.25rem;
+  height: 2rem;
+  border: 3px solid rgb(21 23 61 / 0.55);
+  border-radius: 4px;
+  background: linear-gradient(180deg, #8fd3ff, #c4bdff);
+  transform: translateX(-50%);
+}
+
+.puestos {
+  position: relative;
+  display: flex;
+  gap: 4px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: rgb(21 23 61 / 0.18);
+}
+
+.puestos span {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 0.55);
+}
+
+.puestos span[data-ocupado] {
+  background: var(--tinta);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.6);
+}
+
+.cuerpoSala {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-2);
+  padding: var(--espacio-4) var(--espacio-5) 0;
 }
 
 .nombreSala {
@@ -24,11 +91,14 @@
 }
 
 .pieSala {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--espacio-2);
+  display: grid;
+  justify-items: start;
+  gap: var(--espacio-3);
+  padding: var(--espacio-4) var(--espacio-5) var(--espacio-5);
+}
+
+.pieSala > a {
+  justify-self: stretch;
 }
 
 /* Antesala */

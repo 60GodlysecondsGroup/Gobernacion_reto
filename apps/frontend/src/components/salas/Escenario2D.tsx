@@ -25,10 +25,13 @@ const PALETAS: Record<string, Paleta> = {
   'Hablar con alguien': { suelo: ['#e8e2ef', '#ddd4e8'], pared: '#a594c4', zocalo: '#776697' },
 };
 
+/** Colores de pared y suelo de una sala según su tema (también los usa la lista de salas). */
+export const paletaDeSala = (tema: string): Paleta => PALETAS[tema] ?? PALETA_BASE;
+
 const SOMBRA = 'rgb(27 38 51 / 0.14)';
 
 /** Cada mueble ocupa una celda de 16×16 y se dibuja con rectángulos. */
-function Mueble({ tipo }: { tipo: TipoObstaculo }) {
+export function Mueble({ tipo }: { tipo: TipoObstaculo }) {
   switch (tipo) {
     case 'planta':
       return (
@@ -114,6 +117,8 @@ export function Escenario2D({
   participantes,
   yo,
   descripcion,
+  destino,
+  onElegirCelda,
 }: {
   tema: string;
   ancho: number;
@@ -123,6 +128,10 @@ export function Escenario2D({
   yo: string | null;
   /** Texto alternativo del escenario (posición propia y ocupación). */
   descripcion: string;
+  /** Casilla elegida con un clic, mientras el avatar va hacia ella (F40). */
+  destino?: { x: number; y: number } | null;
+  /** F40: clic en una casilla. El servidor calcula el camino y valida cada paso. */
+  onElegirCelda?: (celda: { x: number; y: number }) => void;
 }) {
   const paleta = PALETAS[tema] ?? PALETA_BASE;
   const anchoPx = ancho * CELDA;
@@ -134,8 +143,21 @@ export function Escenario2D({
     transform: `translate(${p.x * CELDA}px, ${p.y * CELDA}px)`,
   });
 
+  const alHacerClic = (evento: React.MouseEvent<SVGSVGElement>) => {
+    if (!onElegirCelda) return;
+    const svg = evento.currentTarget;
+    const matriz = svg.getScreenCTM();
+    if (!matriz) return;
+    const punto = new DOMPoint(evento.clientX, evento.clientY).matrixTransform(matriz.inverse());
+    const x = Math.floor(punto.x / CELDA);
+    const y = Math.floor(punto.y / CELDA);
+    if (x >= 0 && y >= 0 && x < ancho && y < alto) onElegirCelda({ x, y });
+  };
+
   return (
     <svg
+      onClick={alHacerClic}
+      style={onElegirCelda ? { cursor: 'pointer' } : undefined}
       className={estilos.lienzo}
       viewBox={`-6 ${-PARED - 4} ${anchoPx + 12} ${altoPx + PARED + 10}`}
       shapeRendering="crispEdges"
@@ -172,6 +194,20 @@ export function Escenario2D({
           <Mueble tipo={o.tipo} />
         </g>
       ))}
+
+      {destino && (
+        <rect
+          x={destino.x * CELDA + 2}
+          y={destino.y * CELDA + 2}
+          width={CELDA - 4}
+          height={CELDA - 4}
+          rx="2"
+          fill="rgb(242 169 59 / 0.35)"
+          stroke="#c9801c"
+          strokeWidth="1"
+          strokeDasharray="2 1"
+        />
+      )}
 
       {enOrden.map((p) => (
         <g key={p.id} className={estilos.entidad} style={posicion(p)}>

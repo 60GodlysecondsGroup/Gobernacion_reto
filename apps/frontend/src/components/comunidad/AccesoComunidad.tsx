@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
-import { Aviso, BotonEnlace } from '@/components/ui';
+import { Aviso, BotonEnlace, CargandoLista } from '@/components/ui';
 import { ErrorApi, mensajeDeError } from '@/lib/api/cliente';
 import { obtenerComunidad, type Comunidad } from '@/lib/api/comunidad';
 import comun from '../comun.module.css';
@@ -39,7 +39,7 @@ export function AccesoComunidad() {
     };
   }, [referencia]);
 
-  if (estado.tipo === 'cargando') return <p className={comun.cargando}>Buscando la comunidad…</p>;
+  if (estado.tipo === 'cargando') return <CargandoLista etiqueta="Buscando la comunidad…" />;
   if (estado.tipo === 'error') return <Aviso tono="peligro">{estado.mensaje}</Aviso>;
 
   return (

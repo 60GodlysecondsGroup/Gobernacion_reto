@@ -13,6 +13,8 @@ export type SalaResumen = {
   capacidad: number;
   ocupacion: number;
   estado: EstadoSala;
+  /** false si la administración la deshabilitó: no admite entradas. */
+  habilitada: boolean;
 };
 
 export type SalaDetalle = SalaResumen & {
@@ -45,7 +47,7 @@ export type MensajeServidor =
   | { tipo: 'entro'; participante: ParticipanteEnSala; ocupacion: number }
   | { tipo: 'salio'; id: string; ocupacion: number }
   | { tipo: 'movio'; id: string; x: number; y: number }
-  | { tipo: 'movimiento_rechazado'; motivo: 'limite' | 'obstaculo' }
+  | { tipo: 'movimiento_rechazado'; motivo: MotivoRechazo }
   | {
       tipo: 'mensaje';
       id: string;
@@ -58,7 +60,12 @@ export type MensajeServidor =
 
 /** El cliente solo envía intenciones: nunca coordenadas. */
 export type MensajeCliente =
-  { tipo: 'mover'; direccion: Direccion } | { tipo: 'mensaje'; texto: string } | { tipo: 'salir' };
+  | { tipo: 'mover'; direccion: Direccion }
+  | { tipo: 'ir'; x: number; y: number }
+  | { tipo: 'mensaje'; texto: string }
+  | { tipo: 'salir' };
+
+export type MotivoRechazo = 'limite' | 'obstaculo' | 'destino_invalido' | 'sin_camino';
 
 /** Códigos de cierre del WebSocket que usa el backend. */
 export const CIERRE = {
@@ -68,6 +75,8 @@ export const CIERRE = {
   PROHIBIDO: 4403,
   NO_ENCONTRADA: 4404,
   CERRADA: 4409,
+  /** La administración deshabilitó la sala o la cuenta dejó de estar activa (Fase 7). */
+  RETIRADA: 4410,
   LLENA: 4429,
 } as const;
 

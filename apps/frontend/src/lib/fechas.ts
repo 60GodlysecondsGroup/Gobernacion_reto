@@ -28,3 +28,21 @@ export const hoyEnColombia = () =>
 
 export const haceDias = (dias: number) =>
   dias <= 0 ? 'hoy' : dias === 1 ? 'hace 1 día' : `hace ${dias} días`;
+
+const formatoRelativo = new Intl.RelativeTimeFormat('es-CO', { numeric: 'auto' });
+
+/** Marca de tiempo ISO → «hace 5 minutos», «ayer»… (para listas de moderación). */
+export function haceTiempo(iso: string, ahora = Date.now()) {
+  const segundos = Math.round((new Date(iso).getTime() - ahora) / 1000);
+  const unidades: [Intl.RelativeTimeFormatUnit, number][] = [
+    ['day', 86_400],
+    ['hour', 3_600],
+    ['minute', 60],
+  ];
+  for (const [unidad, tamano] of unidades) {
+    if (Math.abs(segundos) >= tamano) {
+      return formatoRelativo.format(Math.round(segundos / tamano), unidad);
+    }
+  }
+  return 'hace un momento';
+}

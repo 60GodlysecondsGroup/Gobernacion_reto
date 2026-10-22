@@ -1,0 +1,16 @@
+
+> plataforma-orientacion-comunidad@0.1.0 db:reset
+> npm run db:reset -w apps/backend
+
+
+> backend@0.1.0 db:reset
+> tsx scripts/db.ts reiniciar
+
+2026-10-22T05:27:11.354Z INFO  Esquema "app" eliminado.
+2026-10-22T05:27:11.435Z INFO  Migración aplicada: 0001_esquema_inicial.sql
+2026-10-22T05:27:11.439Z INFO  Migración aplicada: 0002_orientacion_fuentes.sql
+2026-10-22T05:27:11.455Z INFO  Migración aplicada: 0003_comunidad.sql
+2026-10-22T05:27:11.458Z INFO  Migración aplicada: 0004_avatar.sql
+2026-10-22T05:27:11.462Z INFO  Migración aplicada: 0005_moderacion_administracion.sql
+2026-10-22T05:27:11.551Z INFO  Datos sintéticos, 20 reglas DLP y 5 fuentes institucionales cargados.
+2026-10-22T05:27:11.553Z INFO  Datos en la base {"comunidades":4,"usuarios":8,"categorias":5,"salas":20,"fuentes":5}

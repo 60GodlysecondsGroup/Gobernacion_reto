@@ -22,3 +22,6 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 ~$*.docx
+
+# Base de datos local de desarrollo (npm run db:local)
+.postgres-local/

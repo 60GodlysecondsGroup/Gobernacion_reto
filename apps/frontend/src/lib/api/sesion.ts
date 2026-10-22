@@ -20,7 +20,8 @@ export type Permiso =
   | 'gestionar_reglas_dlp'
   | 'gestionar_fuentes'
   | 'configurar_comunidades'
-  | 'consultar_registros_administrativos';
+  | 'consultar_registros_administrativos'
+  | 'usar_asistente_admin';
 
 export type SesionPublica = {
   id: string;

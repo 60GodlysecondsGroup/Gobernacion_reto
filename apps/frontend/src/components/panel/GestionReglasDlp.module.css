@@ -1,0 +1,26 @@
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+  margin-bottom: var(--espacio-3);
+}
+
+.titulo {
+  font-size: var(--texto-lg);
+}
+
+.interruptorCategoria {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+}
+
+.regla {
+  display: grid;
+  gap: var(--espacio-1);
+  max-width: 48rem;
+}

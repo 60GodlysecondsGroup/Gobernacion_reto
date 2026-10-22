@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
-import { Aviso, Insignia, Tarjeta } from '@/components/ui';
+import { Aviso, CargandoLista, Insignia, Tarjeta } from '@/components/ui';
 import { ESTADOS_FUENTE } from '@/config/fuentes';
 import { mensajeDeError } from '@/lib/api/cliente';
 import { editarFuente, obtenerFuente, type DetalleFuente } from '@/lib/api/fuentes';
@@ -37,7 +37,7 @@ export function DetalleFuenteGestion() {
   };
 
   if (error) return <Aviso tono="peligro">{error}</Aviso>;
-  if (!detalle) return <p className={comun.cargando}>Cargando fuente…</p>;
+  if (!detalle) return <CargandoLista etiqueta="Cargando fuente…" />;
 
   const { fuente } = detalle;
   const estado = ESTADOS_FUENTE[fuente.estado];

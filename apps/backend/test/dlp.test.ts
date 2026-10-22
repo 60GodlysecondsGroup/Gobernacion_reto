@@ -7,6 +7,7 @@ import {
   compilarPatron,
   MENSAJE_BLOQUEO,
   normalizar,
+  variantesEvasion,
   type CategoriaDlp,
   type ReglaCompilada,
 } from '../src/modules/dlp/dlp.analizador.js';
@@ -188,5 +189,52 @@ describe('Servicio DLP', () => {
 
     expect((await dlp.revisar('Palabra clave de prueba', CONTEXTO)).permitido).toBe(false);
     expect(eventos[0]).toMatchObject({ categoria: 'identidad', idRegla: null });
+  });
+});
+
+describe('Detección básica de evasión (F23, Fase 8)', () => {
+  it.each([
+    [
+      'teléfono dictado en palabras',
+      'tres cero cero cero cero cero cero cero cero cero',
+      'contacto',
+    ],
+    [
+      'teléfono dictado y mezclado',
+      'mi cel: tres 0 0, uno dos tres, cuatro cinco seis siete',
+      'contacto',
+    ],
+    ['dígitos separados con símbolos', 'llama al 300 - 000 * 0000', 'contacto'],
+    ['dígitos con guiones bajos', '3_0_0_0_0_0_0_0_0_0', 'contacto'],
+    ['letras sueltas con espacios', 'búscame en i n s t a g r a m', 'redes_externas'],
+    ['letras sueltas con puntos', 'agrégame al w.h.a.t.s.a.p.p', 'redes_externas'],
+    ['números en lugar de letras', 'estoy en 1nst4gr4m', 'redes_externas'],
+    ['símbolos en lugar de letras', 'escríbeme por wh@ts', 'contacto'],
+    ['letras repetidas', 'tengo whaaaatsapp', 'redes_externas'],
+    ['nombre alterado', 'pásate al guasap', 'redes_externas'],
+    ['nombre alterado con espacio', 'sígueme en tik toc', 'redes_externas'],
+    ['correo con palabras', 'prueba arroba example punto test', 'contacto'],
+    ['correo con (at)', 'prueba(at)example(dot)test', 'contacto'],
+  ])('bloquea %s', (_caso, texto, categoria) => {
+    expect(analizar(texto, reglas)).toMatchObject({ categoria, accion: 'bloquear' });
+  });
+
+  it.each([
+    'Tengo dos hermanos y tres gatos.',
+    'El examen es el 21/10/2026 a las 8.',
+    'Saqué 4 de 5 en la tarea de 3 puntos.',
+    'Me encanta la música de los 80.',
+    'Holaaaa, ¿cómo están?',
+    'Uno, dos, tres: ¡a estudiar!',
+    'Me encanta el disco nuevo de mi banda favorita.',
+    'Mi telegrama llegó tarde, jaja.',
+    'Voy en el nivel 3 del juego.',
+  ])('no bloquea un mensaje inocuo: «%s»', (texto) => {
+    expect(analizar(texto, reglas)).toBeNull();
+  });
+
+  it('las variantes solo se calculan cuando el texto cambia', () => {
+    expect(variantesEvasion(normalizar('Hola a todos'))).toEqual([]);
+    expect(variantesEvasion(normalizar('i n s t a'))).toContain('insta');
   });
 });

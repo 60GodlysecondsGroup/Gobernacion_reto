@@ -16,7 +16,7 @@
   justify-content: space-between;
   gap: var(--espacio-2);
   padding-bottom: var(--espacio-3);
-  border-bottom: 1px dashed var(--color-borde);
+  border-bottom: 1px solid var(--color-borde);
 }
 
 .fila dt {
@@ -39,13 +39,11 @@
   margin-bottom: var(--espacio-3);
   color: var(--color-texto-suave);
   font-size: var(--texto-sm);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 .conteos {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
   gap: var(--espacio-3);
   margin: 0;
   padding: 0;
@@ -56,11 +54,13 @@
   display: grid;
   gap: var(--espacio-1);
   padding: var(--espacio-3) var(--espacio-4);
+  border: 1px solid var(--color-borde);
   border-radius: var(--radio-md);
-  background: var(--color-superficie-suave);
+  background: linear-gradient(180deg, var(--indigo-50), var(--color-superficie));
 }
 
 .numero {
+  font-family: var(--fuente-titulos);
   font-size: var(--texto-2xl);
   font-weight: var(--peso-fuerte);
   font-variant-numeric: tabular-nums;

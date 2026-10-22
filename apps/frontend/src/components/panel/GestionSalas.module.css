@@ -1,0 +1,76 @@
+.salas {
+  display: grid;
+  gap: var(--espacio-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sala {
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--espacio-4) var(--espacio-5);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+}
+
+.sala[data-deshabilitada='true'] {
+  border-style: dashed;
+  background: #fafafd;
+}
+
+.fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+}
+
+.identidad {
+  display: grid;
+  gap: var(--espacio-1);
+  max-width: 40rem;
+}
+
+.nombre {
+  font-size: var(--texto-lg);
+}
+
+.ocupacion {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  font-weight: var(--peso-fuerte);
+  font-variant-numeric: tabular-nums;
+}
+
+.controles {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3) var(--espacio-5);
+}
+
+.control {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+}
+
+.nueva {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--espacio-3);
+  padding: var(--espacio-4) var(--espacio-5);
+  border: 1.5px dashed var(--color-borde-fuerte);
+  border-radius: var(--radio-md);
+}
+
+.nueva label {
+  min-width: 16rem;
+}

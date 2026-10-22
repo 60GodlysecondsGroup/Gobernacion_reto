@@ -153,4 +153,26 @@ describe('Guardianes de seguridad (sin base de datos)', () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ usuario: null });
   });
+
+  it('si la base no responde, una ruta de datos responde 503 claro, sin detalles internos', async () => {
+    const res = await request(app('sin_conexion')).get('/api/orientacion/necesidades');
+    expect(res.status).toBe(503);
+    expect(res.body.error).toEqual({
+      codigo: 'SERVICIO_NO_DISPONIBLE',
+      mensaje: 'El servicio no está disponible en este momento. Intenta de nuevo en unos minutos.',
+    });
+    expect(JSON.stringify(res.body)).not.toContain('ECONNREFUSED');
+  });
+
+  it('con un host que no existe (DATABASE_URL sin completar) también responde 503', async () => {
+    const sinHost = {
+      async query() {
+        throw Object.assign(new Error('getaddrinfo ENOTFOUND HOST'), { code: 'ENOTFOUND' });
+      },
+    } as Database;
+    const res = await request(
+      crearApp({ db: sinHost, logger: crearLogger('silencioso'), config: configPrueba }),
+    ).get('/api/orientacion/necesidades');
+    expect(res.status).toBe(503);
+  });
 });

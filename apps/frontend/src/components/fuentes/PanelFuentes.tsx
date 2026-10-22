@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
-import { Aviso, BotonEnlace, Insignia, Tarjeta } from '@/components/ui';
+import { Aviso, BotonEnlace, CargandoLista, Insignia, Tarjeta } from '@/components/ui';
 import { ESTADOS_FUENTE, TIPOS_CANAL, type EstadoFuente } from '@/config/fuentes';
 import { mensajeDeError } from '@/lib/api/cliente';
 import { listarFuentes, type FuenteGestion } from '@/lib/api/fuentes';
@@ -122,7 +122,7 @@ export function PanelFuentes() {
           </Tarjeta>
         </>
       )}
-      {!datos && !error && <p className={comun.cargando}>Cargando fuentes…</p>}
+      {!datos && !error && <CargandoLista etiqueta="Cargando fuentes…" />}
     </div>
   );
 }

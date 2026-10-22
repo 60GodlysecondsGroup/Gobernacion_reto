@@ -7,6 +7,8 @@ import { manejadorDeErrores, rutaNoEncontrada } from './http/errores.js';
 import { verificarOrigen } from './http/origen.js';
 import { registroDeSolicitudes } from './http/registro-solicitudes.js';
 import type { Logger } from './lib/logger.js';
+import { rutasAsistente } from './modules/asistente/asistente.routes.js';
+import { crearServicioAsistente } from './modules/asistente/asistente.service.js';
 import { crearRepositorioComunidades } from './modules/comunidad/comunidad.repository.js';
 import { rutasComunidad } from './modules/comunidad/comunidad.routes.js';
 import { crearServicioComunidad } from './modules/comunidad/comunidad.service.js';
@@ -20,6 +22,11 @@ import { rutasFuentes } from './modules/fuentes/fuentes.routes.js';
 import { crearServicioFuentes } from './modules/fuentes/fuentes.service.js';
 import { crearRepositorioModeracion } from './modules/moderacion/moderacion.repository.js';
 import { rutasModeracion } from './modules/moderacion/moderacion.routes.js';
+import { crearServicioModeracion } from './modules/moderacion/moderacion.service.js';
+import { crearRepositorioAdministracion } from './modules/administracion/administracion.repository.js';
+import { rutasAdministracion } from './modules/administracion/administracion.routes.js';
+import { crearServicioAdministracion } from './modules/administracion/administracion.service.js';
+import { crearRepositorioAuditoria } from './modules/auditoria/auditoria.js';
 import { crearRepositorioAvatar } from './modules/avatar/avatar.repository.js';
 import { rutasAvatar } from './modules/avatar/avatar.routes.js';
 import { crearServicioAvatar } from './modules/avatar/avatar.service.js';
@@ -50,7 +57,7 @@ import { crearServicioSistema } from './modules/sistema/sistema.service.js';
 export type Dependencias = {
   db: Database;
   logger: Logger;
-  config: Pick<Config, 'origenesPermitidos' | 'sesion' | 'accesoDemo' | 'salas'>;
+  config: Pick<Config, 'origenesPermitidos' | 'sesion' | 'accesoDemo' | 'salas' | 'openai'>;
   /** Reemplazable cuando exista la verificación de edad definitiva. */
   proveedorRango?: ProveedorRangoEdad;
   ttlReglasDlpMs?: number;
@@ -58,6 +65,7 @@ export type Dependencias = {
   intervalosSalas?: {
     movimientoMs?: number;
     mensajeMs?: number;
+    pasoMs?: number;
     guardadoMs?: number;
     latidoMs?: number;
   };
@@ -110,7 +118,8 @@ export function crearServidor({
 
   app.use(cargarSesion(sesiones));
 
-  app.use('/api', rutasSistema(crearServicioSistema(crearRepositorioSistema(db), logger)));
+  const sistema = crearServicioSistema(crearRepositorioSistema(db), logger);
+  app.use('/api', rutasSistema(sistema));
   app.use(
     '/api',
     rutasSesion(sesiones, {
@@ -146,7 +155,6 @@ export function crearServidor({
     rutasPerfil(crearServicioPerfil({ repositorio: crearRepositorioPerfil(db), dlp })),
   );
   app.use('/api', rutasAvatar(crearServicioAvatar(crearRepositorioAvatar(db))));
-  app.use('/api', rutasModeracion(crearRepositorioModeracion(db)));
   const fuentes = crearRepositorioFuentes(db);
   app.use('/api', rutasOrientacion(crearServicioOrientacion(fuentes)));
   app.use('/api', rutasFuentes(crearServicioFuentes(fuentes)));
@@ -162,6 +170,7 @@ export function crearServidor({
     intervaloMovimientoMs: intervalosSalas.movimientoMs,
     intervaloMensajeMs: intervalosSalas.mensajeMs,
     retrasoGuardadoMs: intervalosSalas.guardadoMs,
+    intervaloPasoMs: intervalosSalas.pasoMs,
   });
   const tiempoReal = crearTiempoRealSalas({
     gestor: salas,
@@ -170,6 +179,33 @@ export function crearServidor({
     logger,
     latidoMs: intervalosSalas.latidoMs,
   });
+
+  // Moderación y administración (Fase 7): necesitan el gestor de salas para retirar personas
+  // de una sala deshabilitada o de una cuenta suspendida.
+  const repositorioAdministracion = crearRepositorioAdministracion(db);
+  const administracion = crearServicioAdministracion({
+    repositorio: repositorioAdministracion,
+    salas,
+    dlp,
+  });
+  app.use(
+    '/api',
+    rutasModeracion(
+      crearServicioModeracion({ repositorio: crearRepositorioModeracion(db), administracion }),
+    ),
+  );
+  app.use('/api', rutasAdministracion(administracion, crearRepositorioAuditoria(db)));
+  app.use(
+    '/api',
+    rutasAsistente(
+      crearServicioAsistente({
+        administracion: repositorioAdministracion,
+        sistema,
+        apiKey: config.openai.apiKey,
+        modelo: config.openai.model,
+      }),
+    ),
+  );
 
   app.use(rutaNoEncontrada);
   app.use(manejadorDeErrores(logger));

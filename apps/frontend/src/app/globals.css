@@ -6,9 +6,12 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--alto-encabezado) + var(--espacio-4));
+  color-scheme: light;
 }
 
 body {
+  position: relative;
   margin: 0;
   min-height: 100dvh;
   display: flex;
@@ -18,27 +21,54 @@ body {
   font-family: var(--fuente-base);
   font-size: var(--texto-md);
   line-height: var(--interlineado);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/*
+ * Luz ambiental de marca: dos halos suaves (índigo y ámbar) detrás del encabezado.
+ * Es decorativa, fija y sin animación, así que no cuesta rendimiento.
+ */
+body::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 46rem;
+  background:
+    radial-gradient(42rem 26rem at 12% -6%, rgb(91 79 232 / 0.16), transparent 70%),
+    radial-gradient(34rem 22rem at 92% 2%, rgb(255 200 87 / 0.18), transparent 70%),
+    radial-gradient(30rem 20rem at 60% 30%, rgb(125 227 195 / 0.1), transparent 70%);
+  pointer-events: none;
 }
 
 h1,
 h2,
-h3 {
+h3,
+h4 {
   margin: 0;
+  font-family: var(--fuente-titulos);
+  font-weight: var(--peso-titulo);
   line-height: var(--interlineado-titulo);
+  letter-spacing: -0.022em;
   text-wrap: balance;
 }
 
 p {
   margin: 0;
+  text-wrap: pretty;
 }
 
 a {
   color: var(--color-primario);
-  text-underline-offset: 0.2em;
+  text-underline-offset: 0.22em;
+  text-decoration-thickness: 1px;
+  transition: color var(--transicion);
 }
 
 a:hover {
   color: var(--color-primario-hover);
+  text-decoration-thickness: 2px;
 }
 
 :focus-visible {
@@ -46,12 +76,21 @@ a:hover {
   outline-offset: 2px;
 }
 
+::selection {
+  background: rgb(255 200 87 / 0.45);
+}
+
 code {
   font-family: var(--fuente-mono);
   font-size: 0.9em;
   padding: 0.1em 0.35em;
-  border-radius: var(--radio-sm);
+  border-radius: 6px;
   background: var(--color-superficie-suave);
+}
+
+img,
+svg {
+  max-width: 100%;
 }
 
 .contenedor {
@@ -61,7 +100,7 @@ code {
 
 .contenedor-principal {
   flex: 1;
-  padding-block: var(--espacio-6) var(--espacio-7);
+  padding-block: var(--espacio-6) var(--espacio-8);
 }
 
 .visualmente-oculto {
@@ -77,10 +116,11 @@ code {
   position: absolute;
   top: var(--espacio-2);
   left: var(--espacio-2);
-  z-index: 10;
+  z-index: 80;
   padding: var(--espacio-2) var(--espacio-4);
   border-radius: var(--radio-sm);
   background: var(--color-superficie);
+  box-shadow: var(--sombra-2);
   transform: translateY(-200%);
 }
 
@@ -88,11 +128,71 @@ code {
   transform: none;
 }
 
+/* Texto con el degradado de las cuatro ventanas (solo en títulos grandes sobre fondo oscuro). */
+.texto-ventanas {
+  background: var(--degradado-ventanas);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Subrayado de marca para resaltar una palabra en un título claro. */
+.resaltado {
+  background-image: linear-gradient(
+    transparent 62%,
+    rgb(255 200 87 / 0.55) 62%,
+    rgb(255 200 87 / 0.55) 92%,
+    transparent 92%
+  );
+  border-radius: 4px;
+}
+
+/* Esqueleto de carga: un bloque que late suavemente mientras llegan los datos. */
+.esqueleto {
+  display: block;
+  border-radius: var(--radio-sm);
+  background: linear-gradient(
+    90deg,
+    var(--color-superficie-suave) 0%,
+    #fafaff 50%,
+    var(--color-superficie-suave) 100%
+  );
+  background-size: 200% 100%;
+  animation: esqueleto 1.4s ease-in-out infinite;
+}
+
+@keyframes esqueleto {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+/* Aparición suave del contenido de cada página (solo opacidad y un desplazamiento corto). */
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.contenedor-principal > * {
+  animation: aparecer 420ms var(--curva-salida) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

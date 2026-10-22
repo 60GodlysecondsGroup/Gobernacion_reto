@@ -4,8 +4,8 @@ import estilos from './Boton.module.css';
 
 type PropsBoton = ComponentProps<'button'> & {
   /** `ayuda` se reserva para «Necesito ayuda». */
-  variante?: 'primario' | 'secundario' | 'fantasma' | 'ayuda';
-  tamano?: 'md' | 'sm';
+  variante?: 'primario' | 'secundario' | 'fantasma' | 'oscuro' | 'peligro' | 'ayuda';
+  tamano?: 'sm' | 'md' | 'lg';
   /** Muestra un indicador de carga y deshabilita el botón. */
   cargando?: boolean;
 };

@@ -1,27 +1,101 @@
 .pie {
-  border-top: 1px solid var(--color-borde);
-  background: var(--color-superficie);
-  color: var(--color-texto-suave);
+  position: relative;
+  margin-top: auto;
+  overflow: hidden;
+  background: var(--degradado-noche);
+  color: rgb(255 255 255 / 0.78);
   font-size: var(--texto-sm);
 }
 
-.contenido {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--espacio-2) var(--espacio-5);
-  padding-block: var(--espacio-5);
+/* Las cuatro ventanas de la marca como una franja de luz en el borde superior. */
+.ventanas {
+  height: 4px;
+  background: var(--degradado-ventanas);
 }
 
-.textos {
+.contenido {
+  display: grid;
+  gap: var(--espacio-7);
+  padding-block: var(--espacio-7) var(--espacio-6);
+}
+
+.marca {
+  display: grid;
+  gap: var(--espacio-5);
+  max-width: 36rem;
+}
+
+.limites {
   display: grid;
   gap: var(--espacio-2);
-  max-width: 52rem;
+  padding: var(--espacio-4) var(--espacio-5);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: var(--radio-lg);
+  background: rgb(255 255 255 / 0.05);
 }
 
-.enlaces {
+.tituloLimites {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--espacio-2) var(--espacio-4);
+  align-items: center;
+  gap: var(--espacio-2);
+  color: #fff;
+  font-size: var(--texto-md);
+}
+
+.tituloLimites svg {
+  color: var(--ventana-menta);
+}
+
+.columnas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--espacio-5);
+}
+
+.tituloColumna {
+  margin-bottom: var(--espacio-3);
+  color: #fff;
+  font-family: var(--fuente-base);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.columnas ul {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.columnas a {
+  color: rgb(255 255 255 / 0.82);
+  text-decoration: none;
+}
+
+.columnas a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.columnas a:focus-visible {
+  outline-color: var(--ventana-cielo);
+}
+
+.legal {
+  /* En móvil deja sitio a la barra de navegación inferior. */
+  padding-block: var(--espacio-4)
+    calc(var(--espacio-5) + var(--alto-barra-inferior) + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+  color: rgb(255 255 255 / 0.62);
+  font-size: var(--texto-xs);
+}
+
+@media (min-width: 64rem) {
+  .contenido {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    align-items: start;
+  }
 }

@@ -13,6 +13,7 @@ import {
   leerObstaculos,
   mover,
   puntoDeAparicion,
+  ruta,
   type Escenario,
 } from '../src/modules/salas/salas.escenario.js';
 import { crearGestorSalas, type Conexion } from '../src/modules/salas/salas.gestor.js';
@@ -53,6 +54,48 @@ describe('Escenario 2D', () => {
     expect(puntoDeAparicion(ESCENARIO, [{ x: 0, y: 3 }])).toEqual({ x: 0, y: 2 });
   });
 
+  it('F40 · calcula el camino más corto rodeando obstáculos', () => {
+    // Desde (1,0) hasta (3,1): la mesa en (2,1) obliga a pasar por arriba.
+    const plan = ruta(ESCENARIO, { x: 1, y: 0 }, { x: 3, y: 1 });
+    expect(plan).toEqual({ valido: true, pasos: ['derecha', 'derecha', 'abajo'] });
+    // Ningún paso del camino cae en un obstáculo ni fuera del área.
+    let posicion = { x: 1, y: 0 };
+    for (const paso of plan.valido ? plan.pasos : []) {
+      const resultado = mover(ESCENARIO, posicion, paso);
+      expect(resultado.valido).toBe(true);
+      if (resultado.valido) posicion = resultado.posicion;
+    }
+    expect(posicion).toEqual({ x: 3, y: 1 });
+  });
+
+  it('F40 · rechaza destinos fuera del área, sobre un obstáculo o inalcanzables', () => {
+    expect(ruta(ESCENARIO, { x: 0, y: 3 }, { x: 2, y: 1 })).toEqual({
+      valido: false,
+      motivo: 'destino_invalido',
+    });
+    expect(ruta(ESCENARIO, { x: 0, y: 3 }, { x: 6, y: 0 })).toEqual({
+      valido: false,
+      motivo: 'destino_invalido',
+    });
+    expect(ruta(ESCENARIO, { x: 0, y: 3 }, { x: 1.5, y: 0 })).toEqual({
+      valido: false,
+      motivo: 'destino_invalido',
+    });
+    const encerrado: Escenario = {
+      ...ESCENARIO,
+      obstaculos: [
+        { x: 4, y: 0, tipo: 'caja' },
+        { x: 4, y: 1, tipo: 'caja' },
+        { x: 5, y: 1, tipo: 'caja' },
+      ],
+    };
+    expect(ruta(encerrado, { x: 0, y: 3 }, { x: 5, y: 0 })).toEqual({
+      valido: false,
+      motivo: 'sin_camino',
+    });
+    expect(ruta(ESCENARIO, { x: 0, y: 3 }, { x: 0, y: 3 })).toEqual({ valido: true, pasos: [] });
+  });
+
   it('descarta obstáculos inválidos o fuera del área', () => {
     expect(
       leerObstaculos(
@@ -77,6 +120,7 @@ describe('Escenario 2D', () => {
 function repositorioFalso(capacidad = 10) {
   const sala = {
     estado: 'disponible' as string,
+    habilitada: true,
     ocupacion: 0,
     vaciaDesde: 0,
     maximoVisto: 0,
@@ -97,6 +141,7 @@ function repositorioFalso(capacidad = 10) {
             capacidad,
             ocupacion: sala.ocupacion,
             estado: sala.estado as 'disponible',
+            habilitada: sala.habilitada,
             idComunidad,
             instanciaVigente: null,
           }
@@ -106,6 +151,7 @@ function repositorioFalso(capacidad = 10) {
     ocupar: async () => {
       await pausa();
       if (sala.estado === 'cerrada') return { resultado: 'cerrada' };
+      if (!sala.habilitada) return { resultado: 'deshabilitada' };
       if (sala.ocupacion >= capacidad) return { resultado: 'llena' };
       sala.ocupacion += 1;
       sala.maximoVisto = Math.max(sala.maximoVisto, sala.ocupacion);
@@ -206,6 +252,7 @@ function gestor(opciones: { cierreSegundos?: number; capacidad?: number } = {}) 
     intervaloMovimientoMs: 0,
     intervaloMensajeMs: 0,
     retrasoGuardadoMs: 10,
+    intervaloPasoMs: 5,
   });
   return { gestor: g, ...falso };
 }
@@ -398,5 +445,83 @@ describe('Gestor de salas', () => {
     await new Promise((r) => setTimeout(r, 1200));
     expect(sala.estado).not.toBe('cerrada');
     g.detener();
+  });
+
+  it('AV-05 · el clic mueve paso a paso hasta el destino y todos lo ven', async () => {
+    const { gestor: g } = gestor();
+    const a = conexion();
+    const b = conexion();
+    await g.conectar(a, sesion('a'), ID_SALA);
+    await g.conectar(b, sesion('b'), ID_SALA);
+    // a aparece en (0,3); b, en la celda libre más cercana.
+    await g.recibir(ID_SALA, 'a', a, JSON.stringify({ tipo: 'ir', x: 3, y: 0 }));
+    await new Promise((r) => setTimeout(r, 80));
+
+    expect(g.participantes(ID_SALA).find((p) => p.id === 'a')).toMatchObject({ x: 3, y: 0 });
+    const pasosVistosPorB = recibido(b, 'movio').filter((m) => m.tipo === 'movio' && m.id === 'a');
+    expect(pasosVistosPorB.length).toBe(6);
+    // Ningún paso pasa por la mesa de (2,1).
+    expect(pasosVistosPorB).not.toContainEqual(expect.objectContaining({ x: 2, y: 1 }));
+  });
+
+  it('AV-05 · un destino inválido se rechaza sin mover el avatar', async () => {
+    const { gestor: g } = gestor();
+    const a = conexion();
+    await g.conectar(a, sesion('a'), ID_SALA);
+    await g.recibir(ID_SALA, 'a', a, JSON.stringify({ tipo: 'ir', x: 2, y: 1 }));
+    await g.recibir(ID_SALA, 'a', a, JSON.stringify({ tipo: 'ir', x: 99, y: 0 }));
+    await g.recibir(ID_SALA, 'a', a, JSON.stringify({ tipo: 'ir', x: '1', y: 0 }));
+    expect(recibido(a, 'movimiento_rechazado')).toEqual([
+      { tipo: 'movimiento_rechazado', motivo: 'destino_invalido' },
+      { tipo: 'movimiento_rechazado', motivo: 'destino_invalido' },
+    ]);
+    expect(g.participantes(ID_SALA)[0]).toMatchObject({ x: 0, y: 3 });
+  });
+
+  it('F40 · una tecla cancela el recorrido por clic en curso', async () => {
+    const { gestor: g } = gestor();
+    const a = conexion();
+    await g.conectar(a, sesion('a'), ID_SALA);
+    await g.recibir(ID_SALA, 'a', a, JSON.stringify({ tipo: 'ir', x: 5, y: 0 }));
+    await g.recibir(ID_SALA, 'a', a, JSON.stringify({ tipo: 'mover', direccion: 'abajo' }));
+    await new Promise((r) => setTimeout(r, 80));
+    // El primer paso del recorrido (arriba) ya ocurrió; luego la tecla «abajo» lo detuvo.
+    expect(g.participantes(ID_SALA)[0]).toMatchObject({ x: 0, y: 3 });
+  });
+
+  it('Fase 7 · deshabilitar una sala saca a quien está dentro y no deja entrar', async () => {
+    const { gestor: g, sala } = gestor();
+    const a = conexion();
+    const b = conexion();
+    await g.conectar(a, sesion('a'), ID_SALA);
+    await g.conectar(b, sesion('b'), ID_SALA);
+
+    sala.habilitada = false;
+    expect(await g.retirarTodos(ID_SALA)).toBe(2);
+    expect(a.codigo()).toBe(4410);
+    expect(b.codigo()).toBe(4410);
+    expect(sala.ocupacion).toBe(0);
+    expect(g.participantes(ID_SALA)).toHaveLength(0);
+
+    const tarde = conexion();
+    expect(await g.conectar(tarde, sesion('c'), ID_SALA)).toBeNull();
+    expect(tarde.codigo()).toBe(4410);
+    expect(tarde.mensajes[0]).toMatchObject({ codigo: 'SALA_NO_DISPONIBLE' });
+  });
+
+  it('Fase 7 · suspender una cuenta la retira de la sala y los demás lo ven', async () => {
+    const { gestor: g, sala } = gestor();
+    const a = conexion();
+    const b = conexion();
+    await g.conectar(a, sesion('a'), ID_SALA);
+    await g.conectar(b, sesion('b'), ID_SALA);
+
+    expect(await g.retirarUsuario('a')).toBe(1);
+    expect(a.codigo()).toBe(4410);
+    expect(recibido(b, 'salio')).toEqual([{ tipo: 'salio', id: 'a', ocupacion: 1 }]);
+    expect(sala.ocupacion).toBe(1);
+    // El cierre del socket después de retirar no libera dos veces.
+    await g.desconectar(ID_SALA, 'a', a);
+    expect(sala.ocupacion).toBe(1);
   });
 });

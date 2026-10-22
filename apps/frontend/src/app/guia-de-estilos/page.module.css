@@ -73,3 +73,61 @@
   gap: var(--espacio-4);
   max-width: 32rem;
 }
+
+.marca {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.lienzoMarca {
+  display: flex;
+  align-items: center;
+  min-height: 7rem;
+  padding: var(--espacio-5);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-fondo);
+}
+
+.lienzoOscuro {
+  border-color: transparent;
+  background: var(--degradado-noche);
+}
+
+.tamanosMarca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-5);
+}
+
+.fondoOscuroChico {
+  display: inline-grid;
+  padding: var(--espacio-3);
+  border-radius: var(--radio-md);
+  background: var(--tinta);
+}
+
+.archivosMarca {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--texto-sm);
+}
+
+.archivosMarca li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-1) var(--espacio-3);
+}
+
+.archivosMarca span {
+  color: var(--color-texto-suave);
+}
+
+.estados {
+  display: grid;
+  gap: var(--espacio-4);
+}

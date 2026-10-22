@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, type FormEvent } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
-import { Aviso, Boton, CampoSeleccion, CampoTexto, Tarjeta } from '@/components/ui';
+import { Aviso, Boton, CampoSeleccion, CampoTexto, EnlaceVolver, Tarjeta } from '@/components/ui';
 import { campoDelError, ErrorApi, erroresPorCampo, mensajeDeError } from '@/lib/api/cliente';
 import { crearHilo, obtenerCategorias, type CategoriaForo } from '@/lib/api/hilos';
 import comun from '../comun.module.css';
@@ -61,8 +61,8 @@ export function NuevoHilo() {
 
   return (
     <div className={comun.pagina}>
-      <nav aria-label="Ruta" className={comun.suave}>
-        <Link href="/comunidad">← Volver a la comunidad</Link>
+      <nav aria-label="Ruta">
+        <EnlaceVolver href="/comunidad">Volver a la comunidad</EnlaceVolver>
       </nav>
       <EncabezadoPagina antetitulo="Tu comunidad" titulo="Crear hilo">
         Solo lo verán personas de tu comunidad. Participas con tu alias.

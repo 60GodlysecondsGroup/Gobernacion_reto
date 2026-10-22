@@ -1,18 +1,38 @@
 .boton {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--espacio-2);
   border: 1px solid transparent;
-  border-radius: var(--radio-md);
+  border-radius: var(--radio-total);
   font: inherit;
   font-weight: var(--peso-fuerte);
   line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  max-width: 100%;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   transition:
     background var(--transicion),
     border-color var(--transicion),
-    color var(--transicion);
+    color var(--transicion),
+    box-shadow var(--transicion),
+    transform var(--transicion);
+}
+
+.boton:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.boton:not(:disabled):active {
+  transform: translateY(0) scale(0.98);
+}
+
+.boton svg {
+  flex-shrink: 0;
 }
 
 .enlace,
@@ -21,8 +41,14 @@
 }
 
 .enlace.primario,
-.enlace.primario:hover {
-  color: var(--color-sobre-primario);
+.enlace.primario:hover,
+.enlace.ayuda,
+.enlace.ayuda:hover,
+.enlace.peligro,
+.enlace.peligro:hover,
+.enlace.oscuro,
+.enlace.oscuro:hover {
+  color: #fff;
 }
 
 .enlace.secundario,
@@ -30,39 +56,63 @@
   color: var(--color-texto);
 }
 
-.boton:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
+.enlace.fantasma:hover {
+  color: var(--color-primario-hover);
 }
 
-.md {
-  min-height: 2.75rem;
-  padding: var(--espacio-2) var(--espacio-5);
+.boton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .sm {
   min-height: 2.25rem;
-  padding: var(--espacio-1) var(--espacio-3);
+  padding: var(--espacio-1) var(--espacio-4);
   font-size: var(--texto-sm);
 }
 
+.md {
+  min-height: 2.875rem;
+  padding: var(--espacio-2) var(--espacio-5);
+}
+
+.lg {
+  min-height: 3.375rem;
+  white-space: normal;
+  padding: var(--espacio-3) var(--espacio-6);
+  font-size: var(--texto-md);
+}
+
+/* Principal: degradado de marca con un brillo superior sutil (volumen sin sombras duras). */
 .primario {
-  background: var(--color-primario);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0) 55%),
+    var(--color-primario);
   color: var(--color-sobre-primario);
+  box-shadow:
+    var(--sombra-primario),
+    inset 0 1px 0 rgb(255 255 255 / 0.22);
 }
 
 .primario:not(:disabled):hover {
-  background: var(--color-primario-hover);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.12), rgb(255 255 255 / 0) 55%),
+    var(--color-primario-hover);
+  box-shadow:
+    0 14px 28px -12px rgb(74 63 214 / 0.85),
+    inset 0 1px 0 rgb(255 255 255 / 0.22);
 }
 
 .secundario {
   background: var(--color-superficie);
   border-color: var(--color-borde-fuerte);
   color: var(--color-texto);
+  box-shadow: var(--sombra-1);
 }
 
 .secundario:not(:disabled):hover {
-  background: var(--color-superficie-suave);
+  border-color: var(--color-texto-suave);
+  background: var(--indigo-50);
 }
 
 .fantasma {
@@ -74,11 +124,32 @@
   background: var(--color-primario-suave);
 }
 
-.ayuda,
-.enlace.ayuda,
-.enlace.ayuda:hover {
-  background: var(--color-acento);
+.oscuro {
+  background: var(--tinta);
+  color: #fff;
+  box-shadow: 0 10px 24px -12px rgb(21 23 61 / 0.8);
+}
+
+.oscuro:not(:disabled):hover {
+  background: var(--indigo-950);
+}
+
+.peligro {
+  background: var(--color-peligro);
+  color: #fff;
+}
+
+.peligro:not(:disabled):hover {
+  background: #8f1b13;
+}
+
+.ayuda {
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0) 55%), var(--color-acento);
   color: var(--color-sobre-primario);
+  box-shadow:
+    0 10px 22px -12px rgb(201 58 47 / 0.9),
+    inset 0 1px 0 rgb(255 255 255 / 0.2);
 }
 
 .ayuda:not(:disabled):hover {

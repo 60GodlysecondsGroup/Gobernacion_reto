@@ -2,8 +2,17 @@
 
 Este es el modelo definitivo del prototipo. Convierte el modelo conceptual B.4 del Documento Maestro en tablas de PostgreSQL, dentro del esquema `app`.
 
-- Fuente: [`0001_esquema_inicial.sql`](../apps/backend/db/migraciones/0001_esquema_inicial.sql) y [`0002_orientacion_fuentes.sql`](../apps/backend/db/migraciones/0002_orientacion_fuentes.sql) y [`0003_comunidad.sql`](../apps/backend/db/migraciones/0003_comunidad.sql).
+- Fuente: las migraciones de [`db/migraciones/`](../apps/backend/db/migraciones/), de `0001_esquema_inicial.sql` a `0005_moderacion_administracion.sql`.
 - Datos de demostración: [`datos_demo.sql`](../apps/backend/db/seed/datos_demo.sql), [`reglas_dlp.json`](../apps/backend/db/seed/reglas_dlp.json) y [`fuentes_institucionales.json`](../apps/backend/db/seed/fuentes_institucionales.json).
+
+**Cambios de la migración 0005 (Fase 7):** no borra ni reescribe datos; solo agrega columnas con valor por defecto, índices y restricciones.
+
+- `sala.habilitada` (boolean, por defecto `true`): la administración puede deshabilitar una sala sin borrarla (F29). Una sala deshabilitada no se lista para jóvenes y su `UPDATE` de ocupación exige `habilitada`. Al cerrarse por inactividad, la instancia nueva hereda el valor.
+- `reporte.resolucion`: resultado de la revisión, de una lista cerrada (`sin_accion`, `contenido_oculto`, `usuario_suspendido`, `sala_deshabilitada`). No hay notas libres, para no acumular texto con posibles datos personales.
+- Índices `reporte_contenido` y `registro_auditoria_entidad` para el panel.
+- `registro_auditoria.accion` con formato `^[a-z_]{3,60}$` y `fecha` con `clock_timestamp()` (orden real de varias acciones en una transacción).
+
+**Cambios de la migración 0004 (Fase 6):** `elemento_avatar.orden`, el CHECK que impide URL en `recurso_grafico` y el disparador que exige que cada capa del avatar apunte a un elemento de su tipo.
 
 **Cambios de la migración 0003 (Fase 4):**
 
@@ -34,7 +43,7 @@ No existen campos de salud, diagnóstico, evaluación psicológica ni edad exact
 | POSICION_AVATAR_SALA | `posicion_avatar_sala` | La clave es `(id_sala, id_usuario)`. Es estado de sesión.                                                                                                                                          |
 | CONFIGURACION_AVATAR | `configuracion_avatar` | Solo claves foráneas al catálogo; el personaje base es obligatorio. Un disparador (0004) exige que cada capa apunte a un elemento de su tipo.                                                      |
 | ELEMENTO_AVATAR      | `elemento_avatar`      | Catálogo cerrado. `recurso_grafico` es la clave de un recurso dibujado por código, nunca una URL (un CHECK lo garantiza desde 0004). Incluye `origen`, `licencia` y `orden` (0004).                |
-| REPORTE              | `reporte`              | Agrega `id_comunidad` y `id_revisor`. Estados de F30: pendiente, en_revision, resuelto, descartado.                                                                                                |
+| REPORTE              | `reporte`              | Agrega `id_comunidad`, `id_revisor` y `resolucion` (0005). Estados de F30: pendiente, en_revision, resuelto, descartado.                                                                           |
 | REGLA_DLP            | `regla_dlp`            | `patron` es una expresión regular. Su `categoria` apunta a `categoria_dlp`.                                                                                                                        |
 | EVENTO_DLP           | `evento_dlp`           | Solo metadatos. No guarda el texto del mensaje (B.5).                                                                                                                                              |
 | FUENTE_INSTITUCIONAL | `fuente_institucional` | `fecha_verificacion` es obligatoria. Agrega `es_demo` (para mostrar «DATO DE DEMOSTRACIÓN») e `id_responsable`. El enlace debe empezar por http(s).                                                |
@@ -42,14 +51,14 @@ No existen campos de salud, diagnóstico, evaluación psicológica ni edad exact
 
 ## Tablas añadidas
 
-| Tabla                   | Para qué                                                                                               |
-| ----------------------- | ------------------------------------------------------------------------------------------------------ |
-| `rango_edad`            | Catálogo fijo A (10–12), B (13–15), C (16–17) y D (18–22). Se crea en la migración, no en el seed.     |
-| `categoria_dlp`         | Las seis categorías de protección de 16.1 y B.5.                                                       |
-| `necesidad_orientacion` | Las seis necesidades del navegador de orientación (F04). Son categorías de búsqueda, no de evaluación. |
-| `fuente_necesidad`      | Relaciona cada fuente con las necesidades en las que aparece.                                          |
-| `registro_auditoria`    | Acciones administrativas: quién, qué y cuándo (Fase 7). Solo inserción.                                |
-| `migraciones`           | Migraciones aplicadas. La gestiona el ejecutor de migraciones.                                         |
+| Tabla                   | Para qué                                                                                                                                             |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `rango_edad`            | Catálogo fijo A (10–12), B (13–15), C (16–17) y D (18–22). Se crea en la migración, no en el seed.                                                   |
+| `categoria_dlp`         | Las seis categorías de protección de 16.1 y B.5.                                                                                                     |
+| `necesidad_orientacion` | Las seis necesidades del navegador de orientación (F04). Son categorías de búsqueda, no de evaluación.                                               |
+| `fuente_necesidad`      | Relaciona cada fuente con las necesidades en las que aparece.                                                                                        |
+| `registro_auditoria`    | Acciones administrativas: quién, qué y cuándo (Fase 7). Solo inserción. Cada acción se escribe en la misma sentencia SQL que el cambio que registra. |
+| `migraciones`           | Migraciones aplicadas. La gestiona el ejecutor de migraciones.                                                                                       |
 
 ## Reglas que garantiza la base de datos
 

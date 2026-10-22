@@ -13,6 +13,8 @@ export type SalaResumen = {
   capacidad: number;
   ocupacion: number;
   estado: EstadoSala;
+  /** false si la administración la deshabilitó (F29): no admite entradas. */
+  habilitada: boolean;
 };
 
 export type SalaDetalle = SalaResumen & {
@@ -24,12 +26,12 @@ export type SalaDetalle = SalaResumen & {
 export type Participante = { id: string; alias: string; avatar: Apariencia | null };
 
 export type ResultadoEntrada =
-  { resultado: 'ok'; ocupacion: number } | { resultado: 'llena' | 'cerrada' };
+  { resultado: 'ok'; ocupacion: number } | { resultado: 'llena' | 'cerrada' | 'deshabilitada' };
 
 const SELECT_SALA = `
   select s.id_sala as id, s.nombre, cat.nombre as tematica, s.descripcion, s.reglas,
          s.capacidad_maxima as capacidad, s.usuarios_actuales as ocupacion, s.estado,
-         s.id_comunidad as "idComunidad"
+         s.habilitada, s.id_comunidad as "idComunidad"
   from app.sala s
   join app.categoria cat on cat.id_categoria = s.id_categoria`;
 
@@ -37,11 +39,14 @@ const SELECT_SALA = `
 // la transacción): el cierre automático compara tiempos y debe funcionar también dentro de una.
 export function crearRepositorioSalas(db: Database) {
   return {
-    /** Salas abiertas de la comunidad (las instancias cerradas no se listan). */
+    /**
+     * Salas abiertas y habilitadas de la comunidad. Las instancias cerradas y las que la
+     * administración deshabilitó no se listan.
+     */
     async listar(idComunidad: string): Promise<SalaResumen[]> {
       const { rows } = await db.query<SalaResumen & { idComunidad: string }>(
         `${SELECT_SALA}
-         where s.id_comunidad = $1 and s.estado <> 'cerrada'
+         where s.id_comunidad = $1 and s.estado <> 'cerrada' and s.habilitada
          order by cat.orden, s.nombre`,
         [idComunidad],
       );
@@ -53,7 +58,7 @@ export function crearRepositorioSalas(db: Database) {
       const { rows } = await db.query<SalaDetalle>(
         `select s.id_sala as id, s.nombre, cat.nombre as tematica, s.descripcion, s.reglas,
                 s.capacidad_maxima as capacidad, s.usuarios_actuales as ocupacion, s.estado,
-                s.id_comunidad as "idComunidad",
+                s.habilitada, s.id_comunidad as "idComunidad",
                 (select v.id_sala from app.sala v
                  where s.estado = 'cerrada' and v.id_comunidad = s.id_comunidad
                    and v.nombre = s.nombre and v.estado <> 'cerrada') as "instanciaVigente"
@@ -109,16 +114,19 @@ export function crearRepositorioSalas(db: Database) {
              estado = case when usuarios_actuales + 1 >= capacidad_maxima then 'llena' else 'disponible' end,
              vacia_desde = null,
              ultima_actividad = clock_timestamp()
-         where id_sala = $1 and estado <> 'cerrada' and usuarios_actuales < capacidad_maxima
+         where id_sala = $1 and estado <> 'cerrada' and habilitada
+           and usuarios_actuales < capacidad_maxima
          returning usuarios_actuales as ocupacion`,
         [idSala],
       );
       if (!rows[0]) {
-        const estado = await db.query<{ estado: EstadoSala }>(
-          'select estado from app.sala where id_sala = $1',
+        const estado = await db.query<{ estado: EstadoSala; habilitada: boolean }>(
+          'select estado, habilitada from app.sala where id_sala = $1',
           [idSala],
         );
-        return { resultado: estado.rows[0]?.estado === 'cerrada' ? 'cerrada' : 'llena' };
+        const fila = estado.rows[0];
+        if (fila?.estado === 'cerrada') return { resultado: 'cerrada' };
+        return { resultado: fila && !fila.habilitada ? 'deshabilitada' : 'llena' };
       }
       // Cierra una participación que hubiera quedado abierta y registra la nueva.
       await db.query(
@@ -183,10 +191,13 @@ export function crearRepositorioSalas(db: Database) {
            update app.sala set estado = 'cerrada', fecha_cierre = clock_timestamp()
            where id_sala = $1 and estado = 'vacia' and usuarios_actuales = 0
              and vacia_desde <= clock_timestamp() - make_interval(secs => $2)
-           returning id_sala, id_comunidad, id_categoria, nombre, descripcion, reglas, capacidad_maxima
+           returning id_sala, id_comunidad, id_categoria, nombre, descripcion, reglas,
+                     capacidad_maxima, habilitada
          ), nueva as (
-           insert into app.sala (id_comunidad, id_categoria, nombre, descripcion, reglas, capacidad_maxima)
-           select id_comunidad, id_categoria, nombre, descripcion, reglas, capacidad_maxima from cerrada
+           insert into app.sala
+             (id_comunidad, id_categoria, nombre, descripcion, reglas, capacidad_maxima, habilitada)
+           select id_comunidad, id_categoria, nombre, descripcion, reglas, capacidad_maxima, habilitada
+           from cerrada
            returning id_sala
          ), escenario as (
            insert into app.escenario_sala (id_sala, ancho, alto, obstaculos, aparicion_x, aparicion_y)

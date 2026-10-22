@@ -31,6 +31,8 @@ const INTERVALO_MOVIMIENTO_MS = 110;
 const TEXTO_RECHAZO = {
   limite: 'Llegaste al borde de la sala.',
   obstaculo: 'Hay un mueble en esa dirección.',
+  destino_invalido: 'No puedes ir a esa casilla: hay un mueble.',
+  sin_camino: 'No hay un camino libre hasta esa casilla.',
 };
 
 /** Mientras se escribe o se usa un control de formulario, las teclas no mueven el avatar. */
@@ -56,6 +58,9 @@ export function SalaEnVivo({
   limpiarAvisosChat: () => void;
 }) {
   const [ayudaAbierta, setAyudaAbierta] = useState(false);
+  // Casilla elegida con un clic y el número del último rechazo en ese momento: si llega un
+  // rechazo nuevo, el destino deja de mostrarse.
+  const [destino, setDestino] = useState<{ x: number; y: number; vez: number } | null>(null);
   const ultimoMovimiento = useRef(0);
   const { escenario, participantes, yo, rechazo } = estado;
 
@@ -63,7 +68,14 @@ export function SalaEnVivo({
     const ahora = performance.now();
     if (ahora - ultimoMovimiento.current < INTERVALO_MOVIMIENTO_MS) return;
     ultimoMovimiento.current = ahora;
+    setDestino(null);
     enviar({ tipo: 'mover', direccion });
+  };
+
+  // F40: el clic solo envía la casilla elegida; el servidor decide el camino y cada paso.
+  const irA = (celda: { x: number; y: number }) => {
+    setDestino({ ...celda, vez: rechazo?.vez ?? 0 });
+    enviar({ tipo: 'ir', ...celda });
   };
   const alPulsarTecla = useEffectEvent((evento: KeyboardEvent) => {
     if (evento.ctrlKey || evento.metaKey || evento.altKey) return;
@@ -89,6 +101,12 @@ export function SalaEnVivo({
   };
 
   const propio = participantes.find((p) => p.id === yo);
+  const destinoVigente =
+    destino &&
+    destino.vez === (rechazo?.vez ?? 0) &&
+    !(propio && propio.x === destino.x && propio.y === destino.y)
+      ? destino
+      : null;
   const ocupacion = `${estado.ocupacion}/${estado.capacidad}`;
   const descripcion = propio
     ? `Escenario de la sala ${sala.nombre}, ${ocupacion} personas. Tu avatar está en la columna ${propio.x + 1} y la fila ${propio.y + 1}.`
@@ -112,6 +130,8 @@ export function SalaEnVivo({
               participantes={participantes}
               yo={yo}
               descripcion={descripcion}
+              destino={destinoVigente}
+              onElegirCelda={irA}
             />
           )}
         </div>
@@ -119,7 +139,8 @@ export function SalaEnVivo({
         <div className={estilos.controles}>
           <p id="instrucciones-movimiento" className={estilos.instrucciones}>
             Muévete con las teclas <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd>, con las
-            flechas si el escenario tiene el foco, o con estos botones.
+            flechas si el escenario tiene el foco, con estos botones o haciendo clic en una casilla
+            libre.
           </p>
           <div className={estilos.cruceta} role="group" aria-label="Mover tu avatar">
             <Boton

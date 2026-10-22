@@ -8,6 +8,13 @@
   max-width: 52rem;
 }
 
+/* Páginas de exploración (rejillas de tarjetas): usan todo el ancho del contenido. */
+.paginaAncha {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-6);
+}
+
 .formulario {
   display: grid;
   gap: var(--espacio-4);
