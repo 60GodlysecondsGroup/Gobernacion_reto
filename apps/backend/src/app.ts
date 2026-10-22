@@ -7,6 +7,10 @@ import { manejadorDeErrores, rutaNoEncontrada } from './http/errores.js';
 import { verificarOrigen } from './http/origen.js';
 import { registroDeSolicitudes } from './http/registro-solicitudes.js';
 import type { Logger } from './lib/logger.js';
+import { rutasAsistente } from './modules/asistente/asistente.routes.js';
+import { crearServicioAsistente } from './modules/asistente/asistente.service.js';
+import { rutasAsistenteUsuario } from './modules/asistente-usuario/asistente-usuario.routes.js';
+import { crearServicioAsistenteUsuario } from './modules/asistente-usuario/asistente-usuario.service.js';
 import { crearRepositorioComunidades } from './modules/comunidad/comunidad.repository.js';
 import { rutasComunidad } from './modules/comunidad/comunidad.routes.js';
 import { crearServicioComunidad } from './modules/comunidad/comunidad.service.js';
@@ -55,7 +59,7 @@ import { crearServicioSistema } from './modules/sistema/sistema.service.js';
 export type Dependencias = {
   db: Database;
   logger: Logger;
-  config: Pick<Config, 'origenesPermitidos' | 'sesion' | 'accesoDemo' | 'salas'>;
+  config: Pick<Config, 'origenesPermitidos' | 'sesion' | 'accesoDemo' | 'salas' | 'openai'>;
   /** Reemplazable cuando exista la verificación de edad definitiva. */
   proveedorRango?: ProveedorRangoEdad;
   ttlReglasDlpMs?: number;
@@ -116,7 +120,8 @@ export function crearServidor({
 
   app.use(cargarSesion(sesiones));
 
-  app.use('/api', rutasSistema(crearServicioSistema(crearRepositorioSistema(db), logger)));
+  const sistema = crearServicioSistema(crearRepositorioSistema(db), logger);
+  app.use('/api', rutasSistema(sistema));
   app.use(
     '/api',
     rutasSesion(sesiones, {
@@ -153,11 +158,24 @@ export function crearServidor({
   );
   app.use('/api', rutasAvatar(crearServicioAvatar(crearRepositorioAvatar(db))));
   const fuentes = crearRepositorioFuentes(db);
-  app.use('/api', rutasOrientacion(crearServicioOrientacion(fuentes)));
+  const orientacion = crearServicioOrientacion(fuentes);
+  app.use('/api', rutasOrientacion(orientacion));
   app.use('/api', rutasFuentes(crearServicioFuentes(fuentes)));
 
   const repositorioSalas = crearRepositorioSalas(db);
   app.use('/api', rutasSalas(repositorioSalas, servicioComunidad));
+  app.use(
+    '/api',
+    rutasAsistenteUsuario(
+      crearServicioAsistenteUsuario({
+        salas: repositorioSalas,
+        comunidades: servicioComunidad,
+        orientacion,
+        apiKey: config.openai.apiKey,
+        modelo: config.openai.model,
+      }),
+    ),
+  );
   const salas = crearGestorSalas({
     repositorio: repositorioSalas,
     comunidades: servicioComunidad,
@@ -179,8 +197,9 @@ export function crearServidor({
 
   // Moderación y administración (Fase 7): necesitan el gestor de salas para retirar personas
   // de una sala deshabilitada o de una cuenta suspendida.
+  const repositorioAdministracion = crearRepositorioAdministracion(db);
   const administracion = crearServicioAdministracion({
-    repositorio: crearRepositorioAdministracion(db),
+    repositorio: repositorioAdministracion,
     salas,
     dlp,
   });
@@ -191,6 +210,17 @@ export function crearServidor({
     ),
   );
   app.use('/api', rutasAdministracion(administracion, crearRepositorioAuditoria(db)));
+  app.use(
+    '/api',
+    rutasAsistente(
+      crearServicioAsistente({
+        administracion: repositorioAdministracion,
+        sistema,
+        apiKey: config.openai.apiKey,
+        modelo: config.openai.model,
+      }),
+    ),
+  );
 
   app.use(rutaNoEncontrada);
   app.use(manejadorDeErrores(logger));

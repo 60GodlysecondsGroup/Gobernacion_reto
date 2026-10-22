@@ -108,6 +108,75 @@ const normalizarSala = (sala: SalaAdministrada): SalaAdministrada => ({
  */
 export function crearRepositorioAdministracion(db: Database) {
   return {
+    /** Recuento de reportes agregados por estado y fechas de calendario de Colombia. */
+    async resumenReportes() {
+      const { rows } = await db.query<{
+        estados: Record<string, number>;
+        hoy: number;
+        ayer: number;
+      }>(
+        `select
+           (select coalesce(json_object_agg(estado, total), '{}')
+            from (select estado, count(*)::int total from app.reporte group by estado) t) as estados,
+           count(*) filter (where (fecha_reporte at time zone 'America/Bogota')::date =
+             (now() at time zone 'America/Bogota')::date)::int as hoy,
+           count(*) filter (where (fecha_reporte at time zone 'America/Bogota')::date =
+             (now() at time zone 'America/Bogota')::date - 1)::int as ayer
+         from app.reporte`,
+      );
+      return rows[0]!;
+    },
+
+    /** Eventos diarios agregados. Nunca devuelve filas ni contenido de usuarios. */
+    async tendenciasActividad(dias: number) {
+      const { rows } = await db.query<{
+        dia: string;
+        reportes: number;
+        hilos: number;
+        respuestas: number;
+        bloqueosDlp: number;
+      }>(
+        `with dias as (
+           select serie.dia::date as dia
+           from generate_series(
+             (now() at time zone 'America/Bogota')::date - ($1::int - 1),
+             (now() at time zone 'America/Bogota')::date,
+             interval '1 day') as serie(dia)
+         ), eventos as (
+           select (fecha_reporte at time zone 'America/Bogota')::date dia,
+                  count(*)::int reportes, 0::int hilos, 0::int respuestas, 0::int bloqueos_dlp
+           from app.reporte
+           where (fecha_reporte at time zone 'America/Bogota')::date >=
+             (now() at time zone 'America/Bogota')::date - ($1::int - 1)
+           group by 1
+           union all
+           select (fecha_creacion at time zone 'America/Bogota')::date,
+                  0, count(*)::int, 0, 0 from app.hilo
+           where (fecha_creacion at time zone 'America/Bogota')::date >=
+             (now() at time zone 'America/Bogota')::date - ($1::int - 1) group by 1
+           union all
+           select (fecha_creacion at time zone 'America/Bogota')::date,
+                  0, 0, count(*)::int, 0 from app.respuesta
+           where (fecha_creacion at time zone 'America/Bogota')::date >=
+             (now() at time zone 'America/Bogota')::date - ($1::int - 1) group by 1
+           union all
+           select (fecha at time zone 'America/Bogota')::date,
+                  0, 0, 0, count(*)::int from app.evento_dlp
+           where (fecha at time zone 'America/Bogota')::date >=
+             (now() at time zone 'America/Bogota')::date - ($1::int - 1) group by 1
+         )
+         select to_char(d.dia, 'YYYY-MM-DD') as dia,
+                coalesce(sum(e.reportes), 0)::int as reportes,
+                coalesce(sum(e.hilos), 0)::int as hilos,
+                coalesce(sum(e.respuestas), 0)::int as respuestas,
+                coalesce(sum(e.bloqueos_dlp), 0)::int as "bloqueosDlp"
+         from dias d left join eventos e on e.dia = d.dia
+         group by d.dia order by d.dia`,
+        [dias],
+      );
+      return rows;
+    },
+
     async resumen() {
       const { rows } = await db.query<{
         usuarios: Record<string, number>;

@@ -12,7 +12,13 @@ const formatoLargo = new Intl.DateTimeFormat('es-CO', {
  * Barras de bloqueos DLP por día, con datos reales del backend. Cada barra lleva su valor y una
  * descripción accesible; el gráfico tiene además una tabla equivalente para lectores de pantalla.
  */
-export function GraficoPorDia({ datos }: { datos: { dia: string; total: number }[] }) {
+export function GraficoPorDia({
+  datos,
+  etiqueta = 'Bloqueos',
+}: {
+  datos: { dia: string; total: number }[];
+  etiqueta?: string;
+}) {
   const maximo = Math.max(1, ...datos.map((d) => d.total));
   const fecha = (dia: string) => new Date(`${dia}T00:00:00Z`);
   return (
@@ -21,7 +27,7 @@ export function GraficoPorDia({ datos }: { datos: { dia: string; total: number }
       style={{ margin: 0 }}
     >
       {datos.every((d) => d.total === 0) && (
-        <p className={estilos.mensajeVacio}>Sin bloqueos en estos días.</p>
+        <p className={estilos.mensajeVacio}>Sin {etiqueta.toLowerCase()} en estos días.</p>
       )}
       <div className={estilos.barras} aria-hidden="true">
         {datos.map(({ dia, total }) => (
@@ -48,7 +54,7 @@ export function GraficoPorDia({ datos }: { datos: { dia: string; total: number }
         ))}
       </div>
       <table className="visualmente-oculto">
-        <caption>Bloqueos por día</caption>
+        <caption>{etiqueta} por día</caption>
         <tbody>
           {datos.map(({ dia, total }) => (
             <tr key={dia}>
