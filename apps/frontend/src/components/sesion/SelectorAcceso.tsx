@@ -81,11 +81,6 @@ export function SelectorAcceso() {
         edad y solo verás ese espacio.
       </EncabezadoPagina>
 
-      <Aviso tono="advertencia" titulo="Solo para la demostración del prototipo">
-        No hay contraseñas ni cuentas reales, y el rango de edad viene del usuario de prueba: esto
-        <strong> no es una verificación de edad</strong>. El mecanismo definitivo está pendiente.
-      </Aviso>
-
       {usuario && (
         <Aviso tono="info" titulo={`Ya entraste como ${usuario.alias}`}>
           <div className={comun.fila}>
