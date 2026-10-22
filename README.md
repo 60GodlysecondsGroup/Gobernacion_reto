@@ -8,6 +8,8 @@ Plataforma digital de orientación y comunidad protegida para jóvenes de Villav
 - Decisiones técnicas: [`DECISIONES.md`](DECISIONES.md).
 - Modelo de datos: [`docs/MODELO_DE_DATOS.md`](docs/MODELO_DE_DATOS.md).
 - Cómo cargar fuentes institucionales reales: [`docs/FUENTES.md`](docs/FUENTES.md).
+- Registro de retroalimentación, cambios y fuentes oficiales: [`docs/REGISTRO_Y_FUENTES.md`](docs/REGISTRO_Y_FUENTES.md).
+- Herramientas, componentes de terceros y licencias: [`docs/HERRAMIENTAS_COMPONENTES_Y_LICENCIAS.md`](docs/HERRAMIENTAS_COMPONENTES_Y_LICENCIAS.md).
 - Arquitectura en una página: [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md).
 - Guion de la demo (7 minutos): [`DEMO.md`](DEMO.md).
 - Validación TRL 4: [`EVIDENCIAS/MATRIZ.md`](EVIDENCIAS/MATRIZ.md) (24 de 24 escenarios aprobados, con capturas y registros) y [`EVIDENCIAS/RESTRICCIONES.md`](EVIDENCIAS/RESTRICCIONES.md).
