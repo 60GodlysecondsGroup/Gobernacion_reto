@@ -25,6 +25,8 @@ const esquemaEntorno = z.object({
     .transform((valor) => valor || undefined),
   // Selector de usuarios sintéticos en la pantalla de acceso. Solo para la demo.
   ACCESO_DEMO: z.enum(['true', 'false']).optional(),
+  // lax (por defecto) | none (requerido para frontend en dominio distinto con HTTPS, ej. Vercel) | strict
+  COOKIE_SAME_SITE: z.enum(['lax', 'none', 'strict']).optional(),
   // Segundos sin nadie antes de cerrar una sala (F13). 180 s por defecto; menos solo para ensayar.
   SALA_CIERRE_SEGUNDOS: z.coerce.number().int().min(1).max(3600).default(180),
   // La demo ya tenía `openai` en el .env; OPENAI_API_KEY queda como nombre estándar opcional.
@@ -45,6 +47,7 @@ export type Config = {
     secretoGenerado: boolean;
     duracionMs: number;
     cookieSegura: boolean;
+    sameSite?: 'lax' | 'none' | 'strict';
   };
   accesoDemo: boolean;
   salas: { cierreSegundos: number };
@@ -87,7 +90,9 @@ export function cargarConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
   return {
     entorno: v.NODE_ENV,
     puerto: v.BACKEND_PORT,
-    origenesPermitidos: v.FRONTEND_ORIGIN.split(',').map((origen) => origen.trim()),
+    origenesPermitidos: v.FRONTEND_ORIGIN.split(',')
+      .map((origen) => origen.trim().replace(/\/+$/, ''))
+      .filter(Boolean),
     nivelLog: v.LOG_LEVEL,
     baseDeDatos: { url: v.DATABASE_URL, ssl: v.DATABASE_SSL },
     sesion: {
@@ -95,6 +100,7 @@ export function cargarConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
       secretoGenerado: !v.SESSION_SECRET,
       duracionMs: DURACION_SESION_MS,
       cookieSegura: produccion,
+      sameSite: v.COOKIE_SAME_SITE,
     },
     accesoDemo: v.ACCESO_DEMO ? v.ACCESO_DEMO === 'true' : !produccion,
     salas: { cierreSegundos: v.SALA_CIERRE_SEGUNDOS },

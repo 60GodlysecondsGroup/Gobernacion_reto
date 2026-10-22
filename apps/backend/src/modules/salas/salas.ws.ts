@@ -94,8 +94,8 @@ export function crearTiempoRealSalas({
       const ruta = RUTA.exec(req.url ?? '');
       if (!ruta) return rechazarHandshake(socket, '404 Not Found');
 
-      const origen = req.headers.origin;
-      if (origen && !origenesPermitidos.includes(origen)) {
+      const origen = req.headers.origin?.replace(/\/+$/, '');
+      if (origen && !origenesPermitidos.map((o) => o.replace(/\/+$/, '')).includes(origen)) {
         return rechazarHandshake(socket, '403 Forbidden');
       }
 

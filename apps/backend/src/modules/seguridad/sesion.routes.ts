@@ -9,16 +9,18 @@ type Opciones = {
   accesoDemo: boolean;
   duracionMs: number;
   cookieSegura: boolean;
+  cookieSameSite?: 'lax' | 'none' | 'strict';
 };
 
 const esquemaInicio = z.object({ codigo: z.string().regex(/^[A-Za-z]+_\d{3}$/) }).strict();
 
 export function rutasSesion(servicio: ServicioSesion, opciones: Opciones): Router {
   const router = Router();
+  const sameSite = opciones.cookieSameSite ?? 'lax';
   const cookie: CookieOptions = {
     httpOnly: true,
-    sameSite: 'lax',
-    secure: opciones.cookieSegura,
+    sameSite,
+    secure: sameSite === 'none' ? true : opciones.cookieSegura,
     path: '/',
   };
   // El acceso por selector de usuarios sintéticos solo existe en modo demo.

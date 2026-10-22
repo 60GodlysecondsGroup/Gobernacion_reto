@@ -60,11 +60,24 @@ describe('Prueba de humo del backend', () => {
     expect(res.body.baseDeDatos.estado).toBe('sin_esquema');
   });
 
-  it('permite CORS solo al origen del frontend', async () => {
-    const permitido = await request(app()).get('/api/salud').set('Origin', ORIGEN_FRONTEND);
-    expect(permitido.headers['access-control-allow-origin']).toBe(ORIGEN_FRONTEND);
+  it('permite CORS para los orígenes del frontend configurados', async () => {
+    const configConVercel = {
+      ...configPrueba,
+      origenesPermitidos: [ORIGEN_FRONTEND, 'https://gobernacion-reto-i8so.vercel.app'],
+    };
+    const appVercel = app('ok', configConVercel);
 
-    const ajeno = await request(app())
+    const permitidoLocal = await request(appVercel).get('/api/salud').set('Origin', ORIGEN_FRONTEND);
+    expect(permitidoLocal.headers['access-control-allow-origin']).toBe(ORIGEN_FRONTEND);
+
+    const permitidoVercel = await request(appVercel)
+      .get('/api/salud')
+      .set('Origin', 'https://gobernacion-reto-i8so.vercel.app');
+    expect(permitidoVercel.headers['access-control-allow-origin']).toBe(
+      'https://gobernacion-reto-i8so.vercel.app',
+    );
+
+    const ajeno = await request(appVercel)
       .get('/api/salud')
       .set('Origin', 'https://sitio-ajeno.example');
     expect(ajeno.headers['access-control-allow-origin']).toBeUndefined();

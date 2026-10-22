@@ -71,12 +71,25 @@ describe('cargarConfig()', () => {
     expect(cargarConfig({ DATABASE_URL: URL_PRUEBA, ACCESO_DEMO: 'false' }).accesoDemo).toBe(false);
   });
 
-  it('admite varios orígenes de CORS separados por coma', () => {
+  it('admite varios orígenes de CORS separados por coma y elimina barras finales', () => {
     const config = cargarConfig({
       DATABASE_URL: URL_PRUEBA,
-      FRONTEND_ORIGIN: 'http://localhost:3000, http://127.0.0.1:3000',
+      FRONTEND_ORIGIN:
+        'http://localhost:3000/, https://gobernacion-reto-i8so.vercel.app/, http://127.0.0.1:3000',
     });
-    expect(config.origenesPermitidos).toEqual(['http://localhost:3000', 'http://127.0.0.1:3000']);
+    expect(config.origenesPermitidos).toEqual([
+      'http://localhost:3000',
+      'https://gobernacion-reto-i8so.vercel.app',
+      'http://127.0.0.1:3000',
+    ]);
+  });
+
+  it('permite configurar COOKIE_SAME_SITE para despliegues entre dominios', () => {
+    const config = cargarConfig({
+      DATABASE_URL: URL_PRUEBA,
+      COOKIE_SAME_SITE: 'none',
+    });
+    expect(config.sesion.sameSite).toBe('none');
   });
 
   it('falla con un mensaje claro si falta DATABASE_URL', () => {

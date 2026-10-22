@@ -128,6 +128,7 @@ export function crearServidor({
       accesoDemo: config.accesoDemo,
       duracionMs: config.sesion.duracionMs,
       cookieSegura: config.sesion.cookieSegura,
+      cookieSameSite: config.sesion.sameSite,
     }),
   );
   const servicioComunidad = crearServicioComunidad(comunidades);
