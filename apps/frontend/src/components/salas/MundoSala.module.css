@@ -1,0 +1,405 @@
+/*
+ * Capas del mundo de la sala sobre el escenario. Las capas no reciben clics (el suelo sigue
+ * siendo del escenario); solo sus objetos y bots.
+ */
+.capaPared,
+.capaSuelo {
+  position: absolute;
+  top: 0;
+  pointer-events: none;
+}
+
+.capaSuelo {
+  z-index: 2;
+}
+
+.capaPared {
+  z-index: 1;
+}
+
+/* ── Objetos de la pared ───────────────────────────── */
+.objetos {
+  position: relative;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ranura {
+  position: absolute;
+  bottom: 6%;
+  width: clamp(2.6rem, 13%, 5.5rem);
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+}
+
+.objeto {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 240ms var(--curva-resorte);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.objeto svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  transition: filter var(--transicion);
+}
+
+.objeto:hover,
+.objeto:focus-visible {
+  transform: translateY(-4px);
+}
+
+.objeto:hover svg,
+.objeto:focus-visible svg {
+  filter: drop-shadow(0 0 6px rgb(255 236 170 / 0.95)) drop-shadow(0 6px 6px rgb(38 20 99 / 0.25));
+}
+
+.objeto:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 3px;
+}
+
+/* Al activarlo: un pulso corto (alterna entre dos animaciones para repetirse cada vez). */
+.objeto[data-tocado='0'] {
+  animation: activarA 360ms var(--curva-resorte);
+}
+
+.objeto[data-tocado='1'] {
+  animation: activarB 360ms var(--curva-resorte);
+}
+
+/* Indicador discreto de que el objeto es interactivo: un brillo que late unas veces. */
+.indicador,
+.hecho {
+  position: absolute;
+  top: -4px;
+  right: -2px;
+  display: grid;
+  place-items: center;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+}
+
+.indicador {
+  background: #ffc857;
+  box-shadow: 0 0 8px rgb(255 200 87 / 0.9);
+  animation: latir 1.8s ease-in-out 4;
+}
+
+.hecho {
+  width: 15px;
+  height: 15px;
+  background: var(--color-exito);
+  color: #fff;
+}
+
+/* Etiqueta: aparece al pasar o enfocar (el nombre accesible está en el botón). */
+.etiqueta {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  padding: 2px 8px;
+  border-radius: var(--radio-total);
+  background: var(--tinta);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: var(--peso-fuerte);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, 4px);
+  transition:
+    opacity var(--transicion),
+    transform var(--transicion);
+  pointer-events: none;
+}
+
+.objeto:hover .etiqueta,
+.objeto:focus-visible .etiqueta {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* Los extremos alinean la etiqueta hacia dentro para que no se corte. */
+.ranura:first-child .etiqueta {
+  left: 0;
+  transform: translate(0, 4px);
+}
+
+.ranura:last-child .etiqueta {
+  right: 0;
+  left: auto;
+  transform: translate(0, 4px);
+}
+
+.ranura:first-child .objeto:is(:hover, :focus-visible) .etiqueta,
+.ranura:last-child .objeto:is(:hover, :focus-visible) .etiqueta {
+  transform: translate(0, 0);
+}
+
+/* ── Bots ──────────────────────────────────────────── */
+.bot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: transform 520ms linear;
+  will-change: transform;
+}
+
+.cuerpoBot {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  animation: aparecerBot 480ms var(--curva-resorte) var(--retraso) backwards;
+}
+
+.cuerpoBot:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.salto {
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: saltito 520ms var(--curva-resorte);
+}
+
+.sprite {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transition: transform 160ms ease;
+}
+
+.sprite svg {
+  width: 100%;
+  height: 100%;
+}
+
+.cuerpoBot[data-izquierda] .sprite {
+  transform: scaleX(-1);
+}
+
+/* Al caminar, un balanceo corto en cada paso. */
+.bot[data-caminando] .salto {
+  animation: paso 260ms ease-in-out infinite alternate;
+}
+
+.cuerpoBot:hover .sprite {
+  filter: drop-shadow(0 0 5px rgb(255 236 170 / 0.9));
+}
+
+.placa {
+  position: absolute;
+  bottom: calc(100% - 2px);
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px 1px 7px;
+  border-radius: var(--radio-total);
+  background: rgb(255 255 255 / 0.92);
+  color: var(--tinta);
+  font-size: 0.625rem;
+  font-weight: var(--peso-fuerte);
+  white-space: nowrap;
+  transform: translateX(-50%);
+  box-shadow: 0 2px 6px rgb(38 20 99 / 0.18);
+}
+
+.placa em {
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--morado-600);
+  color: #fff;
+  font-size: 0.5625rem;
+  font-style: normal;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ── Globo de diálogo ──────────────────────────────── */
+.globo {
+  position: absolute;
+  bottom: calc(100% + 18px);
+  left: 50%;
+  z-index: 3;
+  display: grid;
+  gap: 2px;
+  width: min(15rem, 70vw);
+  padding: 8px 30px 9px 11px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: #fff;
+  box-shadow: var(--sombra-3);
+  transform: translateX(-50%);
+  animation: aparecerGlobo 280ms var(--curva-salida);
+  pointer-events: auto;
+}
+
+.globo[data-lado='izq'] {
+  left: 0;
+  transform: none;
+}
+
+.globo[data-lado='der'] {
+  right: 0;
+  left: auto;
+  transform: none;
+}
+
+.globo[data-abajo] {
+  top: calc(100% + 6px);
+  bottom: auto;
+}
+
+.globo[data-tono='logro'] {
+  border-color: color-mix(in srgb, var(--color-exito) 45%, transparent);
+}
+
+.quien {
+  color: var(--color-texto-tenue);
+  font-size: 0.6875rem;
+}
+
+.quien strong {
+  color: var(--tinta);
+}
+
+.textoGlobo {
+  color: var(--tinta);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  line-height: 1.35;
+}
+
+.cerrarGlobo {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-texto-tenue);
+  cursor: pointer;
+}
+
+.cerrarGlobo:hover {
+  background: var(--morado-50);
+}
+
+.cerrarGlobo:focus-visible {
+  outline: 3px solid var(--color-foco);
+}
+
+/* ── Modal ─────────────────────────────────────────── */
+.iconoModal {
+  display: block;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.iconoModal svg {
+  width: 100%;
+  height: 100%;
+}
+
+.instruccion {
+  margin-bottom: var(--espacio-3);
+  color: var(--color-texto-suave);
+}
+
+@keyframes activarA {
+  40% {
+    transform: scale(0.9);
+  }
+}
+
+@keyframes activarB {
+  40% {
+    transform: scale(0.9);
+  }
+}
+
+@keyframes latir {
+  50% {
+    opacity: 0.55;
+    transform: scale(0.8);
+  }
+}
+
+@keyframes aparecerBot {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.6);
+  }
+}
+
+@keyframes saltito {
+  40% {
+    transform: translateY(-22%);
+  }
+}
+
+@keyframes paso {
+  to {
+    transform: translateY(-6%) rotate(-3deg);
+  }
+}
+
+@keyframes aparecerGlobo {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .objeto,
+  .objeto svg,
+  .bot,
+  .sprite,
+  .etiqueta {
+    transition: none;
+  }
+
+  .objeto[data-tocado],
+  .indicador,
+  .cuerpoBot,
+  .salto,
+  .bot[data-caminando] .salto,
+  .globo {
+    animation: none;
+  }
+
+  .objeto:hover,
+  .objeto:focus-visible {
+    transform: none;
+  }
+}

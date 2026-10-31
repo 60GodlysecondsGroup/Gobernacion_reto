@@ -12,8 +12,12 @@ import comun from '../comun.module.css';
 import estilos from './Comunidad.module.css';
 import { BuscadorPersonas } from './BuscadorPersonas';
 import { ListaHilos } from './ListaHilos';
+import { TarjetaIdentidad } from './TarjetaIdentidad';
 
-/** Inicio de la comunidad (F03): bienvenida, reglas, orientación y ayuda, categorías e hilos. */
+/**
+ * Inicio de la comunidad (F03): bienvenida, tu identidad (avatar, nametag, hobbies y rango de
+ * edad), reglas, orientación y ayuda, categorías e hilos.
+ */
 export function VistaComunidad() {
   const { puede } = useSesion();
   const [comunidad, setComunidad] = useState<Comunidad | null>(null);
@@ -56,6 +60,8 @@ export function VistaComunidad() {
         {comunidad.descripcion} Aquí conversas con tu alias con personas de tu mismo rango de edad;
         nadie de otra comunidad puede ver este espacio.
       </EncabezadoPagina>
+
+      <TarjetaIdentidad comunidad={comunidad.nombre} rango={comunidad.rango} />
 
       <div className={estilos.columnas}>
         <div className={estilos.principal}>

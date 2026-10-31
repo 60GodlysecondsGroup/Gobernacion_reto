@@ -14,6 +14,7 @@ import type { Direccion, MensajeCliente, SalaDetalle } from '@/lib/api/salas';
 import { ChatSala } from './ChatSala';
 import { Escenario2D } from './Escenario2D';
 import { PanelAyudaSala } from './PanelAyudaSala';
+import { MundoSala } from './MundoSala';
 import estilos from './Salas.module.css';
 import type { EstadoSalaEnVivo } from './useSalaEnVivo';
 
@@ -27,6 +28,9 @@ const FLECHAS: Record<string, Direccion> = {
 
 /** Mínimo entre dos movimientos enviados (el servidor también limita). */
 const INTERVALO_MOVIMIENTO_MS = 110;
+
+/** En la sala en vivo la pared es más alta: ahí están los objetos interactivos. */
+const PARED_SALA = 34;
 
 const TEXTO_RECHAZO = {
   limite: 'Llegaste al borde de la sala.',
@@ -80,6 +84,8 @@ export function SalaEnVivo({
   const alPulsarTecla = useEffectEvent((evento: KeyboardEvent) => {
     if (evento.ctrlKey || evento.metaKey || evento.altKey) return;
     if (esControlEditable(evento.target)) return;
+    // Con una actividad abierta encima de la sala, las teclas son de la actividad.
+    if (document.querySelector('dialog[open]')) return;
     const direccion = TECLAS[evento.key.toLowerCase()];
     if (!direccion) return;
     evento.preventDefault();
@@ -96,6 +102,8 @@ export function SalaEnVivo({
   const alPulsarEnEscenario = (evento: EventoTeclado<HTMLDivElement>) => {
     const direccion = FLECHAS[evento.key];
     if (!direccion || evento.ctrlKey || evento.metaKey || evento.altKey) return;
+    // Solo con el foco en el propio escenario: no en un objeto, un bot ni una actividad abierta.
+    if (evento.target !== evento.currentTarget) return;
     evento.preventDefault();
     mover(direccion);
   };
@@ -115,6 +123,17 @@ export function SalaEnVivo({
   return (
     <div className={estilos.enVivo}>
       <div className={estilos.columnaEscenario}>
+        {propio && (
+          <p className={estilos.identidadSala}>
+            <span className={estilos.avatarSala}>
+              <Avatar apariencia={propio.avatar} tamano={36} />
+            </span>
+            <span>
+              <strong>{propio.alias}</strong>
+              <span className={estilos.textoIdentidad}>Estás en la sala con tu alias y tu avatar</span>
+            </span>
+          </p>
+        )}
         <div
           className={estilos.escenario}
           tabIndex={0}
@@ -132,6 +151,18 @@ export function SalaEnVivo({
               descripcion={descripcion}
               destino={destinoVigente}
               onElegirCelda={irA}
+              pared={PARED_SALA}
+              ventana={false}
+            />
+          )}
+          {escenario && (
+            <MundoSala
+              sala={sala.nombre}
+              ancho={escenario.ancho}
+              alto={escenario.alto}
+              obstaculos={escenario.obstaculos}
+              pared={PARED_SALA}
+              personas={participantes}
             />
           )}
         </div>

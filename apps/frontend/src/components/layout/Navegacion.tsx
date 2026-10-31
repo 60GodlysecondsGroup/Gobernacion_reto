@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, LifeBuoy, LogIn } from 'lucide-react';
+import { LifeBuoy, LogIn } from 'lucide-react';
 import { motion } from 'motion/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -33,9 +33,11 @@ function useSecciones() {
   const principales = visibles.filter((e) => !e.soloMenuCuenta);
 
   // Barra inferior: Inicio + secciones (perfil incluido) o «Entrar»; como mucho cinco.
-  const inicio: EnlaceNavegacion = { href: '/', etiqueta: 'Inicio', icono: Home };
+  // «Inicio» va siempre primero; si sobran secciones, se recortan las del medio, nunca Inicio.
+  const inicio = visibles.find((e) => e.href === '/')!;
   const entrar: EnlaceNavegacion = { href: '/acceso', etiqueta: 'Entrar', icono: LogIn };
-  const inferiores = [inicio, ...visibles, ...(!cargando && !usuario ? [entrar] : [])].slice(-5);
+  const resto = [...visibles.filter((e) => e !== inicio), ...(!cargando && !usuario ? [entrar] : [])];
+  const inferiores = [inicio, ...resto.slice(-4)];
 
   return { ruta, cargando, usuario, activo, principales, inferiores };
 }

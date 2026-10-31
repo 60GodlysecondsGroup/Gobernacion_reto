@@ -17,6 +17,7 @@ const COLUMNAS = [
     enlaces: [
       { href: '/reglas', texto: 'Reglas de la comunidad' },
       { href: '/guia', texto: 'Cómo funciona' },
+      { href: '/salas', texto: 'Salas y actividades' },
     ],
   },
   {

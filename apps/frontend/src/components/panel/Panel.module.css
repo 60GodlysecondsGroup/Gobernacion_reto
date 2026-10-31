@@ -113,8 +113,8 @@
   border-radius: inherit;
   background: #fff;
   box-shadow:
-    0 1px 2px rgb(11 27 63 / 0.08),
-    0 4px 12px -4px rgb(19 48 110 / 0.18);
+    0 1px 2px rgb(38 20 99 / 0.08),
+    0 4px 12px -4px rgb(51 25 138 / 0.18);
 }
 
 .notaLateral {
@@ -202,7 +202,7 @@
 }
 
 a.indicador:hover {
-  border-color: rgb(36 87 230 / 0.28);
+  border-color: rgb(91 53 213 / 0.28);
   color: var(--color-texto);
   text-decoration: none;
   box-shadow: var(--cristal-brillo), var(--sombra-3);

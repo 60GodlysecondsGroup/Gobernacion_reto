@@ -1,0 +1,191 @@
+/* Globo de consejo del asistente: aparece sobre el botón de la guía, sin tapar el contenido. */
+.globo {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--espacio-3);
+  width: min(22rem, calc(100vw - 2 * var(--espacio-3)));
+  padding: var(--espacio-4) var(--espacio-5) var(--espacio-4) var(--espacio-4);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg) var(--radio-lg) var(--radio-sm) var(--radio-lg);
+  background: var(--color-superficie-solida);
+  box-shadow: var(--sombra-3);
+  pointer-events: auto;
+  transform-origin: bottom right;
+  animation: aparecerGlobo 360ms var(--curva-salida);
+}
+
+.globo[data-saliendo] {
+  animation: ocultarGlobo 200ms var(--curva-entrada) forwards;
+}
+
+/* Colita del globo apuntando al botón de la guía. */
+.globo::after {
+  content: '';
+  position: absolute;
+  right: 1.5rem;
+  bottom: -7px;
+  width: 14px;
+  height: 14px;
+  border-right: 1px solid var(--color-borde);
+  border-bottom: 1px solid var(--color-borde);
+  background: var(--color-superficie-solida);
+  transform: rotate(45deg);
+}
+
+.personaje {
+  display: grid;
+  place-items: center;
+  align-self: start;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: var(--radio-md);
+  background: linear-gradient(135deg, var(--morado-100), var(--morado-50));
+  animation: saludo 900ms var(--curva-salida) 200ms;
+}
+
+.personaje[data-personaje='chigui'] {
+  background: linear-gradient(135deg, #fbeee0, var(--morado-50));
+}
+
+.contenido {
+  display: grid;
+  gap: var(--espacio-2);
+  min-width: 0;
+}
+
+.quien {
+  display: grid;
+  line-height: 1.2;
+}
+
+.quien strong {
+  font-family: var(--fuente-titulos);
+}
+
+.quien span {
+  color: var(--color-texto-tenue);
+  font-size: 0.75rem;
+}
+
+.texto {
+  font-size: var(--texto-sm);
+  line-height: 1.5;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.accion,
+.secundaria {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.25rem;
+  padding: 0 var(--espacio-3);
+  border-radius: var(--radio-total);
+  font: inherit;
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background var(--transicion),
+    transform 200ms var(--curva-resorte);
+}
+
+.accion {
+  border: 0;
+  background: var(--color-primario);
+  color: #fff;
+}
+
+.accion:hover {
+  background: var(--color-primario-hover);
+  color: #fff;
+}
+
+.secundaria {
+  border: 1px solid var(--color-borde);
+  background: transparent;
+  color: var(--color-texto-suave);
+}
+
+.secundaria:hover {
+  background: var(--morado-50);
+  color: var(--color-texto);
+}
+
+.accion:active,
+.secundaria:active {
+  transform: scale(0.96);
+}
+
+.cerrar {
+  position: absolute;
+  top: var(--espacio-2);
+  right: var(--espacio-2);
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-texto-tenue);
+  cursor: pointer;
+}
+
+.cerrar:hover {
+  background: var(--morado-50);
+  color: var(--color-texto);
+}
+
+@keyframes aparecerGlobo {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+}
+
+@keyframes ocultarGlobo {
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}
+
+/* Un pequeño saludo del personaje al aparecer (una sola vez). */
+@keyframes saludo {
+  30% {
+    transform: translateY(-3px) rotate(-6deg);
+  }
+  60% {
+    transform: translateY(0) rotate(4deg);
+  }
+}
+
+/* Móvil y tableta: sin botón de la guía, el globo ocupa el ancho disponible y no lleva colita. */
+@media (max-width: 63.99rem) {
+  .globo {
+    width: auto;
+    max-width: 30rem;
+    margin-left: auto;
+    border-radius: var(--radio-lg);
+    transform-origin: bottom center;
+  }
+
+  .globo::after {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .globo,
+  .globo[data-saliendo],
+  .personaje {
+    animation: none;
+  }
+}

@@ -1,0 +1,309 @@
+/* Tareas rápidas de las salas: conectar, ordenar y estado de ánimo. */
+.tarea,
+.exito {
+  display: grid;
+  gap: var(--espacio-4);
+  animation: entrar 320ms var(--curva-salida);
+}
+
+.cabecera {
+  display: grid;
+  gap: var(--espacio-2);
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+}
+
+.progreso {
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--radio-total);
+  background: var(--morado-100);
+}
+
+.progreso span {
+  display: block;
+  height: 100%;
+  background: var(--degradado-accion);
+  transform-origin: left;
+  transition: transform 420ms var(--curva-salida);
+}
+
+.enunciado {
+  color: var(--tinta);
+  font-size: var(--texto-md);
+  font-weight: var(--peso-fuerte);
+}
+
+.aviso {
+  min-height: 1.5em;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.nota {
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+/* ── Conectar ── */
+.columnas {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: var(--espacio-3);
+}
+
+.lista {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ficha {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  width: 100%;
+  min-height: 3rem;
+  padding: var(--espacio-2) var(--espacio-3);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: #fff;
+  color: var(--tinta);
+  font: inherit;
+  font-size: var(--texto-sm);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 200ms var(--curva-resorte),
+    border-color var(--transicion),
+    background var(--transicion);
+}
+
+.ficha:hover:not(:disabled) {
+  border-color: var(--morado-300);
+  transform: translateY(-1px);
+}
+
+.ficha:focus-visible,
+.flechas button:focus-visible,
+.deslizador:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.ficha[data-estado='elegido'] {
+  border-color: var(--color-primario);
+  background: var(--morado-50);
+  box-shadow: 0 0 0 3px rgb(91 53 213 / 0.15);
+}
+
+.ficha[data-estado='unido'] {
+  border-color: color-mix(in srgb, var(--color-exito) 50%, transparent);
+  background: color-mix(in srgb, var(--color-exito) 10%, #fff);
+  color: var(--color-exito);
+  cursor: default;
+  animation: unir 360ms var(--curva-resorte);
+}
+
+.ficha[data-estado='error'] {
+  border-color: var(--color-peligro, #c0392b);
+  animation: sacudir 320ms ease;
+}
+
+/* ── Ordenar ── */
+.orden {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pasoOrden {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--espacio-3);
+  padding: var(--espacio-2) var(--espacio-2) var(--espacio-2) var(--espacio-3);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: #fff;
+}
+
+.pasoOrden[data-estado='bien'] {
+  border-color: color-mix(in srgb, var(--color-exito) 50%, transparent);
+  background: color-mix(in srgb, var(--color-exito) 8%, #fff);
+}
+
+.pasoOrden[data-estado='mal'] {
+  border-color: color-mix(in srgb, #d98a2b 55%, transparent);
+}
+
+.numero {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: var(--morado-100);
+  color: var(--color-primario);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+}
+
+.textoPaso {
+  font-size: var(--texto-sm);
+}
+
+.flechas {
+  display: flex;
+  gap: 4px;
+}
+
+.flechas button {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-sm);
+  background: var(--morado-50);
+  color: var(--color-primario);
+  cursor: pointer;
+}
+
+.flechas button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ── Estado de ánimo ── */
+.animo {
+  display: grid;
+  justify-items: center;
+  gap: var(--espacio-2);
+}
+
+.cara {
+  width: 6rem;
+  height: 6rem;
+  filter: drop-shadow(0 8px 12px rgb(38 20 99 / 0.18));
+  transition: transform 260ms var(--curva-resorte);
+  transform: rotate(calc((var(--nivel) - 2) * 3deg));
+}
+
+.etiquetaAnimo {
+  color: var(--tinta);
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-fuerte);
+}
+
+.deslizador {
+  width: 100%;
+  min-height: 2.75rem;
+  accent-color: var(--color-primario);
+  cursor: pointer;
+}
+
+.extremos {
+  display: flex;
+  justify-content: space-between;
+  margin-top: calc(-1 * var(--espacio-3));
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+}
+
+.enlaceAyuda {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  justify-self: center;
+  color: var(--coral, #d9483b);
+  font-weight: var(--peso-fuerte);
+}
+
+/* ── Éxito ── */
+.exito {
+  justify-items: center;
+  padding: var(--espacio-3) 0;
+  text-align: center;
+}
+
+.exito h2 {
+  font-size: var(--texto-xl);
+}
+
+.exito h2:focus {
+  outline: none;
+}
+
+.destello {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: var(--degradado-accion);
+  color: #fff;
+  box-shadow: 0 0 0 8px rgb(115 80 234 / 0.12);
+  animation: celebrar 600ms var(--curva-resorte);
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes unir {
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes sacudir {
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes celebrar {
+  from {
+    opacity: 0;
+    transform: scale(0.6) rotate(-12deg);
+  }
+}
+
+@media (max-width: 30rem) {
+  .columnas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tarea,
+  .exito,
+  .ficha[data-estado],
+  .destello {
+    animation: none;
+  }
+
+  .ficha,
+  .cara,
+  .progreso span {
+    transition: none;
+  }
+}

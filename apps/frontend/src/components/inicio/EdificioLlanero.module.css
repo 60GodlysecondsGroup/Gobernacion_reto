@@ -18,7 +18,7 @@
 
 .letra {
   font-family: var(--fuente-titulos);
-  font-size: 8px;
+  font-size: 7px;
   font-weight: 700;
 }
 
@@ -72,4 +72,274 @@
   min-height: 3.2em;
   color: var(--color-texto);
   font-size: var(--texto-sm);
+}
+
+/* ── Ambiente vivo ───────────────────────────────────── */
+.escena {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radio-lg);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+}
+
+/* Estrellas que titilan muy despacio; se detienen cuando el edificio no se ve. */
+.estrella {
+  animation: titilar 3.6s ease-in-out infinite;
+}
+
+.escena[data-pausa] .estrella {
+  animation-play-state: paused;
+}
+
+.resplandor {
+  fill: #9579f3;
+  opacity: 0.35;
+  filter: blur(2px);
+  animation: encender 420ms var(--curva-salida);
+}
+
+/* Cocuyo vuela hasta el piso elegido. La caja ocupa toda la escena para usar % de su alto. */
+.cocuyo {
+  position: absolute;
+  top: 0;
+  left: 76%;
+  height: 100%;
+  pointer-events: none;
+  transition: transform 700ms var(--curva-salida);
+}
+
+.cocuyoVuelo {
+  display: block;
+  filter: drop-shadow(0 0 6px rgb(242 169 59 / 0.7));
+  animation: aletear 1.6s ease-in-out 4 alternate;
+}
+
+.escena[data-piso] .cocuyoVuelo {
+  animation: llegar 600ms var(--curva-salida);
+}
+
+@keyframes titilar {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@keyframes encender {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes aletear {
+  to {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes llegar {
+  40% {
+    transform: translateY(-6px) rotate(-8deg);
+  }
+}
+
+.botonPiso {
+  transition:
+    background var(--transicion),
+    color var(--transicion),
+    border-color var(--transicion),
+    transform 220ms var(--curva-resorte);
+}
+
+.botonPiso:active {
+  transform: scale(0.92);
+}
+
+.botonPiso[aria-pressed='true'] {
+  border-color: var(--morado-700);
+  background: var(--degradado-accion);
+  color: #fff;
+  box-shadow: var(--sombra-primario);
+}
+
+.explicacion {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .estrella,
+  .cocuyoVuelo,
+  .escena[data-piso] .cocuyoVuelo,
+  .resplandor {
+    animation: none;
+  }
+
+  .cocuyo {
+    transition: none;
+  }
+}
+
+/* Etiqueta del piso elegido: aparece junto a la fachada, con el color de su comunidad. */
+.etiquetaPiso {
+  position: absolute;
+  right: 3%;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 8px;
+  border-radius: var(--radio-total);
+  background: rgb(255 255 255 / 0.94);
+  color: var(--tinta);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  white-space: nowrap;
+  box-shadow: 0 8px 20px -10px rgb(0 0 0 / 0.6);
+  pointer-events: none;
+  animation: aparecerEtiqueta 360ms var(--curva-salida);
+}
+
+.etiquetaPiso::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--color-piso);
+}
+
+@keyframes aparecerEtiqueta {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .etiquetaPiso {
+    animation: none;
+  }
+}
+
+/* ── Ambiente: viento, faroles, ventanas y hojas (todo se detiene fuera de pantalla) ── */
+.rama {
+  transform-box: view-box;
+  /* A pasos, como el pixel art: el dibujo se repinta solo unas veces por segundo. */
+  animation: viento 5.5s steps(5) infinite alternate;
+}
+
+.halo {
+  animation: farol 4s steps(4) infinite alternate;
+}
+
+.parpadeo {
+  animation: ventana 7s steps(1) infinite;
+}
+
+.bandera {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: ondear 2.4s steps(3) infinite alternate;
+}
+
+.hojas {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hojas i {
+  position: absolute;
+  top: 48%;
+  width: 4px;
+  height: 3px;
+  border-radius: 1px;
+  background: #f2c94c;
+  opacity: 0;
+  animation-name: caer;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.hojas i:nth-child(even) {
+  background: #e9a91e;
+}
+
+.escena[data-pausa] :is(.rama, .halo, .parpadeo, .bandera, .estrella, .hojas i) {
+  animation-play-state: paused;
+}
+
+@keyframes viento {
+  from {
+    transform: rotate(-1.2deg);
+  }
+  to {
+    transform: rotate(1.4deg);
+  }
+}
+
+@keyframes farol {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ventana {
+  0%,
+  86% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 0.55;
+  }
+  92% {
+    opacity: 1;
+  }
+  94% {
+    opacity: 0.75;
+  }
+}
+
+@keyframes ondear {
+  to {
+    transform: scaleX(0.82) skewY(4deg);
+  }
+}
+
+/* Cada hoja cae solo durante una parte de su ciclo: «de vez en cuando». */
+@keyframes caer {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  4% {
+    opacity: 1;
+  }
+  20% {
+    transform: translate(10px, 40px) rotate(160deg);
+  }
+  34% {
+    opacity: 0.9;
+    transform: translate(-6px, 80px) rotate(320deg);
+  }
+  40%,
+  100% {
+    opacity: 0;
+    transform: translate(4px, 96px) rotate(380deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rama,
+  .halo,
+  .parpadeo,
+  .bandera {
+    animation: none;
+  }
+
+  .hojas {
+    display: none;
+  }
 }

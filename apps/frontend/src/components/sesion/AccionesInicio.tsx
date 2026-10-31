@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, Compass } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { BotonEnlace } from '@/components/ui';
 import { useSesion } from './ProveedorSesion';
 
@@ -10,7 +10,7 @@ export function AccionesInicio() {
     return (
       <span
         className="esqueleto"
-        style={{ width: '22rem', maxWidth: '100%', height: '3.375rem', borderRadius: 999 }}
+        style={{ width: '17rem', maxWidth: '100%', height: '3.375rem', borderRadius: 999 }}
       />
     );
 
@@ -41,13 +41,6 @@ export function AccionesInicio() {
     </BotonEnlace>
   );
 
-  return (
-    <>
-      {principal}
-      <BotonEnlace href="/orientacion" variante="secundario" tamano="lg">
-        <Compass aria-hidden="true" size={18} />
-        Explorar orientación
-      </BotonEnlace>
-    </>
-  );
+  // Una sola acción principal: Orientación sigue a un clic en la navegación y en la portada.
+  return principal;
 }

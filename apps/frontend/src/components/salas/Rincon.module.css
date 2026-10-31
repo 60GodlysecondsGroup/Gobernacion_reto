@@ -1,0 +1,571 @@
+/*
+ * Rincón de actividades de una sala: una pared con el tono de la sala, un suelo donde están los
+ * objetos interactivos y el personaje con su globo. Se adapta a su propio ancho (container queries)
+ * porque vive en la columna de la sala, no en todo el ancho de la página.
+ */
+.rincon {
+  --acento: var(--morado-500);
+  --pared: color-mix(in srgb, var(--acento) 14%, #fff);
+  --suelo: color-mix(in srgb, var(--acento) 26%, #fff);
+  container-type: inline-size;
+  position: relative;
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--padding-tarjeta);
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--acento) 22%, transparent);
+  border-radius: var(--radio-xl);
+  background: linear-gradient(180deg, var(--pared) 0%, #fff 75%);
+  box-shadow: var(--sombra-2);
+}
+
+.cabecera {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 2px;
+}
+
+.titulo {
+  font-size: var(--texto-lg);
+}
+
+.subtitulo {
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-sm);
+}
+
+.escena {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-4);
+  align-items: end;
+}
+
+/* El suelo de la sala: una franja donde se apoyan el personaje y los objetos. */
+.escena::before {
+  content: '';
+  position: absolute;
+  right: calc(-1 * var(--padding-tarjeta));
+  bottom: calc(-1 * var(--padding-tarjeta));
+  left: calc(-1 * var(--padding-tarjeta));
+  height: calc(5.25rem + var(--padding-tarjeta));
+  border-top: 2px solid color-mix(in srgb, var(--acento) 28%, transparent);
+  background: linear-gradient(180deg, var(--suelo), color-mix(in srgb, var(--suelo) 55%, #fff));
+}
+
+/*
+ * Con espacio, el personaje y los objetos comparten el suelo. El globo flota sobre el personaje
+ * en un espacio reservado: aparecer, cambiar o cerrarse nunca mueve los objetos.
+ */
+@container (min-width: 46rem) {
+  .escena {
+    grid-template-columns: 19rem minmax(0, 1fr);
+  }
+
+  .guia {
+    min-height: 19.5rem;
+    align-content: end;
+  }
+
+  .objetos {
+    padding-bottom: var(--espacio-1);
+  }
+
+  .globo {
+    position: absolute;
+    bottom: 6rem;
+    left: 0;
+    z-index: 2;
+  }
+}
+
+/* ── Detalles del ambiente: flotan despacio unas veces y se quedan quietos ── */
+.ambiente {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ambiente i {
+  position: absolute;
+  top: calc(8% + var(--i) * 7%);
+  left: calc(6% + var(--i) * 16%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50% 0;
+  background: color-mix(in srgb, var(--acento) 45%, transparent);
+  opacity: 0.55;
+  animation: flotarAmbiente 4.5s ease-in-out calc(var(--i) * -0.7s) 6 alternate;
+}
+
+.rincon[data-ambiente='libros'] .ambiente i {
+  width: 12px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.rincon[data-ambiente='corazones'] .ambiente i,
+.rincon[data-ambiente='burbujas'] .ambiente i {
+  border-radius: 50%;
+}
+
+.rincon[data-ambiente='burbujas'] .ambiente i {
+  background: transparent;
+  border: 2px solid color-mix(in srgb, var(--acento) 40%, transparent);
+}
+
+.rincon[data-ambiente='brotes'] .ambiente i {
+  border-radius: 0 50%;
+}
+
+@keyframes flotarAmbiente {
+  to {
+    transform: translateY(-8px) rotate(14deg);
+  }
+}
+
+/* ── Personaje y globo ─────────────────────────────── */
+.guia {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: start;
+  gap: var(--espacio-2);
+  min-width: 0;
+}
+
+.globo {
+  position: relative;
+  display: grid;
+  gap: var(--espacio-1);
+  width: 100%;
+  padding: var(--espacio-3) var(--espacio-6) var(--espacio-3) var(--espacio-3);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg) var(--radio-lg) var(--radio-lg) var(--radio-sm);
+  background: #fff;
+  box-shadow: var(--sombra-2);
+  transform-origin: bottom left;
+  animation: aparecerGlobo 320ms var(--curva-salida);
+}
+
+.globo::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 1.5rem;
+  width: 12px;
+  height: 12px;
+  border-right: 1px solid var(--color-borde);
+  border-bottom: 1px solid var(--color-borde);
+  background: #fff;
+  transform: rotate(45deg);
+}
+
+.globo[data-tono='logro'] {
+  border-color: color-mix(in srgb, var(--color-exito) 40%, transparent);
+}
+
+.quien {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--espacio-2);
+  font-size: var(--texto-xs);
+}
+
+.quien strong {
+  color: var(--tinta);
+  font-size: var(--texto-sm);
+}
+
+.quien span {
+  color: var(--color-texto-tenue);
+}
+
+.textoGlobo {
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+}
+
+.detalleGlobo {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.cerrarGlobo {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-texto-tenue);
+  cursor: pointer;
+}
+
+.cerrarGlobo:hover {
+  background: var(--morado-50);
+  color: var(--tinta);
+}
+
+.personaje {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: var(--espacio-1);
+  border: 0;
+  border-radius: var(--radio-md);
+  background: transparent;
+  cursor: pointer;
+}
+
+.personaje:focus-visible,
+.objeto:focus-visible,
+.cerrarGlobo:focus-visible,
+.carta:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+/* Al hablar, el personaje da un saltito (una sola vez). */
+.salto {
+  display: block;
+  animation: saltito 520ms var(--curva-resorte);
+}
+
+.placaGuia {
+  padding: 1px 10px;
+  border-radius: var(--radio-total);
+  background: var(--acento);
+  color: #fff;
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+}
+
+@keyframes saltito {
+  40% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes aparecerGlobo {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+}
+
+/* ── Objetos de la sala ────────────────────────────── */
+.objetos {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@container (min-width: 30rem) {
+  .objetos {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.objeto {
+  display: grid;
+  justify-items: center;
+  gap: var(--espacio-2);
+  width: 100%;
+  padding: var(--espacio-2) var(--espacio-1);
+  border: 0;
+  border-radius: var(--radio-md);
+  background: transparent;
+  color: var(--color-texto);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* La pieza: un objeto con volumen que se levanta y brilla al acercarse. */
+.pieza {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 1.1rem;
+  background:
+    linear-gradient(160deg, rgb(255 255 255 / 0.35), transparent 55%),
+    color-mix(in srgb, var(--acento) 82%, var(--morado-900));
+  color: #fff;
+  box-shadow:
+    inset 0 -4px 0 rgb(0 0 0 / 0.18),
+    0 10px 16px -10px color-mix(in srgb, var(--acento) 80%, #000);
+  transition:
+    transform 260ms var(--curva-resorte),
+    box-shadow var(--transicion-lenta);
+}
+
+/* Sombra en el suelo bajo cada objeto. */
+.pieza::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  width: 70%;
+  height: 6px;
+  border-radius: 50%;
+  background: rgb(38 20 99 / 0.16);
+  transform: translateX(-50%);
+  transition:
+    transform 260ms var(--curva-resorte),
+    opacity var(--transicion);
+}
+
+.objeto[data-recomendada] .pieza {
+  background:
+    linear-gradient(160deg, rgb(255 255 255 / 0.35), transparent 55%),
+    var(--degradado-accion);
+}
+
+.objeto:hover .pieza,
+.objeto:focus-visible .pieza {
+  box-shadow:
+    inset 0 -4px 0 rgb(0 0 0 / 0.18),
+    0 16px 24px -12px color-mix(in srgb, var(--acento) 90%, #000),
+    0 0 0 6px color-mix(in srgb, var(--acento) 16%, transparent);
+  transform: translateY(-5px);
+}
+
+.objeto:hover .pieza::after,
+.objeto:focus-visible .pieza::after {
+  opacity: 0.6;
+  transform: translate(-50%, 5px) scale(0.85);
+}
+
+.objeto:active .pieza {
+  transform: translateY(-1px) scale(0.97);
+}
+
+.hecha {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--color-exito);
+  animation: aparecerGlobo 300ms var(--curva-resorte);
+}
+
+.placa {
+  display: grid;
+  gap: 1px;
+  margin-top: var(--espacio-1);
+}
+
+.nombreActividad {
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  line-height: 1.25;
+}
+
+.nombreObjeto {
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+}
+
+.objeto[data-recomendada] .nombreObjeto {
+  color: var(--color-primario);
+  font-weight: var(--peso-fuerte);
+}
+
+/* ── Retos rápidos: memoria ────────────────────────── */
+.memoria,
+.pausaReto {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.cabeceraMemoria {
+  display: grid;
+  gap: var(--espacio-2);
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+}
+
+.progresoMemoria {
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--radio-total);
+  background: var(--morado-100);
+}
+
+.progresoMemoria span {
+  display: block;
+  height: 100%;
+  background: var(--degradado-accion);
+  transform-origin: left;
+  transition: transform 420ms var(--curva-salida);
+}
+
+.cartas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  perspective: 900px;
+}
+
+@media (min-width: 30rem) {
+  .cartas {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.carta {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 5.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 380ms var(--curva-salida);
+}
+
+.carta[data-visible] {
+  transform: rotateY(180deg);
+}
+
+.caraOculta,
+.caraVisible {
+  grid-area: 1 / 1;
+  display: grid;
+  place-items: center;
+  padding: var(--espacio-2);
+  border-radius: var(--radio-md);
+  backface-visibility: hidden;
+}
+
+.caraOculta {
+  background:
+    radial-gradient(circle at 30% 25%, rgb(255 255 255 / 0.25), transparent 50%),
+    var(--fondo-profundo);
+  color: rgb(255 255 255 / 0.85);
+  font-size: var(--texto-xl);
+  font-weight: var(--peso-fuerte);
+}
+
+.caraVisible {
+  border: 1px solid var(--color-borde);
+  background: #fff;
+  color: var(--tinta);
+  font-size: var(--texto-sm);
+  line-height: 1.3;
+  text-align: center;
+  transform: rotateY(180deg);
+}
+
+.carta[data-tipo='concepto'] .caraVisible {
+  font-weight: var(--peso-fuerte);
+}
+
+.carta[data-hallada] {
+  cursor: default;
+}
+
+.carta[data-hallada] .caraVisible {
+  border-color: color-mix(in srgb, var(--color-exito) 50%, transparent);
+  background: color-mix(in srgb, var(--color-exito) 10%, #fff);
+}
+
+.avisoMemoria {
+  min-height: 1.5em;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.pausaReto {
+  justify-items: center;
+  padding: var(--espacio-4) 0;
+  text-align: center;
+}
+
+.pausaReto h2 {
+  font-size: var(--texto-xl);
+}
+
+.pausaReto h2:focus {
+  outline: none;
+}
+
+.iconoPausa {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: var(--degradado-accion);
+  color: #fff;
+  animation: saltito 600ms var(--curva-resorte);
+}
+
+.accionesReto {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--espacio-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambiente i,
+  .salto,
+  .globo,
+  .hecha,
+  .iconoPausa {
+    animation: none;
+  }
+
+  .pieza,
+  .pieza::after,
+  .carta,
+  .progresoMemoria span {
+    transition: none;
+  }
+
+  /* Sin giro: la carta cambia de cara al instante. */
+  .carta[data-visible] {
+    transform: none;
+  }
+
+  .carta[data-visible] .caraOculta {
+    visibility: hidden;
+  }
+
+  .carta[data-visible] .caraVisible {
+    transform: none;
+  }
+
+  .objeto:hover .pieza,
+  .objeto:focus-visible .pieza {
+    transform: none;
+  }
+}

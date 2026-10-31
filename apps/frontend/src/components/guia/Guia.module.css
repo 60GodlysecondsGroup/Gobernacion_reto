@@ -16,7 +16,8 @@
   padding: var(--espacio-1) var(--espacio-4) var(--espacio-1) var(--espacio-2);
   border: 0;
   border-radius: var(--radio-total);
-  background: var(--anil-noche);
+  background: linear-gradient(135deg, var(--morado-800), var(--morado-950));
+  box-shadow: 0 10px 28px -10px rgb(38 20 99 / 0.6);
   color: #fff;
   font: inherit;
   font-size: var(--texto-sm);
@@ -42,7 +43,7 @@
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-lg);
   background: var(--color-superficie);
-  box-shadow: 0 24px 60px -20px rgb(11 27 63 / 0.4);
+  box-shadow: 0 24px 60px -20px rgb(38 20 99 / 0.4);
 }
 
 .cabecera {
@@ -173,10 +174,85 @@
 
 /*
  * En móvil y tableta la guía se abre desde la barra inferior («Guía») o el menú de la cuenta
- * («Cómo funciona»): el botón flotante taparía contenido y botones.
+ * («Cómo funciona»): el botón flotante taparía contenido y botones. Solo queda el globo de
+ * consejo, que aparece una vez por página sobre la barra inferior y se puede cerrar.
  */
 @media (max-width: 63.99rem) {
   .flotante {
+    left: max(var(--margen-lateral), env(safe-area-inset-left));
+    justify-items: stretch;
+    pointer-events: none;
+  }
+
+  .lanzador,
+  .ventana {
     display: none;
   }
+}
+
+/* ── Consejos de esta página (reabrir los mensajes de los asistentes) ── */
+.consejos {
+  display: grid;
+  gap: var(--espacio-2);
+  padding: var(--espacio-3);
+  border-radius: var(--radio-md);
+  background: var(--morado-50);
+}
+
+.tituloConsejos {
+  color: var(--color-primario);
+  font-family: var(--fuente-base);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.listaConsejos {
+  display: grid;
+  gap: var(--espacio-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.consejo {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--espacio-2);
+  width: 100%;
+  padding: var(--espacio-2);
+  border: 1px solid transparent;
+  border-radius: var(--radio-sm);
+  background: transparent;
+  color: var(--color-texto);
+  font: inherit;
+  font-size: var(--texto-sm);
+  line-height: 1.45;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--transicion),
+    border-color var(--transicion);
+}
+
+.consejo:hover {
+  border-color: var(--color-borde);
+  background: #fff;
+}
+
+.interruptor {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  color: var(--color-texto-suave);
+  font-size: var(--texto-xs);
+  cursor: pointer;
+}
+
+.interruptor input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--color-primario);
 }

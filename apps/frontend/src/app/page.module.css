@@ -1,42 +1,69 @@
+/*
+ * Portada. Ritmo vertical con --separacion-seccion; anchos con clamp() para que se reorganice
+ * (no solo se encoja) entre 360 px y 1920 px.
+ */
 .pagina {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--espacio-9);
+  gap: var(--separacion-seccion);
 }
 
-/* ── Héroe: tipografía y espacio, sin adornos ───────── */
+/* ── Héroe ───────────────────────────────────────────── */
 .heroe {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  gap: var(--espacio-7);
-  padding-top: var(--espacio-5);
+  gap: clamp(2rem, 1.2rem + 3vw, 4rem);
+  padding-top: clamp(0.5rem, 0rem + 2vw, 2rem);
 }
 
 .textoHeroe {
   display: grid;
   justify-items: start;
-  gap: var(--espacio-5);
+  gap: clamp(1rem, 0.8rem + 0.8vw, 1.5rem);
 }
 
 .antetitulo {
-  color: var(--color-primario);
-  font-size: var(--texto-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  padding: 6px 14px 6px 10px;
+  border: 1px solid rgb(91 53 213 / 0.18);
+  border-radius: var(--radio-total);
+  background: rgb(255 255 255 / 0.7);
+  color: var(--morado-800);
+  font-size: var(--texto-xs);
   font-weight: var(--peso-fuerte);
 }
 
+.punto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-exito);
+  box-shadow: 0 0 0 3px rgb(15 122 90 / 0.18);
+}
+
 .titulo {
-  max-width: 17ch;
-  font-size: var(--texto-3xl);
-  font-weight: 740;
-  letter-spacing: -0.04em;
-  line-height: 1.03;
+  max-width: 19ch;
+  font-size: clamp(2.1rem, 1.3rem + 3vw, 3.6rem);
+  font-weight: 760;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+/* «un lugar seguro» en el morado de la marca, con un subrayado de luz. */
+.resalte {
+  background: linear-gradient(120deg, var(--morado-500), var(--morado-700) 60%, #4a4fe0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .entradilla {
   max-width: 34rem;
   color: var(--color-texto-suave);
-  font-size: var(--texto-lg);
+  font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
   line-height: 1.55;
 }
 
@@ -44,11 +71,13 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--espacio-3);
+  margin-top: var(--espacio-1);
 }
 
 .garantias {
-  display: grid;
-  gap: var(--espacio-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2) var(--espacio-4);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -57,9 +86,9 @@
 }
 
 .garantias li {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: var(--espacio-2);
+  gap: 6px;
 }
 
 .garantias svg {
@@ -67,21 +96,70 @@
   color: var(--color-exito);
 }
 
-.ilustracion {
+/* La ilustración: tarjeta clara con un halo morado detrás y dos etiquetas flotantes. */
+.visual {
+  position: relative;
   min-width: 0;
-  padding: var(--espacio-4);
-  border: 1px solid var(--cristal-borde);
+  padding-block: var(--espacio-4);
+}
+
+.visual::before {
+  content: '';
+  position: absolute;
+  inset: 8% 6%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(115 80 234 / 0.35), transparent);
+  filter: blur(20px);
+}
+
+.ilustracion {
+  max-width: 34rem;
+  margin-inline: auto;
+  padding: clamp(0.75rem, 0.5rem + 1vw, 1.25rem);
+  border: 1px solid rgb(255 255 255 / 0.8);
   border-radius: var(--radio-xl);
-  background: var(--cristal-fino);
+  background: rgb(255 255 255 / 0.88);
   box-shadow: var(--cristal-brillo), var(--sombra-3);
-  -webkit-backdrop-filter: var(--cristal-desenfoque-suave);
-  backdrop-filter: var(--cristal-desenfoque-suave);
+}
+
+.chip {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-total);
+  background: #fff;
+  color: var(--morado-800);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  box-shadow: var(--sombra-2);
+  white-space: nowrap;
+  animation: llegarChip 600ms var(--curva-salida) backwards;
+}
+
+.chip svg {
+  color: var(--color-primario);
+}
+
+.chipA {
+  top: 2%;
+  left: -2%;
+  animation-delay: 500ms;
+}
+
+.chipB {
+  right: -2%;
+  bottom: 30%;
+  animation-delay: 650ms;
 }
 
 /* ── Secciones ───────────────────────────────────────── */
 .seccion {
   display: grid;
-  gap: var(--espacio-5);
+  gap: clamp(1.25rem, 1rem + 1vw, 2rem);
 }
 
 .cabeceraSeccion {
@@ -90,8 +168,20 @@
   max-width: 42rem;
 }
 
-.cabeceraSeccion h2 {
-  font-size: var(--texto-2xl);
+.antetituloSeccion {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  color: var(--color-primario);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cabeceraSeccion h2,
+.textoJuegos h2 {
+  font-size: clamp(1.75rem, 1.35rem + 1.6vw, 2.5rem);
   letter-spacing: -0.03em;
 }
 
@@ -164,84 +254,102 @@
 }
 
 /* ── Cómo te cuidamos: panel profundo con tres placas de cristal oscuro ── */
-.cuidado {
-  padding: var(--espacio-7) var(--espacio-5);
-  border: 1px solid var(--cristal-borde-oscuro);
-  border-radius: var(--radio-xl);
-  background: var(--fondo-profundo);
-  color: #fff;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.12),
-    var(--sombra-3);
-}
 
-.cuidado .cabeceraSeccion p {
-  color: rgb(255 255 255 / 0.76);
-}
-
-.capas {
+/* ── Minijuegos ──────────────────────────────────────── */
+.juegos {
+  position: relative;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
-  gap: var(--espacio-6);
-  margin: 0;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(1rem, 0.6rem + 2vw, 2.5rem);
+  padding: clamp(1.25rem, 1rem + 2vw, 2.5rem);
+  overflow: hidden;
+  border: 1px solid rgb(91 53 213 / 0.14);
+  border-radius: var(--radio-xl);
+  background:
+    radial-gradient(28rem 14rem at 0% 100%, rgb(115 80 234 / 0.16), transparent 70%),
+    radial-gradient(24rem 14rem at 100% 0%, rgb(61 111 245 / 0.1), transparent 70%), #fff;
+  box-shadow: var(--sombra-2);
+}
+
+.personajeJuegos {
+  display: grid;
+  place-items: center;
+  width: 8rem;
+  height: 8rem;
+  border-radius: 50%;
+  background: var(--morado-50);
+}
+
+.personajeJuegos svg {
+  transition: transform 400ms var(--curva-resorte);
+}
+
+.juegos:hover .personajeJuegos svg {
+  transform: translateY(-4px) rotate(-4deg);
+}
+
+.textoJuegos {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.textoJuegos > p:not(.antetituloSeccion) {
+  max-width: 36rem;
+  color: var(--color-texto-suave);
+}
+
+.listaJuegos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+  margin: var(--espacio-1) 0 0;
   padding: 0;
   list-style: none;
 }
 
-.capa {
-  display: grid;
-  align-content: start;
-  gap: var(--espacio-2);
-  padding: var(--espacio-5);
-  border: 1px solid var(--cristal-borde-oscuro);
-  border-radius: var(--radio-lg);
-  background: rgb(255 255 255 / 0.07);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1);
-}
-
-.capa h3 {
-  margin-top: var(--espacio-2);
-  font-size: var(--texto-lg);
-}
-
-.capa p {
-  color: rgb(255 255 255 / 0.76);
-  font-size: var(--texto-sm);
-}
-
-.iconoCapa {
-  color: var(--cian);
-}
-
-.capa:nth-child(2) .iconoCapa {
-  color: var(--ventana-ambar);
-}
-
-.capa:nth-child(3) .iconoCapa {
-  color: var(--ventana-lila);
-}
-
-.enlace {
-  display: inline-flex;
-  align-items: center;
-  justify-self: start;
-  gap: var(--espacio-1);
+.listaJuegos li {
+  padding: 4px 12px;
+  border-radius: var(--radio-total);
+  background: var(--morado-50);
+  color: var(--morado-800);
+  font-size: var(--texto-xs);
   font-weight: var(--peso-fuerte);
 }
 
-.cuidado .enlace {
+.irJuegos {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: 3rem;
+  padding: 0 var(--espacio-5);
+  border-radius: var(--radio-total);
+  background: var(--degradado-accion);
   color: #fff;
+  font-weight: var(--peso-fuerte);
+  white-space: nowrap;
+  text-decoration: none;
+  box-shadow: var(--sombra-primario);
+  transition:
+    transform 220ms var(--curva-resorte),
+    box-shadow var(--transicion);
 }
 
-.cuidado .enlace:hover {
-  color: var(--cian);
+.irJuegos:hover {
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px -10px rgb(91 53 213 / 0.7);
 }
 
-.cuidado .enlace:focus-visible {
-  outline-color: var(--cian);
+.irJuegos svg {
+  transition: transform var(--transicion);
 }
 
-/* ── Estado del prototipo: disponible, pero sin ocupar el primer plano ── */
+.irJuegos:hover svg {
+  transform: translateX(3px);
+}
+
+/* ── Estado del prototipo ────────────────────────────── */
 .estado {
   max-width: 44rem;
   border-top: 1px solid var(--color-borde-fuerte);
@@ -264,39 +372,42 @@
   margin-top: var(--espacio-4);
 }
 
-@media (max-width: 47.99rem) {
-  .acciones > * {
-    flex: 1 1 100%;
-  }
-}
-
-@media (min-width: 48rem) {
-  .cuidado {
-    padding: var(--espacio-8) var(--espacio-7);
-  }
-
-  .ayuda {
-    grid-template-columns: auto minmax(0, 1fr) auto;
-  }
-
-  .irAyuda {
-    grid-column: auto;
-  }
-}
-
+/* ── Puntos de quiebre ───────────────────────────────── */
 @media (min-width: 64rem) {
   .heroe {
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-    gap: var(--espacio-8);
-    padding-top: var(--espacio-7);
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
   }
 }
 
-/*
- * Entrada de la portada: el texto se asienta línea a línea (antetítulo, título, entradilla,
- * acciones y garantías) y la ilustración llega un instante después. Es CSS puro: se ve igual
- * aunque la página aún no se haya hidratado y no retrasa ningún clic (≤ 360 ms en total).
- */
+@media (max-width: 47.99rem) {
+  .juegos {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: start;
+  }
+
+  .personajeJuegos {
+    width: 5.5rem;
+    height: 5.5rem;
+  }
+
+  .personajeJuegos svg {
+    width: 64px;
+    height: 64px;
+  }
+
+  .irJuegos {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+@media (max-width: 29.99rem) {
+  .chip {
+    display: none;
+  }
+}
+
+/* ── Entrada de la portada (CSS: se ve aunque la página aún no se haya hidratado) ── */
 .textoHeroe > * {
   animation: asentarse 560ms var(--curva-salida) backwards;
 }
@@ -332,6 +443,21 @@
   from {
     opacity: 0;
     transform: translateY(18px) scale(0.97);
+  }
+}
+
+@keyframes llegarChip {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.9);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .textoHeroe > *,
+  .ilustracion,
+  .chip {
+    animation: none;
   }
 }
 

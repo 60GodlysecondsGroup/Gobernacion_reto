@@ -2,7 +2,15 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--espacio-6);
+}
+
+/* El texto se lee en una columna cómoda; las etapas de «Cómo funciona» usan todo el ancho. */
+.pagina > * {
   max-width: var(--ancho-lectura);
+}
+
+.pagina > .ancho {
+  max-width: none;
 }
 
 .presentacion {
@@ -43,4 +51,12 @@
 
 .seccion > div {
   font-size: var(--texto-md);
+}
+
+/* Separa las cuatro etapas de las preguntas frecuentes. */
+.subtitulo {
+  margin-top: var(--espacio-6);
+  padding-top: var(--espacio-6);
+  border-top: 1px solid var(--color-borde);
+  font-size: clamp(1.4rem, 1.2rem + 0.8vw, 1.75rem);
 }

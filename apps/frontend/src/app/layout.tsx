@@ -39,15 +39,18 @@ const bricolage = localFont({
 });
 
 export const metadata: Metadata = {
-  title: { default: 'Comunidad Protegida · Prototipo', template: '%s · Comunidad Protegida' },
+  title: {
+    default: 'Comunidad Protegida | Un espacio para jóvenes en Villavicencio',
+    template: '%s · Comunidad Protegida',
+  },
   description:
-    'Prototipo de hackathon con datos sintéticos: orientación institucional y comunidad protegida para jóvenes de Villavicencio. No es un servicio de salud.',
+    'Espacio digital de orientación, participación y convivencia segura para jóvenes de 10 a 22 años en Villavicencio, Meta.',
   robots: { index: false, follow: false },
   applicationName: 'Comunidad Protegida',
 };
 
 export const viewport: Viewport = {
-  themeColor: '#eef2fa',
+  themeColor: '#f3f1fb',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

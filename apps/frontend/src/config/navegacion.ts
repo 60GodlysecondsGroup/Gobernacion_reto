@@ -3,6 +3,7 @@ import {
   BookOpen,
   Building2,
   Compass,
+  Home,
   LayoutDashboard,
   Library,
   MessagesSquare,
@@ -35,6 +36,8 @@ export type EnlaceNavegacion = {
  * «Necesito ayuda» no va aquí: es un botón fijo del encabezado.
  */
 export const enlacesNavegacion: EnlaceNavegacion[] = [
+  // «Inicio» siempre vuelve a la portada (ruta interna de Next.js, nunca una URL fija).
+  { href: '/', etiqueta: 'Inicio', icono: Home },
   { href: '/orientacion', etiqueta: 'Orientación', icono: Compass },
   {
     href: '/guia',
