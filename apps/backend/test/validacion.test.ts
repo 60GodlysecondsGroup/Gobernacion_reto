@@ -60,15 +60,22 @@ describe('cargarConfig()', () => {
     );
   });
 
-  it('el acceso de demostración está activo en desarrollo y apagado en producción', () => {
-    const produccion = {
+  it('ya no existe un acceso de demostración: ACCESO_DEMO no cambia la configuración', () => {
+    const config = cargarConfig({ DATABASE_URL: URL_PRUEBA, ACCESO_DEMO: 'true' });
+    expect(config).not.toHaveProperty('accesoDemo');
+  });
+
+  it('la sesión dura 8 h y «Recordarme» 30 días; la cookie es Secure en producción', () => {
+    const desarrollo = cargarConfig({ DATABASE_URL: URL_PRUEBA });
+    expect(desarrollo.sesion.duracionMs).toBe(8 * 60 * 60 * 1000);
+    expect(desarrollo.sesion.duracionRecordadaMs).toBe(30 * 24 * 60 * 60 * 1000);
+    expect(desarrollo.sesion.cookieSegura).toBe(false);
+    const produccion = cargarConfig({
       DATABASE_URL: URL_PRUEBA,
       NODE_ENV: 'production',
       SESSION_SECRET: 'x'.repeat(32),
-    };
-    expect(cargarConfig({ DATABASE_URL: URL_PRUEBA }).accesoDemo).toBe(true);
-    expect(cargarConfig(produccion).accesoDemo).toBe(false);
-    expect(cargarConfig({ DATABASE_URL: URL_PRUEBA, ACCESO_DEMO: 'false' }).accesoDemo).toBe(false);
+    });
+    expect(produccion.sesion.cookieSegura).toBe(true);
   });
 
   it('admite varios orígenes de CORS separados por coma y elimina barras finales', () => {

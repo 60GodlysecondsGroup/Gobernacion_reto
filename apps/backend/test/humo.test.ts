@@ -67,7 +67,9 @@ describe('Prueba de humo del backend', () => {
     };
     const appVercel = app('ok', configConVercel);
 
-    const permitidoLocal = await request(appVercel).get('/api/salud').set('Origin', ORIGEN_FRONTEND);
+    const permitidoLocal = await request(appVercel)
+      .get('/api/salud')
+      .set('Origin', ORIGEN_FRONTEND);
     expect(permitidoLocal.headers['access-control-allow-origin']).toBe(ORIGEN_FRONTEND);
 
     const permitidoVercel = await request(appVercel)
@@ -148,17 +150,16 @@ describe('Guardianes de seguridad (sin base de datos)', () => {
     const res = await request(app())
       .post('/api/sesion')
       .set('Origin', 'https://sitio-ajeno.example')
-      .send({ codigo: 'Usuario_001' });
+      .send({ alias: 'LunaDemo', contrasena: 'una-contrasena-cualquiera' });
     expect(res.status).toBe(403);
     expect(res.body.error.codigo).toBe('ORIGEN_NO_PERMITIDO');
   });
 
-  it('sin modo demo no existe el selector de usuarios sintéticos', async () => {
-    const sinDemo = app('ok', { ...configPrueba, accesoDemo: false });
-    expect((await request(sinDemo).get('/api/sesion/usuarios-demo')).status).toBe(404);
-    expect(
-      (await request(sinDemo).post('/api/sesion').send({ codigo: 'Usuario_001' })).status,
-    ).toBe(404);
+  it('ya no existe el acceso sin contraseña con usuarios sintéticos', async () => {
+    expect((await request(app()).get('/api/sesion/usuarios-demo')).status).toBe(404);
+    const res = await request(app()).post('/api/sesion').send({ codigo: 'Usuario_001' });
+    expect(res.status).toBe(400);
+    expect(res.headers['set-cookie']).toBeUndefined();
   });
 
   it('sin sesión, GET /api/sesion responde usuario null', async () => {

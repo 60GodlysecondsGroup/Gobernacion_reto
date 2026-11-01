@@ -25,13 +25,16 @@ Plataforma digital de orientación y comunidad protegida para jóvenes de Villav
 ```bash
 cp .env.example .env    # completa DATABASE_URL y SESSION_SECRET (o usa el .env del equipo)
 npm install             # instala frontend y backend
-npm run db:reset        # crea el esquema y carga datos sintéticos, reglas DLP y fuentes de demo
+npm run db:reset        # crea el esquema y carga datos base, reglas DLP y fuentes de demo
+npm run admin:contrasena  # define la contraseña de la cuenta de administración (AdminDemo)
 npm run dev             # levanta backend (:4000) y frontend (:3000)
 ```
 
-**Sin base de datos propia:** `npm install` y luego `npm run dev:local`. Inicia un PostgreSQL local empaquetado en npm (carpeta `.postgres-local/`, ignorada por git), aplica las migraciones, carga los datos sintéticos y levanta backend y frontend apuntando a él, sin tocar el `.env`. Para volver a los datos iniciales: `npm run db:reset:local` (con la base local en marcha).
+En una base que ya existía basta `npm run db:migrate` (aplica `0006_autenticacion.sql`). `db:reset` y `db:seed` se niegan si hay cuentas con contraseña, salvo con `-- --forzar`.
 
-Abre <http://localhost:3000>: la tarjeta «Estado del sistema» muestra **backend OK**, la base conectada y los datos sintéticos cargados. Pulsa **Entrar** para elegir un usuario de prueba.
+**Sin base de datos propia:** `npm install` y luego `npm run dev:local`. Inicia un PostgreSQL local empaquetado en npm (carpeta `.postgres-local/`, ignorada por git), aplica las migraciones, carga los datos base con las cuentas sintéticas de prueba y levanta backend y frontend apuntando a él, sin tocar el `.env`. Para volver a los datos iniciales: `npm run db:reset:local` (con la base local en marcha).
+
+Abre <http://localhost:3000>: la tarjeta «Estado del sistema» muestra **backend OK** y la base conectada. Pulsa **Iniciar con mi Avatar** para crear tu cuenta o entrar.
 
 ### Asistente IA del panel (demo)
 
@@ -51,11 +54,20 @@ El historial del chat solo vive en la pestaña y no se guarda en el servidor. El
 
 Antes de usarlo con personas o datos reales, el responsable del tratamiento debe revisar la información y autorización presentadas a los titulares, así como el contrato y las condiciones que apliquen al envío de consultas al proveedor externo. En Colombia, los datos de salud son sensibles y la SIC distingue entre transmisión y transferencia internacional de datos personales.
 
-## Acceso de demostración
+## Iniciar con mi Avatar (acceso)
 
-> **Esto NO es verificación de edad real.** El rango de edad sale del usuario sintético que eliges. Todo el sistema obtiene el rango de un único módulo reemplazable ([`seguridad/rango-edad.ts`](apps/backend/src/modules/seguridad/rango-edad.ts)). El mecanismo definitivo de validación de edad sigue pendiente (sección 8.1 y `DECISIONES.md`).
+> **Esto NO es verificación de edad real.** El rango de edad lo declara la persona al registrarse y no puede cambiarlo después. Todo el sistema obtiene el rango de un único módulo reemplazable ([`seguridad/rango-edad.ts`](apps/backend/src/modules/seguridad/rango-edad.ts)). El mecanismo definitivo de validación de edad sigue pendiente (sección 8.1 y `DECISIONES.md`).
 
-La pantalla `/acceso` lista los usuarios sintéticos; no hay contraseñas. Solo existe cuando `ACCESO_DEMO=true`, que es el valor por defecto fuera de producción.
+El botón **Iniciar con mi Avatar** de la portada (y **Entrar** en la navegación) lleva a `/acceso`, con dos pestañas:
+
+- **Soy nuevo:** el registro. Pide el avatar (elegido visualmente del catálogo, con «Sorpréndeme»), un **nametag** (el alias público), el **rango de edad**, los **hobbies** (opcionales, hasta 10) y una **contraseña** (mínimo 8 caracteres, sin el nametag). No pide nombre real, correo ni teléfono. Al terminar, la sesión queda abierta y lleva a la comunidad del rango.
+- **Ya tengo cuenta:** nametag y contraseña, con la opción **Recordarme** (30 días; si no, la sesión dura 8 horas y termina al cerrar el navegador).
+
+Con una sesión abierta, `/acceso` ofrece continuar o cerrar sesión. Cerrar sesión la revoca en el servidor: una copia de la cookie deja de servir. El token solo viaja en una cookie HttpOnly. Detalles en `DECISIONES.md` («Autenticación»).
+
+**Administración.** La única cuenta de la base compartida es `Admin_001` (nametag `AdminDemo`), que nace sin contraseña. Quien opera el servidor la define, sin que se vea al escribirla, con `npm run admin:contrasena` (y la cambia con `npm run admin:contrasena -- --reemplazar`, que cierra sus sesiones abiertas). La contraseña nunca se guarda en el repositorio, la semilla ni los logs. Los jóvenes no pueden recuperar su contraseña en línea porque no se pide correo.
+
+**Cuentas de prueba.** Las cuentas sintéticas de la tabla solo existen en la base local (`npm run dev:local`, `npm run test:db`) y **no tienen contraseña**: no sirven para entrar por la interfaz. Las pruebas automatizadas les abren la sesión directamente. En la base compartida se eliminaron con `npm run usuarios:limpiar-prueba` (simulación; `-- --confirmar` para borrar). Ese comando conserva la administración y nunca toca cuentas con contraseña.
 
 | Código          | Alias           | Rol                    | Comunidad              |
 | --------------- | --------------- | ---------------------- | ---------------------- |
@@ -68,7 +80,7 @@ La pantalla `/acceso` lista los usuarios sintéticos; no hay contraseñas. Solo 
 | `Admin_001`     | `AdminDemo`     | Administrador          | —                      |
 | `Gestor_001`    | `GestorDemo`    | Gestor de fuentes      | —                      |
 
-El guion completo de la presentación está en [`DEMO.md`](DEMO.md). Las demos por fase siguen sirviendo para ensayar cada parte.
+El guion completo de la presentación está en [`DEMO.md`](DEMO.md). Las demos por fase siguen sirviendo para ensayar cada parte, pero se escribieron con el antiguo selector de usuarios de prueba: donde dicen «Entrar → `LunaDemo`», crea una cuenta con **Iniciar con mi Avatar** en el rango indicado. Las cuentas de moderación y gestión de fuentes no se pueden crear desde la interfaz (ver `DECISIONES.md`).
 
 ### Demo de la Fase 2 (2 minutos)
 
@@ -134,68 +146,71 @@ La sesión es una cookie, así que dos pestañas del mismo navegador son la mism
 
 ## Comandos
 
-| Comando                              | Qué hace                                                                                                                                         |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `npm install`                        | Instala las dos aplicaciones (npm workspaces).                                                                                                   |
-| `npm run dev`                        | Levanta backend y frontend a la vez, con recarga automática.                                                                                     |
-| `npm run db:reset`                   | **Reinicia los datos de demo**: borra el esquema `app`, aplica las migraciones y carga el seed.                                                  |
-| `npm run db:migrate`                 | Aplica solo las migraciones pendientes.                                                                                                          |
-| `npm run db:seed`                    | Vacía las tablas y recarga datos sintéticos, reglas DLP y fuentes de demo (sin tocar el esquema).                                                |
-| `npm run fuentes:cargar`             | Sincroniza las fuentes con `db/seed/fuentes_institucionales.json` sin tocar el resto (ver `docs/FUENTES.md`).                                    |
-| `npm run salas:simular`              | Conecta personas sintéticas a una sala (`--cantidad`, `--desde`, `--sala`, `--comunidad`) para la demo de capacidad.                             |
-| `npm test`                           | Pruebas unitarias y de humo del backend (DLP y evasión, permisos, sesión, guardianes, salas y clic). Sin red ni base de datos.                   |
-| `npm run test:db`                    | Integración contra la base del `.env`: TRL-01 a 12, AV-01 a 12, DLP, reportes, moderación, administración, salas y permisos. Deja la base igual. |
-| `npm run lint` / `npm run typecheck` | ESLint y TypeScript en las dos aplicaciones.                                                                                                     |
-| `npm run format` / `format:check`    | Prettier.                                                                                                                                        |
-| `npm run verificar`                  | Formato + lint + tipos + pruebas: lo que debe pasar antes de cerrar una fase.                                                                    |
+| Comando                              | Qué hace                                                                                                                                                                                                                      |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm install`                        | Instala las dos aplicaciones (npm workspaces).                                                                                                                                                                                |
+| `npm run dev`                        | Levanta backend y frontend a la vez, con recarga automática.                                                                                                                                                                  |
+| `npm run db:reset`                   | **Reinicia los datos**: borra el esquema `app`, aplica las migraciones y carga los datos base (sin cuentas de prueba). Se niega si hay cuentas con contraseña, salvo con `-- --forzar`.                                       |
+| `npm run db:migrate`                 | Aplica solo las migraciones pendientes.                                                                                                                                                                                       |
+| `npm run db:seed`                    | Vacía las tablas y recarga datos base, reglas DLP y fuentes de demo (sin tocar el esquema). Misma protección que `db:reset`.                                                                                                  |
+| `npm run admin:contrasena`           | Define (o con `-- --reemplazar`, cambia) la contraseña de la cuenta de administración. Entrada oculta; solo se guarda el hash.                                                                                                |
+| `npm run usuarios:limpiar-prueba`    | Inventario de las cuentas sintéticas de prueba en la base del `.env`; con `-- --confirmar` las borra y conserva la administración.                                                                                            |
+| `npm run fuentes:cargar`             | Sincroniza las fuentes con `db/seed/fuentes_institucionales.json` sin tocar el resto (ver `docs/FUENTES.md`).                                                                                                                 |
+| `npm run salas:simular`              | Conecta personas sintéticas a una sala (`--cantidad`, `--desde`, `--sala`, `--comunidad`) para la demo de capacidad.                                                                                                          |
+| `npm test`                           | Pruebas unitarias y de humo del backend (DLP y evasión, permisos, sesión, guardianes, salas y clic). Sin red ni base de datos.                                                                                                |
+| `npm run test:db`                    | Integración contra una base local desechable (`comunidad_pruebas`, reconstruida en cada ejecución; nunca la del `.env`): autenticación, TRL-01 a 12, AV-01 a 12, DLP, reportes, moderación, administración, salas y permisos. |
+| `npm run lint` / `npm run typecheck` | ESLint y TypeScript en las dos aplicaciones.                                                                                                                                                                                  |
+| `npm run format` / `format:check`    | Prettier.                                                                                                                                                                                                                     |
+| `npm run verificar`                  | Formato + lint + tipos + pruebas: lo que debe pasar antes de cerrar una fase.                                                                                                                                                 |
 
 ## API
 
 Todo bajo `/api`. Los errores tienen la forma `{ error: { codigo, mensaje, detalles? } }`.
 
-| Ruta                                                  | Quién                             | Qué hace                                                                                                                                                       |
-| ----------------------------------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /salud`                                          | Cualquiera                        | Estado del backend, de la base y conteo de datos de demo.                                                                                                      |
-| `GET /sesion`                                         | Cualquiera                        | Sesión actual (`usuario: null` si no hay).                                                                                                                     |
-| `POST /sesion`, `DELETE /sesion`                      | Solo modo demo / cualquiera       | Entrar como usuario sintético (`{ codigo }`) / salir.                                                                                                          |
-| `GET /sesion/usuarios-demo`                           | Solo modo demo                    | Usuarios para el selector de acceso.                                                                                                                           |
-| `GET /comunidad`, `GET /comunidades`                  | Con comunidad                     | La comunidad propia. La lista solo la contiene a ella.                                                                                                         |
-| `GET /comunidades/:id-o-A-D`                          | Con comunidad                     | La propia, o 404 idéntico al de una inexistente.                                                                                                               |
-| `GET /perfil`, `PUT /perfil`                          | Con sesión                        | Perfil propio: alias e intereses (y su avatar, de solo lectura). Todo texto pasa por el DLP.                                                                   |
-| `GET /avatar`                                         | Con sesión                        | «Mi avatar»: la configuración propia y el catálogo activo.                                                                                                     |
-| `PUT /avatar`                                         | Jóvenes y administración          | Guardar el avatar propio: solo ids del catálogo, una por capa. No hay ruta para otra persona ni carga de archivos.                                             |
-| `GET /perfiles?buscar=`, `GET /perfiles/:id`          | Con comunidad                     | Búsqueda y perfiles, solo de la misma comunidad.                                                                                                               |
-| `GET /moderacion/incidencias-dlp?dias=`               | Moderación y administración       | Bloqueos DLP por categoría, por día y por tipo, y los recientes, sin texto ni autor (F35).                                                                     |
-| `GET /moderacion/reportes?estado=&pagina=`            | Moderación y administración       | Reportes por estado (F30), de 15 en 15, con el conteo de cada estado.                                                                                          |
-| `GET`/`PATCH /moderacion/reportes/:id`                | Moderación y administración       | Detalle (motivo, fecha, contenido asociado, sin quién reportó) / cambiar estado (`{ estado }`).                                                                |
-| `POST /moderacion/reportes/:id/acciones`              | Moderación y administración       | `ocultar_contenido`, `restaurar_contenido`, `suspender_autor`, `reactivar_autor`, `deshabilitar_sala` (solo admin).                                            |
-| `GET /admin/resumen`                                  | Moderación y administración       | Indicadores del panel con datos reales.                                                                                                                        |
-| `GET /admin/usuarios`, `PATCH /admin/usuarios/:id`    | Moderación (solo jóvenes) y admin | Cuentas con datos mínimos / suspender, bloquear o reactivar (`{ estado }`). Nadie actúa sobre su propia cuenta.                                                |
-| `GET`/`PATCH /admin/comunidades[/:id]`                | Administración                    | Nombre, descripción y estado. El rango de edad no se puede cambiar.                                                                                            |
-| `GET`/`POST`/`PATCH /admin/categorias[/:id]`          | Administración                    | Categorías de foros y salas (F28).                                                                                                                             |
-| `GET`/`POST`/`PATCH /admin/salas[/:id]`               | Administración                    | Salas por comunidad: habilitar, capacidad (1 a 10), descripción y reglas; habilitar la sala de una categoría.                                                  |
-| `PUT /admin/salas/:id/escenario`                      | Administración                    | Obstáculos y punto de entrada, con la sala vacía. El backend exige que no queden zonas sin salida.                                                             |
-| `GET /admin/reglas-dlp`                               | Moderación y administración       | Reglas por categoría con sus bloqueos de 30 días.                                                                                                              |
-| `PATCH /admin/reglas-dlp/:id`, `…/categorias/:codigo` | Administración                    | Activar o desactivar una regla o una categoría completa (`{ estado }`).                                                                                        |
-| `GET /admin/auditoria?pagina=`                        | Moderación y administración       | Registro de acciones: quién, qué, cuándo. La moderación ve solo lo que gestiona.                                                                               |
-| `GET /comunidad/categorias`                           | Con comunidad                     | Las cinco categorías, con el número de hilos de la comunidad propia.                                                                                           |
-| `GET /comunidad/hilos?categoria=&buscar=&pagina=`     | Con comunidad                     | Hilos de la comunidad propia, de 10 en 10, por última actividad.                                                                                               |
-| `POST /comunidad/hilos`                               | Jóvenes y administración          | Crear hilo (`{ categoria, titulo, contenido }`). Pasa por el DLP.                                                                                              |
-| `GET /comunidad/hilos/:id`                            | Con comunidad                     | Hilo con sus respuestas. De otra comunidad: 404 idéntico al de uno inexistente.                                                                                |
-| `POST /comunidad/hilos/:id/respuestas`                | Con comunidad                     | Responder (`{ contenido }`). Pasa por el DLP. Un hilo cerrado responde 409.                                                                                    |
-| `POST /reportes`                                      | Con comunidad                     | Reportar hilo, respuesta, perfil o sala de la propia comunidad. Responde «Tu reporte fue registrado.»                                                          |
-| `GET /salas`                                          | Con comunidad                     | Salas abiertas de la comunidad propia, con ocupación y estado.                                                                                                 |
-| `GET /salas/:id`                                      | Con comunidad                     | Antesala: tema, descripción, reglas y ocupación. De otra comunidad: 404. Si se cerró, indica la instancia abierta.                                             |
-| `WS /ws/salas/:id` (fuera de `/api`)                  | Con comunidad                     | Tiempo real de la sala, autenticado con la cookie de sesión. Intenciones: `mover`, `ir` (clic, Fase 8), `mensaje`, `salir`. Protocolo en `salas.protocolo.ts`. |
-| `GET /orientacion/necesidades`                        | Cualquiera, sin sesión            | Las seis necesidades del navegador, con cuántos servicios tiene cada una.                                                                                      |
-| `GET /orientacion/necesidades/:codigo`                | Cualquiera, sin sesión            | Servicios activos o en revisión de esa necesidad.                                                                                                              |
-| `GET /orientacion/servicios/:id`                      | Cualquiera, sin sesión            | Ficha del servicio. Una fuente inactiva responde 404.                                                                                                          |
-| `GET /orientacion/ayuda`                              | Cualquiera, sin sesión            | Canales de «Necesito ayuda».                                                                                                                                   |
-| `GET`/`POST /gestion/fuentes`                         | Gestor y administración           | Semáforo y lista / crear una fuente (con fecha de verificación).                                                                                               |
-| `GET`/`PUT /gestion/fuentes/:id`                      | Gestor y administración           | Detalle con bitácora / editar datos.                                                                                                                           |
-| `POST /gestion/fuentes/:id/revision`                  | Gestor y administración           | Marcar para revisión (`{ motivo }`).                                                                                                                           |
-| `POST /gestion/fuentes/:id/verificacion`              | Gestor y administración           | Verificar (`{ fecha?, observacion? }`); vuelve a Activo.                                                                                                       |
-| `POST /gestion/fuentes/:id/desactivacion`             | Gestor y administración           | Desactivar (`{ motivo }`).                                                                                                                                     |
+| Ruta                                                  | Quién                             | Qué hace                                                                                                                                                            |
+| ----------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /salud`                                          | Cualquiera                        | Estado del backend, de la base y conteo de datos de demo.                                                                                                           |
+| `GET /sesion`                                         | Cualquiera                        | Sesión actual (`usuario: null` si no hay).                                                                                                                          |
+| `POST /sesion`                                        | Cualquiera                        | Iniciar sesión: `{ alias, contrasena, recordar }`. 401 genérico si algo no coincide; 429 tras varios intentos.                                                      |
+| `GET /sesion/registro`, `POST /sesion/registro`       | Cualquiera                        | Opciones del formulario (rangos y catálogo de avatar) / crear cuenta de joven: `{ alias, contrasena, rango, intereses, avatar, recordar }`. Deja la sesión abierta. |
+| `DELETE /sesion`                                      | Cualquiera                        | Cerrar sesión: la revoca en el servidor y borra la cookie.                                                                                                          |
+| `GET /comunidad`, `GET /comunidades`                  | Con comunidad                     | La comunidad propia. La lista solo la contiene a ella.                                                                                                              |
+| `GET /comunidades/:id-o-A-D`                          | Con comunidad                     | La propia, o 404 idéntico al de una inexistente.                                                                                                                    |
+| `GET /perfil`, `PUT /perfil`                          | Con sesión                        | Perfil propio: alias e intereses (y su avatar, de solo lectura). Todo texto pasa por el DLP.                                                                        |
+| `GET /avatar`                                         | Con sesión                        | «Mi avatar»: la configuración propia y el catálogo activo.                                                                                                          |
+| `PUT /avatar`                                         | Jóvenes y administración          | Guardar el avatar propio: solo ids del catálogo, una por capa. No hay ruta para otra persona ni carga de archivos.                                                  |
+| `GET /perfiles?buscar=`, `GET /perfiles/:id`          | Con comunidad                     | Búsqueda y perfiles, solo de la misma comunidad.                                                                                                                    |
+| `GET /moderacion/incidencias-dlp?dias=`               | Moderación y administración       | Bloqueos DLP por categoría, por día y por tipo, y los recientes, sin texto ni autor (F35).                                                                          |
+| `GET /moderacion/reportes?estado=&pagina=`            | Moderación y administración       | Reportes por estado (F30), de 15 en 15, con el conteo de cada estado.                                                                                               |
+| `GET`/`PATCH /moderacion/reportes/:id`                | Moderación y administración       | Detalle (motivo, fecha, contenido asociado, sin quién reportó) / cambiar estado (`{ estado }`).                                                                     |
+| `POST /moderacion/reportes/:id/acciones`              | Moderación y administración       | `ocultar_contenido`, `restaurar_contenido`, `suspender_autor`, `reactivar_autor`, `deshabilitar_sala` (solo admin).                                                 |
+| `GET /admin/resumen`                                  | Moderación y administración       | Indicadores del panel con datos reales.                                                                                                                             |
+| `GET /admin/usuarios`, `PATCH /admin/usuarios/:id`    | Moderación (solo jóvenes) y admin | Cuentas con datos mínimos / suspender, bloquear o reactivar (`{ estado }`). Nadie actúa sobre su propia cuenta.                                                     |
+| `GET`/`PATCH /admin/comunidades[/:id]`                | Administración                    | Nombre, descripción y estado. El rango de edad no se puede cambiar.                                                                                                 |
+| `GET`/`POST`/`PATCH /admin/categorias[/:id]`          | Administración                    | Categorías de foros y salas (F28).                                                                                                                                  |
+| `GET`/`POST`/`PATCH /admin/salas[/:id]`               | Administración                    | Salas por comunidad: habilitar, capacidad (1 a 10), descripción y reglas; habilitar la sala de una categoría.                                                       |
+| `PUT /admin/salas/:id/escenario`                      | Administración                    | Obstáculos y punto de entrada, con la sala vacía. El backend exige que no queden zonas sin salida.                                                                  |
+| `GET /admin/reglas-dlp`                               | Moderación y administración       | Reglas por categoría con sus bloqueos de 30 días.                                                                                                                   |
+| `PATCH /admin/reglas-dlp/:id`, `…/categorias/:codigo` | Administración                    | Activar o desactivar una regla o una categoría completa (`{ estado }`).                                                                                             |
+| `GET /admin/auditoria?pagina=`                        | Moderación y administración       | Registro de acciones: quién, qué, cuándo. La moderación ve solo lo que gestiona.                                                                                    |
+| `GET /comunidad/categorias`                           | Con comunidad                     | Las cinco categorías, con el número de hilos de la comunidad propia.                                                                                                |
+| `GET /comunidad/hilos?categoria=&buscar=&pagina=`     | Con comunidad                     | Hilos de la comunidad propia, de 10 en 10, por última actividad.                                                                                                    |
+| `POST /comunidad/hilos`                               | Jóvenes y administración          | Crear hilo (`{ categoria, titulo, contenido }`). Pasa por el DLP.                                                                                                   |
+| `GET /comunidad/hilos/:id`                            | Con comunidad                     | Hilo con sus respuestas. De otra comunidad: 404 idéntico al de uno inexistente.                                                                                     |
+| `POST /comunidad/hilos/:id/respuestas`                | Con comunidad                     | Responder (`{ contenido }`). Pasa por el DLP. Un hilo cerrado responde 409.                                                                                         |
+| `POST /reportes`                                      | Con comunidad                     | Reportar hilo, respuesta, perfil o sala de la propia comunidad. Responde «Tu reporte fue registrado.»                                                               |
+| `GET /salas`                                          | Con comunidad                     | Salas abiertas de la comunidad propia, con ocupación y estado.                                                                                                      |
+| `GET /salas/:id`                                      | Con comunidad                     | Antesala: tema, descripción, reglas y ocupación. De otra comunidad: 404. Si se cerró, indica la instancia abierta.                                                  |
+| `WS /ws/salas/:id` (fuera de `/api`)                  | Con comunidad                     | Tiempo real de la sala, autenticado con la cookie de sesión. Intenciones: `mover`, `ir` (clic, Fase 8), `mensaje`, `salir`. Protocolo en `salas.protocolo.ts`.      |
+| `GET /orientacion/necesidades`                        | Cualquiera, sin sesión            | Las seis necesidades del navegador, con cuántos servicios tiene cada una.                                                                                           |
+| `GET /orientacion/necesidades/:codigo`                | Cualquiera, sin sesión            | Servicios activos o en revisión de esa necesidad.                                                                                                                   |
+| `GET /orientacion/servicios/:id`                      | Cualquiera, sin sesión            | Ficha del servicio. Una fuente inactiva responde 404.                                                                                                               |
+| `GET /orientacion/ayuda`                              | Cualquiera, sin sesión            | Canales de «Necesito ayuda».                                                                                                                                        |
+| `GET`/`POST /gestion/fuentes`                         | Gestor y administración           | Semáforo y lista / crear una fuente (con fecha de verificación).                                                                                                    |
+| `GET`/`PUT /gestion/fuentes/:id`                      | Gestor y administración           | Detalle con bitácora / editar datos.                                                                                                                                |
+| `POST /gestion/fuentes/:id/revision`                  | Gestor y administración           | Marcar para revisión (`{ motivo }`).                                                                                                                                |
+| `POST /gestion/fuentes/:id/verificacion`              | Gestor y administración           | Verificar (`{ fecha?, observacion? }`); vuelve a Activo.                                                                                                            |
+| `POST /gestion/fuentes/:id/desactivacion`             | Gestor y administración           | Desactivar (`{ motivo }`).                                                                                                                                          |
 
 ## Estructura
 
@@ -240,7 +255,7 @@ apps/
       components/avatar/        Avatar (único componente, por capas), sus dibujos (capas.ts) y «Mi avatar»
       components/panel/         Panel administrativo: resumen, reportes, usuarios, salas y escenario, comunidades, reglas, registro
       components/guia/          Guía virtual «Cocuyo» (contenido en config/guia.ts)
-      components/inicio/        Edificio llanero (ilustración del inicio) y atajos de orientación
+      components/inicio/        Valle de las cuatro casas (ilustración del inicio, estaciones en config/comunidades.ts) y atajos de orientación
       components/…              Orientación, fuentes, comunidad, perfil, moderación y layout
       config/textos.ts          Aviso de límites (texto exacto de la sección 18.1)
       config/navegacion.ts      Menú principal (cada enlace declara el permiso que necesita)
@@ -313,7 +328,7 @@ DEMO.md                         Guion de la demostración
 
 ## Integración y validación (Fase 9)
 
-- 24 de 24 escenarios (TRL-01 a 12 y AV-01 a 12) ejecutados y aprobados el 22/10/2026, con capturas de un navegador real y la salida de las pruebas: [`EVIDENCIAS/MATRIZ.md`](EVIDENCIAS/MATRIZ.md). La validación se hizo con PostgreSQL local; el equipo debe repetir `npm run db:reset` y `npm run test:db` contra su base.
+- 24 de 24 escenarios (TRL-01 a 12 y AV-01 a 12) ejecutados y aprobados el 22/10/2026, con capturas de un navegador real y la salida de las pruebas: [`EVIDENCIAS/MATRIZ.md`](EVIDENCIAS/MATRIZ.md). La validación se hizo con PostgreSQL local. Desde la autenticación real, `npm run test:db` siempre usa una base local desechable.
 - Verificación de restricciones con evidencia: [`EVIDENCIAS/RESTRICCIONES.md`](EVIDENCIAS/RESTRICCIONES.md).
 
 ## Interfaz e identidad visual

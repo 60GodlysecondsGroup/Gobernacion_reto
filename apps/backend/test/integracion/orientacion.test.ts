@@ -1,5 +1,5 @@
 /**
- * Fase 3 · Orientación y fuentes, contra la base real del .env (npm run test:db).
+ * Fase 3 · Orientación y fuentes, contra la base local de pruebas (npm run test:db).
  * Las pruebas que escriben corren dentro de una transacción que se revierte al final:
  * la bitácora es de solo inserción, así que no se podría limpiar de otra forma.
  */
@@ -12,7 +12,7 @@ import { crearPool, type PoolDeDatos } from '../../src/db/database.js';
 import { crearLogger } from '../../src/lib/logger.js';
 import { cargarFuentes, leerFuentes } from '../../src/modules/fuentes/fuentes.carga.js';
 import { hoyEnColombia } from '../../src/modules/fuentes/fuentes.esquemas.js';
-import { configPrueba } from '../apoyo.js';
+import { cookieDe, configPrueba } from '../apoyo.js';
 
 const logger = crearLogger('silencioso');
 type App = ReturnType<typeof crearApp>;
@@ -45,9 +45,7 @@ async function enTransaccionRevertida(prueba: (app: App, cliente: pg.PoolClient)
 }
 
 async function entrar(aplicacion: App, codigo: string) {
-  const res = await request(aplicacion).post('/api/sesion').send({ codigo });
-  expect(res.status).toBe(201);
-  const cookie = (res.headers['set-cookie'] as unknown as string[])[0]!.split(';')[0]!;
+  const cookie = await cookieDe(pool, codigo);
   return {
     get: (ruta: string) => request(aplicacion).get(ruta).set('Cookie', cookie),
     post: (ruta: string, cuerpo: object = {}) =>

@@ -1,26 +1,27 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
 /**
- * Token de sesión sin estado: `<contenido base64url>.<firma HMAC-SHA256>`.
- * El contenido solo lleva el id del usuario y la expiración; rol y rango se leen de la base
- * en cada solicitud, así una suspensión o un cambio de rol se aplican de inmediato.
+ * Token de la cookie de sesión: `<contenido base64url>.<firma HMAC-SHA256>`.
+ * El contenido solo lleva el id de la sesión (app.sesion) y la expiración. La firma descarta
+ * tokens inventados sin consultar la base; después, la sesión debe existir, no haber vencido ni
+ * haber sido revocada, y rol, rango y estado se leen de la base en cada solicitud.
  */
 const firmar = (contenido: string, secreto: string) =>
   createHmac('sha256', secreto).update(contenido).digest('base64url');
 
 export function crearToken(
-  idUsuario: string,
+  idSesion: string,
   secreto: string,
   duracionMs: number,
   ahora = Date.now(),
 ): string {
-  const contenido = Buffer.from(JSON.stringify({ u: idUsuario, exp: ahora + duracionMs })).toString(
+  const contenido = Buffer.from(JSON.stringify({ s: idSesion, exp: ahora + duracionMs })).toString(
     'base64url',
   );
   return `${contenido}.${firmar(contenido, secreto)}`;
 }
 
-/** Devuelve el id del usuario si el token es auténtico y no ha expirado; si no, null. */
+/** Devuelve el id de la sesión si el token es auténtico y no ha expirado; si no, null. */
 export function verificarToken(token: string, secreto: string, ahora = Date.now()): string | null {
   const partes = token.split('.');
   if (partes.length !== 2) return null;
@@ -32,13 +33,13 @@ export function verificarToken(token: string, secreto: string, ahora = Date.now(
 
   try {
     const datos = JSON.parse(Buffer.from(contenido, 'base64url').toString('utf8')) as {
-      u?: unknown;
+      s?: unknown;
       exp?: unknown;
     };
-    if (typeof datos.u !== 'string' || typeof datos.exp !== 'number' || datos.exp <= ahora) {
+    if (typeof datos.s !== 'string' || typeof datos.exp !== 'number' || datos.exp <= ahora) {
       return null;
     }
-    return datos.u;
+    return datos.s;
   } catch {
     return null;
   }

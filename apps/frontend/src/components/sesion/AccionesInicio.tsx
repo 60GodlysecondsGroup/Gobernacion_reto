@@ -16,7 +16,7 @@ export function AccionesInicio() {
 
   const principal = !usuario ? (
     <BotonEnlace href="/acceso" tamano="lg">
-      Entrar con un usuario de prueba
+      Iniciar con mi Avatar
       <ArrowRight aria-hidden="true" size={18} />
     </BotonEnlace>
   ) : usuario.comunidad ? (

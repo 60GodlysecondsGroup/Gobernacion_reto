@@ -1,5 +1,5 @@
 /**
- * Fase 2 · Seguridad base, contra la base real del .env (npm run test:db).
+ * Fase 2 · Seguridad base, contra la base local de pruebas (npm run test:db).
  * Deja la base como estaba: restaura el perfil de LunaDemo, reactiva reglas y borra los
  * eventos DLP que generan las pruebas.
  */
@@ -13,7 +13,7 @@ import { crearLogger } from '../../src/lib/logger.js';
 import { MENSAJE_BLOQUEO } from '../../src/modules/dlp/dlp.analizador.js';
 import { crearRepositorioDlp } from '../../src/modules/dlp/dlp.repository.js';
 import { crearServicioDlp } from '../../src/modules/dlp/dlp.service.js';
-import { configPrueba } from '../apoyo.js';
+import { cookieDe, configPrueba } from '../apoyo.js';
 
 const logger = crearLogger('silencioso');
 const UUID_INEXISTENTE = '00000000-0000-4000-8000-000000000000';
@@ -52,10 +52,7 @@ afterAll(async () => {
 
 /** Inicia sesión con un usuario sintético y devuelve la cookie. */
 async function entrar(codigo: string): Promise<string> {
-  const res = await request(app).post('/api/sesion').send({ codigo });
-  expect(res.status).toBe(201);
-  const cookies = res.headers['set-cookie'] as unknown as string[];
-  return cookies.map((cookie) => cookie.split(';')[0]).join('; ');
+  return cookieDe(pool, codigo);
 }
 
 const como = (cookie: string) => ({
@@ -63,25 +60,12 @@ const como = (cookie: string) => ({
   put: (ruta: string, cuerpo: object) => request(app).put(ruta).set('Cookie', cookie).send(cuerpo),
 });
 
-describe('Acceso de demostración', () => {
-  it('ofrece al menos un usuario por rango y uno por rol', async () => {
-    const res = await request(app).get('/api/sesion/usuarios-demo');
-    const usuarios: { rol: string; rango: string | null }[] = res.body.usuarios;
-
-    expect(new Set(usuarios.map((u) => u.rango).filter(Boolean))).toEqual(
-      new Set(['10–12 años', '13–15 años', '16–17 años', '18–22 años']),
-    );
-    expect(new Set(usuarios.map((u) => u.rol))).toEqual(
-      new Set(['usuario', 'moderador', 'admin_plataforma', 'gestor_fuentes']),
-    );
-  });
-
-  it('LunaDemo entra a su comunidad 13–15, con cookie HttpOnly y sin datos de edad', async () => {
-    const res = await request(app).post('/api/sesion').send({ codigo: 'Usuario_001' });
-
-    expect(res.status).toBe(201);
-    expect(res.headers['set-cookie']?.[0]).toMatch(/HttpOnly/i);
-    expect(res.headers['set-cookie']?.[0]).toMatch(/SameSite=Lax/i);
+describe('Sesión de una cuenta de prueba', () => {
+  it('LunaDemo queda en su comunidad 13–15, sin datos de edad', async () => {
+    const res = await request(app)
+      .get('/api/sesion')
+      .set('Cookie', await entrar('Usuario_001'));
+    expect(res.status).toBe(200);
     expect(res.body.usuario).toMatchObject({
       alias: 'LunaDemo',
       rol: 'usuario',
@@ -90,22 +74,12 @@ describe('Acceso de demostración', () => {
     expect(JSON.stringify(res.body)).not.toMatch(/edad|nacimiento/i);
   });
 
-  it('rechaza un usuario de prueba inexistente o campos extra', async () => {
-    expect((await request(app).post('/api/sesion').send({ codigo: 'Usuario_999' })).status).toBe(
-      404,
-    );
-    const extra = await request(app)
-      .post('/api/sesion')
-      .send({ codigo: 'Usuario_001', rol: 'admin' });
-    expect(extra.status).toBe(400);
-  });
-
-  it('cerrar sesión borra la cookie', async () => {
+  it('las cuentas de prueba no tienen contraseña: no se puede entrar con ellas', async () => {
     const res = await request(app)
-      .delete('/api/sesion')
-      .set('Cookie', await entrar('Usuario_001'));
-    expect(res.status).toBe(204);
-    expect(res.headers['set-cookie']?.[0]).toMatch(/sesion=;/);
+      .post('/api/sesion')
+      .send({ alias: 'LunaDemo', contrasena: 'cualquier-contrasena' });
+    expect(res.status).toBe(401);
+    expect(res.body.error.codigo).toBe('CREDENCIALES_INVALIDAS');
   });
 });
 

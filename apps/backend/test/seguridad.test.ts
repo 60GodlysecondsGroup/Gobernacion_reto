@@ -13,7 +13,7 @@ import { crearToken, verificarToken } from '../src/modules/seguridad/sesion.toke
 const SECRETO = 'secreto-solo-para-pruebas-automatizadas-0000';
 
 describe('Token de sesión', () => {
-  it('verifica un token propio y devuelve el id del usuario', () => {
+  it('verifica un token propio y devuelve el id de la sesión', () => {
     const token = crearToken('id-usuario', SECRETO, 60_000);
     expect(verificarToken(token, SECRETO)).toBe('id-usuario');
   });
@@ -21,7 +21,7 @@ describe('Token de sesión', () => {
   it('rechaza un token con el contenido alterado', () => {
     const [, firma] = crearToken('id-usuario', SECRETO, 60_000).split('.');
     const otroContenido = Buffer.from(
-      JSON.stringify({ u: 'otro', exp: Date.now() + 60_000 }),
+      JSON.stringify({ s: 'otra', exp: Date.now() + 60_000 }),
     ).toString('base64url');
     expect(verificarToken(`${otroContenido}.${firma}`, SECRETO)).toBeNull();
   });

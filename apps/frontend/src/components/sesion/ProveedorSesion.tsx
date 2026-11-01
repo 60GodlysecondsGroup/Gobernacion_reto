@@ -3,8 +3,11 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import {
   cerrarSesion,
-  iniciarSesionDemo,
+  iniciarSesion,
   obtenerSesion,
+  registrarse,
+  type DatosInicio,
+  type DatosRegistro,
   type Permiso,
   type SesionPublica,
 } from '@/lib/api/sesion';
@@ -14,7 +17,10 @@ type ContextoSesion = {
   usuario: SesionPublica | null;
   /** Solo para ocultar o mostrar interfaz. La autorización real la hace el backend. */
   puede: (permiso: Permiso) => boolean;
-  entrar: (codigo: string) => Promise<SesionPublica>;
+  /** Inicia sesión con nametag y contraseña. */
+  entrar: (datos: DatosInicio) => Promise<SesionPublica>;
+  /** Crea la cuenta y deja la sesión iniciada. */
+  registrarse: (datos: DatosRegistro) => Promise<SesionPublica>;
   /** Cierra la sesión y recarga en `destino` (por defecto, el inicio). */
   salir: (destino?: string) => Promise<void>;
   refrescar: () => Promise<void>;
@@ -50,8 +56,13 @@ export function ProveedorSesion({ children }: { children: React.ReactNode }) {
       cargando,
       usuario,
       puede: (permiso) => usuario?.permisos.includes(permiso) ?? false,
-      entrar: async (codigo) => {
-        const { usuario: nuevo } = await iniciarSesionDemo(codigo);
+      entrar: async (datos) => {
+        const { usuario: nuevo } = await iniciarSesion(datos);
+        setUsuario(nuevo);
+        return nuevo;
+      },
+      registrarse: async (datos) => {
+        const { usuario: nuevo } = await registrarse(datos);
         setUsuario(nuevo);
         return nuevo;
       },

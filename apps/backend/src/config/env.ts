@@ -4,6 +4,8 @@ import path from 'node:path';
 import { z } from 'zod';
 
 const DURACION_SESION_MS = 8 * 60 * 60 * 1000;
+// «Recordarme» en el inicio de sesión: la cookie dura 30 días (y se puede revocar antes).
+const DURACION_SESION_RECORDADA_MS = 30 * 24 * 60 * 60 * 1000;
 
 const esquemaEntorno = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -23,8 +25,6 @@ const esquemaEntorno = z.object({
     ])
     .optional()
     .transform((valor) => valor || undefined),
-  // Selector de usuarios sintéticos en la pantalla de acceso. Solo para la demo.
-  ACCESO_DEMO: z.enum(['true', 'false']).optional(),
   // lax (por defecto) | none (requerido para frontend en dominio distinto con HTTPS, ej. Vercel) | strict
   COOKIE_SAME_SITE: z.enum(['lax', 'none', 'strict']).optional(),
   // Segundos sin nadie antes de cerrar una sala (F13). 180 s por defecto; menos solo para ensayar.
@@ -46,10 +46,10 @@ export type Config = {
     /** true si no había SESSION_SECRET: las sesiones se pierden al reiniciar el backend. */
     secretoGenerado: boolean;
     duracionMs: number;
+    duracionRecordadaMs: number;
     cookieSegura: boolean;
     sameSite?: 'lax' | 'none' | 'strict';
   };
-  accesoDemo: boolean;
   salas: { cierreSegundos: number };
   openai: { apiKey?: string; model: string };
 };
@@ -99,10 +99,10 @@ export function cargarConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
       secreto: v.SESSION_SECRET ?? randomBytes(32).toString('hex'),
       secretoGenerado: !v.SESSION_SECRET,
       duracionMs: DURACION_SESION_MS,
+      duracionRecordadaMs: DURACION_SESION_RECORDADA_MS,
       cookieSegura: produccion,
       sameSite: v.COOKIE_SAME_SITE,
     },
-    accesoDemo: v.ACCESO_DEMO ? v.ACCESO_DEMO === 'true' : !produccion,
     salas: { cierreSegundos: v.SALA_CIERRE_SEGUNDOS },
     openai: { apiKey: v.OPENAI_API_KEY || v.openai || undefined, model: v.OPENAI_MODEL },
   };

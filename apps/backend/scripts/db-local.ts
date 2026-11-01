@@ -6,12 +6,11 @@
  *   npm run dev:local    → base local + backend + frontend, todo junto
  *
  * La primera vez crea el clúster en `.postgres-local/` (ignorado por git), aplica las migraciones
- * y carga los datos sintéticos. Las siguientes veces solo aplica migraciones pendientes.
+ * y carga los datos base con las cuentas sintéticas de prueba (que no tienen contraseña). Las siguientes veces solo aplica migraciones pendientes.
  * Ctrl+C la detiene. Los datos se conservan entre ejecuciones; `npm run db:reset` los reinicia.
  */
 import { existsSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import EmbeddedPostgres from 'embedded-postgres';
 import { crearPool } from '../src/db/database.js';
 import { migrar, sembrar } from '../src/db/migraciones.js';
 import { crearLogger } from '../src/lib/logger.js';
@@ -24,24 +23,10 @@ import {
   URL_ADMIN_DB_LOCAL,
   URL_DB_LOCAL,
 } from './db-local.config.js';
+import { crearServidorLocal } from './db-local.servidor.js';
 const logger = crearLogger('info');
 
-const servidor = new EmbeddedPostgres({
-  databaseDir: DIRECTORIO,
-  port: PUERTO_DB_LOCAL,
-  user: 'postgres',
-  password: 'postgres',
-  persistent: true,
-  // UTF-8 y sin configuración regional del sistema, igual en Windows, macOS y Linux.
-  initdbFlags: ['--encoding=UTF8', '--no-locale'],
-  // En un usuario administrador de Linux (contenedores), PostgreSQL no arranca como root.
-  createPostgresUser: process.platform !== 'win32' && process.getuid?.() === 0,
-  onLog: () => {},
-  onError: (error) => {
-    const texto = error instanceof Error ? error.message : String(error);
-    if (texto.trim()) logger.warn('PostgreSQL local', { mensaje: texto.trim().slice(0, 300) });
-  },
-});
+const servidor = crearServidorLocal(logger);
 
 const nuevo = !existsSync(path.join(DIRECTORIO, 'PG_VERSION'));
 rmSync(SENAL_LISTA, { force: true });
@@ -91,7 +76,7 @@ try {
                     where table_schema = 'app' and table_name = 'usuario') as existe`,
   );
   await migrar(pool, logger);
-  if (!rows[0]?.existe) await sembrar(pool, logger);
+  if (!rows[0]?.existe) await sembrar(pool, logger, { usuariosPrueba: true });
 } catch (error) {
   await pool.end().catch(() => undefined);
   await detenerConError('No se pudo preparar el esquema', error);

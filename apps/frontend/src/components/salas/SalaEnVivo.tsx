@@ -1,36 +1,25 @@
 'use client';
 
-import {
-  useEffect,
-  useEffectEvent,
-  useRef,
-  useState,
-  type KeyboardEvent as EventoTeclado,
-} from 'react';
+import { useMemo, useState } from 'react';
 import { Avatar } from '@/components/avatar/Avatar';
 import { BotonReportar } from '@/components/comunidad/BotonReportar';
 import { Boton } from '@/components/ui';
 import type { Direccion, MensajeCliente, SalaDetalle } from '@/lib/api/salas';
 import { ChatSala } from './ChatSala';
-import { Escenario2D } from './Escenario2D';
+import { ControlesMovimiento } from './controles/ControlesMovimiento';
+import { esPasoLibre } from './controles/direcciones';
+import { useControlMovimiento } from './controles/useControlMovimiento';
+import { useTeclasMovimiento } from './controles/useTeclasMovimiento';
+import { Escenario2D, geometriaEscenario } from './Escenario2D';
 import { PanelAyudaSala } from './PanelAyudaSala';
 import { MundoSala } from './MundoSala';
 import estilos from './Salas.module.css';
 import type { EstadoSalaEnVivo } from './useSalaEnVivo';
 
-const TECLAS: Record<string, Direccion> = { w: 'arriba', a: 'izquierda', s: 'abajo', d: 'derecha' };
-const FLECHAS: Record<string, Direccion> = {
-  ArrowUp: 'arriba',
-  ArrowLeft: 'izquierda',
-  ArrowDown: 'abajo',
-  ArrowRight: 'derecha',
-};
-
-/** Mínimo entre dos movimientos enviados (el servidor también limita). */
-const INTERVALO_MOVIMIENTO_MS = 110;
-
 /** En la sala en vivo la pared es más alta: ahí están los objetos interactivos. */
 const PARED_SALA = 34;
+
+const ID_INSTRUCCIONES = 'instrucciones-movimiento';
 
 const TEXTO_RECHAZO = {
   limite: 'Llegaste al borde de la sala.',
@@ -38,15 +27,6 @@ const TEXTO_RECHAZO = {
   destino_invalido: 'No puedes ir a esa casilla: hay un mueble.',
   sin_camino: 'No hay un camino libre hasta esa casilla.',
 };
-
-/** Mientras se escribe o se usa un control de formulario, las teclas no mueven el avatar. */
-function esControlEditable(destino: EventTarget | null) {
-  if (!(destino instanceof HTMLElement)) return false;
-  return (
-    destino.isContentEditable ||
-    destino.closest('input, textarea, select, [contenteditable="true"]') !== null
-  );
-}
 
 export function SalaEnVivo({
   sala,
@@ -65,50 +45,33 @@ export function SalaEnVivo({
   // Casilla elegida con un clic y el número del último rechazo en ese momento: si llega un
   // rechazo nuevo, el destino deja de mostrarse.
   const [destino, setDestino] = useState<{ x: number; y: number; vez: number } | null>(null);
-  const ultimoMovimiento = useRef(0);
   const { escenario, participantes, yo, rechazo } = estado;
+  const propio = participantes.find((p) => p.id === yo);
 
-  const mover = (direccion: Direccion) => {
-    const ahora = performance.now();
-    if (ahora - ultimoMovimiento.current < INTERVALO_MOVIMIENTO_MS) return;
-    ultimoMovimiento.current = ahora;
-    setDestino(null);
-    enviar({ tipo: 'mover', direccion });
-  };
+  const ocupadas = useMemo(
+    () => new Set(escenario?.obstaculos.map((o) => `${o.x},${o.y}`)),
+    [escenario],
+  );
+
+  // Teclado, joystick y cruceta terminan en el mismo envío: el servidor decide cada paso.
+  const control = useControlMovimiento({
+    alPaso: (direccion: Direccion) => {
+      setDestino(null);
+      enviar({ tipo: 'mover', direccion });
+    },
+    puedeIr: (direccion) =>
+      !escenario || !propio || esPasoLibre({ ...escenario, ocupadas }, propio, direccion),
+    // Con una actividad abierta encima de la sala, el avatar no se mueve.
+    habilitado: () => !document.querySelector('dialog[open]'),
+  });
+  useTeclasMovimiento((vector) => control.fijarEntrada('teclado', vector));
 
   // F40: el clic solo envía la casilla elegida; el servidor decide el camino y cada paso.
   const irA = (celda: { x: number; y: number }) => {
     setDestino({ ...celda, vez: rechazo?.vez ?? 0 });
     enviar({ tipo: 'ir', ...celda });
   };
-  const alPulsarTecla = useEffectEvent((evento: KeyboardEvent) => {
-    if (evento.ctrlKey || evento.metaKey || evento.altKey) return;
-    if (esControlEditable(evento.target)) return;
-    // Con una actividad abierta encima de la sala, las teclas son de la actividad.
-    if (document.querySelector('dialog[open]')) return;
-    const direccion = TECLAS[evento.key.toLowerCase()];
-    if (!direccion) return;
-    evento.preventDefault();
-    mover(direccion);
-  });
 
-  useEffect(() => {
-    const alPulsar = (evento: KeyboardEvent) => alPulsarTecla(evento);
-    window.addEventListener('keydown', alPulsar);
-    return () => window.removeEventListener('keydown', alPulsar);
-  }, []);
-
-  // Las flechas solo mueven con el foco en el escenario, para no impedir el desplazamiento de la página.
-  const alPulsarEnEscenario = (evento: EventoTeclado<HTMLDivElement>) => {
-    const direccion = FLECHAS[evento.key];
-    if (!direccion || evento.ctrlKey || evento.metaKey || evento.altKey) return;
-    // Solo con el foco en el propio escenario: no en un objeto, un bot ni una actividad abierta.
-    if (evento.target !== evento.currentTarget) return;
-    evento.preventDefault();
-    mover(direccion);
-  };
-
-  const propio = participantes.find((p) => p.id === yo);
   const destinoVigente =
     destino &&
     destino.vez === (rechazo?.vez ?? 0) &&
@@ -119,26 +82,19 @@ export function SalaEnVivo({
   const descripcion = propio
     ? `Escenario de la sala ${sala.nombre}, ${ocupacion} personas. Tu avatar está en la columna ${propio.x + 1} y la fila ${propio.y + 1}.`
     : `Escenario de la sala ${sala.nombre}.`;
+  // El escenario conserva su proporción en cualquier pantalla: el CSS lo ajusta al alto disponible.
+  const proporcion = escenario
+    ? geometriaEscenario(escenario.ancho, escenario.alto, PARED_SALA).proporcion
+    : undefined;
 
   return (
     <div className={estilos.enVivo}>
       <div className={estilos.columnaEscenario}>
-        {propio && (
-          <p className={estilos.identidadSala}>
-            <span className={estilos.avatarSala}>
-              <Avatar apariencia={propio.avatar} tamano={36} />
-            </span>
-            <span>
-              <strong>{propio.alias}</strong>
-              <span className={estilos.textoIdentidad}>Estás en la sala con tu alias y tu avatar</span>
-            </span>
-          </p>
-        )}
         <div
           className={estilos.escenario}
+          style={{ ['--proporcion' as string]: proporcion }}
           tabIndex={0}
-          onKeyDown={alPulsarEnEscenario}
-          aria-describedby="instrucciones-movimiento"
+          aria-describedby={ID_INSTRUCCIONES}
         >
           {escenario && (
             <Escenario2D
@@ -165,62 +121,22 @@ export function SalaEnVivo({
               personas={participantes}
             />
           )}
-        </div>
-
-        <div className={estilos.controles}>
-          <p id="instrucciones-movimiento" className={estilos.instrucciones}>
-            Muévete con las teclas <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd>, con las
-            flechas si el escenario tiene el foco, con estos botones o haciendo clic en una casilla
-            libre.
-          </p>
-          <div className={estilos.cruceta} role="group" aria-label="Mover tu avatar">
-            <Boton
-              variante="secundario"
-              tamano="sm"
-              className={estilos.arriba}
-              onClick={() => mover('arriba')}
-            >
-              <span aria-hidden="true">▲</span>
-              <span className="visualmente-oculto">Mover arriba</span>
-            </Boton>
-            <Boton
-              variante="secundario"
-              tamano="sm"
-              className={estilos.izquierda}
-              onClick={() => mover('izquierda')}
-            >
-              <span aria-hidden="true">◀</span>
-              <span className="visualmente-oculto">Mover a la izquierda</span>
-            </Boton>
-            <Boton
-              variante="secundario"
-              tamano="sm"
-              className={estilos.abajo}
-              onClick={() => mover('abajo')}
-            >
-              <span aria-hidden="true">▼</span>
-              <span className="visualmente-oculto">Mover abajo</span>
-            </Boton>
-            <Boton
-              variante="secundario"
-              tamano="sm"
-              className={estilos.derecha}
-              onClick={() => mover('derecha')}
-            >
-              <span aria-hidden="true">▶</span>
-              <span className="visualmente-oculto">Mover a la derecha</span>
-            </Boton>
-          </div>
           {/* Región estable: el espacio final alterno hace que se anuncie también un rechazo repetido. */}
           <p className={estilos.rechazo} role="status">
             {rechazo && (
               <span key={rechazo.vez} className={estilos.destello}>
                 {TEXTO_RECHAZO[rechazo.motivo]}
-                {rechazo.vez % 2 ? '' : '\u00a0'}
+                {rechazo.vez % 2 ? '' : ' '}
               </span>
             )}
           </p>
         </div>
+
+        <ControlesMovimiento
+          className={estilos.zonaControles}
+          control={control}
+          idInstrucciones={ID_INSTRUCCIONES}
+        />
       </div>
 
       <aside className={estilos.columnaLateral} aria-label="Personas, acciones y chat">

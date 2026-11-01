@@ -19,7 +19,7 @@ import { Avatar } from './Avatar';
 import estilos from './EditorAvatar.module.css';
 
 /** Las cinco capas que se eligen, en orden. Cabello y accesorio admiten «ninguno». */
-const CATEGORIAS: { capa: Capa; tipo: TipoElemento; titulo: string; ninguno?: string }[] = [
+export const CATEGORIAS: { capa: Capa; tipo: TipoElemento; titulo: string; ninguno?: string }[] = [
   { capa: 'personaje', tipo: 'personaje', titulo: 'Personaje base' },
   { capa: 'cabello', tipo: 'cabello', titulo: 'Cabello', ninguno: 'Sin cabello' },
   { capa: 'rasgos', tipo: 'rasgo', titulo: 'Rasgos' },
@@ -28,7 +28,10 @@ const CATEGORIAS: { capa: Capa; tipo: TipoElemento; titulo: string; ninguno?: st
 ];
 
 /** Traduce identificadores del catálogo a los recursos que se dibujan. */
-function aparienciaDe(configuracion: ConfiguracionAvatar, catalogo: ElementoAvatar[]): Apariencia {
+export function aparienciaDe(
+  configuracion: ConfiguracionAvatar,
+  catalogo: ElementoAvatar[],
+): Apariencia {
   const recurso = (id: string | null) =>
     id === null ? null : (catalogo.find((elemento) => elemento.id === id)?.recurso ?? null);
   return {
@@ -189,7 +192,7 @@ export function EditorAvatar() {
 }
 
 /** Una capa: cada opción muestra el avatar actual con esa opción aplicada. */
-function SelectorCapa({
+export function SelectorCapa({
   capa,
   titulo,
   ninguno,
