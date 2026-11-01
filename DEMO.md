@@ -24,7 +24,7 @@ Prototipo TRL 4 con datos sintéticos. Todo lo que se muestra funciona de verdad
 
 ## Guion
 
-**0:00 · Presentación (30 s).** En el inicio, señala el edificio: cuatro pisos, cuatro comunidades por edad, sin escaleras entre ellas. Pulsa los botones A–D para explicarlo. Señala el pie: lo que la plataforma no hace.
+**0:00 · Presentación (30 s).** En el inicio, señala el valle: cuatro casas iguales, cuatro comunidades por edad, ninguna por encima de otra y cada una con su cerca. Pasa el cursor por las casas (o tócalas en el móvil) para que cada estación se extienda por el valle. Señala el pie: lo que la plataforma no hace.
 
 **0:30 · Segmentación (45 s).** Navegador 1 → **Entrar** → `LunaDemo` → **Mi comunidad** (Comunidad B). Escribe en la barra de direcciones `/comunidades/C`: «No encontramos esa comunidad». Busca «Demo» en «Buscar personas»: solo aparecen LunaDemo y SolDemo.
 

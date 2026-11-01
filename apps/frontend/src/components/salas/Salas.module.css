@@ -27,7 +27,7 @@
 }
 
 .tarjetaSala:hover {
-  border-color: rgb(36 87 230 / 0.28);
+  border-color: rgb(91 53 213 / 0.28);
   box-shadow: var(--cristal-brillo), var(--sombra-3);
   transform: translateY(-2px);
 }
@@ -52,7 +52,7 @@
   left: 50%;
   width: 3.25rem;
   height: 2rem;
-  border: 3px solid rgb(11 27 63 / 0.55);
+  border: 3px solid rgb(38 20 99 / 0.55);
   border-radius: 4px;
   background: linear-gradient(180deg, #8fd3ff, #c4bdff);
   transform: translateX(-50%);
@@ -64,7 +64,7 @@
   gap: 4px;
   padding: 4px 6px;
   border-radius: 6px;
-  background: rgb(11 27 63 / 0.18);
+  background: rgb(38 20 99 / 0.18);
 }
 
 .puestos span {
@@ -116,6 +116,74 @@
   gap: var(--espacio-4);
 }
 
+/* Dentro de la sala: «Volver» y el nombre de la sala en una línea, con un título más bajo. */
+.cabeceraSala {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-1) var(--espacio-5);
+}
+
+.cabeceraSala header {
+  padding-bottom: 0;
+}
+
+.cabeceraSala h1 {
+  font-size: clamp(1.375rem, 1.2rem + 0.6vw, 1.75rem);
+}
+
+/* Quién eres en la sala, al final de esa misma línea cuando hay ancho. */
+@media (min-width: 48rem) {
+  .cabeceraSala .identidadSala {
+    margin-left: auto;
+  }
+}
+
+/* En el móvil: «Volver» y la identidad comparten la primera línea; el título va debajo. */
+@media (max-width: 47.99rem) {
+  .cabeceraSala {
+    justify-content: space-between;
+    column-gap: var(--espacio-2);
+  }
+
+  .cabeceraSala > nav {
+    flex-shrink: 0;
+  }
+
+  .cabeceraSala header {
+    order: 1;
+    flex-basis: 100%;
+  }
+
+  /* En pantallas muy estrechas, el alias se recorta antes que pasar a otra línea. */
+  .cabeceraSala .identidadSala {
+    flex: 1 1 0;
+    gap: var(--espacio-2);
+    min-width: 0;
+    max-width: max-content;
+    padding: 3px var(--espacio-3) 3px 3px;
+  }
+
+  .cabeceraSala .identidadSala > span:last-child {
+    min-width: 0;
+  }
+
+  .cabeceraSala .identidadSala strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cabeceraSala .avatarSala {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .cabeceraSala .textoIdentidad {
+    display: none;
+  }
+}
+
 .enVivo {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -137,17 +205,34 @@
 }
 
 .escenario {
+  /*
+   * Alto que ocupan alrededor del escenario el encabezado de la página, la identidad y los
+   * controles. El escenario toma todo el ancho que puede sin pasarse del alto que queda en la
+   * ventana, y conserva la proporción de la cuadrícula (`--proporcion`, desde el componente).
+   */
+  --reserva-escenario: 20rem;
+  /* Sin recorte: los globos de los bots pueden salir del escenario. El lienzo recorta sus esquinas. */
+  position: relative;
+  justify-self: center;
+  width: min(100%, max(26rem, (100dvh - var(--reserva-escenario)) * var(--proporcion, 1.2)));
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-lg);
-  overflow: hidden;
   background: var(--color-superficie);
   box-shadow: var(--sombra-1);
+}
+
+/* El joystick ocupa más alto que la cruceta. */
+@media (hover: none) and (pointer: coarse) {
+  .escenario {
+    --reserva-escenario: 24rem;
+  }
 }
 
 .lienzo {
   display: block;
   width: 100%;
   height: auto;
+  border-radius: inherit;
 }
 
 .entidad {
@@ -169,90 +254,46 @@
   fill: var(--color-primario-oscuro);
 }
 
-/* Controles de movimiento */
-.controles {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--espacio-3) var(--espacio-5);
-}
-
-.instrucciones {
-  color: var(--color-texto-suave);
-  font-size: var(--texto-sm);
-}
-
-.instrucciones kbd {
-  display: inline-block;
-  min-width: 1.6em;
-  padding: 0 0.3em;
-  border: 1px solid var(--color-borde-fuerte);
-  border-bottom-width: 2px;
-  border-radius: var(--radio-sm);
-  background: var(--color-superficie);
-  color: var(--color-texto);
-  font-family: var(--fuente-mono);
-  font-size: 0.85em;
-  text-align: center;
-}
-
-.cruceta {
-  display: grid;
-  grid-template-columns: repeat(3, 2.75rem);
-  grid-template-rows: repeat(2, 2.75rem);
-  grid-template-areas:
-    '. arriba .'
-    'izquierda abajo derecha';
-  gap: var(--espacio-1);
-}
-
-.cruceta > button {
-  min-height: 0;
-  padding: 0;
-}
-
-.arriba {
-  grid-area: arriba;
-}
-
-.izquierda {
-  grid-area: izquierda;
-}
-
-.abajo {
-  grid-area: abajo;
-}
-
-.derecha {
-  grid-area: derecha;
-}
-
+/*
+ * Aviso de un paso rechazado: aparece sobre el suelo, donde se está mirando, y se desvanece
+ * solo. La región `status` es estable, así que los lectores de pantalla lo anuncian igual.
+ */
 .rechazo {
-  grid-column: 1 / -1;
-  min-height: 1.6em;
-  color: var(--color-advertencia);
-  font-size: var(--texto-sm);
-  font-weight: var(--peso-fuerte);
+  position: absolute;
+  bottom: var(--espacio-3);
+  left: 50%;
+  z-index: 4;
+  width: max-content;
+  max-width: calc(100% - 2 * var(--espacio-3));
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
 }
 
 .destello {
-  animation: destello 600ms ease;
+  display: inline-block;
+  padding: var(--espacio-1) var(--espacio-3);
+  border-radius: var(--radio-total);
+  background: rgb(23 18 58 / 0.86);
+  color: #fff;
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  box-shadow: var(--sombra-2);
+  animation: destello 2.8s ease forwards;
 }
 
 @keyframes destello {
   from {
-    opacity: 0.2;
+    opacity: 0;
+  }
+
+  10%,
+  80% {
+    opacity: 1;
   }
 
   to {
-    opacity: 1;
-  }
-}
-
-@media (max-width: 30rem) {
-  .controles {
-    grid-template-columns: minmax(0, 1fr);
-    justify-items: center;
+    opacity: 0;
   }
 }
 
@@ -373,6 +414,72 @@
   justify-self: end;
 }
 
+.cabeceraChat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-2);
+}
+
+.contenidoChat {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+/* Botón para plegar el chat: solo se ve en un móvil en horizontal (ver la sala inmersiva). */
+.alternarChat {
+  position: relative;
+  display: none;
+  align-items: center;
+  gap: var(--espacio-1);
+  min-height: 2.75rem;
+  padding: 0 var(--espacio-3);
+  border: 1px solid var(--color-borde-fuerte);
+  border-radius: var(--radio-total);
+  background: var(--color-superficie-solida);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  cursor: pointer;
+}
+
+.nuevos {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-acento);
+  box-shadow: 0 0 0 2px #fff;
+}
+
+/*
+ * Con dos columnas, la lateral se estira hasta el alto del escenario y el registro del chat
+ * ocupa lo que sobra, en lugar de tener un alto fijo.
+ */
+@media (min-width: 60rem) {
+  .columnaLateral {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+  }
+
+  .chat,
+  .contenidoChat {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+  }
+
+  .registro {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 12rem;
+  }
+}
+
 /* Cada mensaje nuevo llega con un fundido y un pequeño impulso desde su lado del chat. */
 .mensaje,
 .mensajePropio,
@@ -392,5 +499,177 @@
   from {
     opacity: 0;
     transform: translateY(6px) scale(0.97);
+  }
+}
+
+/* Identidad de quien está en la sala: avatar y alias siempre visibles. */
+.identidadSala {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  padding: var(--espacio-2) var(--espacio-4) var(--espacio-2) var(--espacio-2);
+  justify-self: start;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-total);
+  background: var(--color-superficie-solida);
+  box-shadow: var(--sombra-1);
+  animation: entrarSala 420ms var(--curva-salida);
+}
+
+.identidadSala strong {
+  display: block;
+  color: var(--tinta);
+  line-height: 1.2;
+}
+
+.avatarSala {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--morado-50);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--morado-300);
+}
+
+.textoIdentidad {
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+}
+
+/* Al entrar, la sala aparece con un desplazamiento corto (transición entre antesala y sala). */
+.enVivo {
+  animation: entrarSala 480ms var(--curva-salida);
+}
+
+@keyframes entrarSala {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .identidadSala,
+  .enVivo {
+    animation: none;
+  }
+}
+
+/*
+ * Sala inmersiva: un móvil en horizontal. La sala ocupa toda la pantalla por encima del
+ * encabezado y la barra inferior (z-index 40 y 45; las notificaciones siguen encima, 70):
+ * joystick a la izquierda, escenario al alto completo y, a la derecha, personas y acciones
+ * siempre visibles con el chat plegado. Respeta las áreas seguras (muesca, barra del sistema).
+ * Misma condición que en `controles/Controles.module.css`.
+ */
+@media (orientation: landscape) and (max-height: 32rem) and (hover: none) and (pointer: coarse) {
+  /* Queda tapada por la sala; para irse está «Salir de la sala». */
+  .cabeceraSala {
+    display: none;
+  }
+
+  .enVivo {
+    --hueco: var(--espacio-2);
+    --borde-arriba: max(var(--hueco), env(safe-area-inset-top, 0px));
+    --borde-derecho: max(var(--hueco), env(safe-area-inset-right, 0px));
+    --borde-abajo: max(var(--hueco), env(safe-area-inset-bottom, 0px));
+    --borde-izquierdo: max(var(--hueco), env(safe-area-inset-left, 0px));
+    position: fixed;
+    inset: 0;
+    z-index: 46;
+    grid-template-columns: auto auto minmax(11rem, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: 'controles escenario lateral';
+    gap: var(--hueco);
+    padding: var(--borde-arriba) var(--borde-derecho) var(--borde-abajo) var(--borde-izquierdo);
+    background: var(--color-fondo);
+    /* Arrastrar sobre la sala no desplaza ni amplía la página que queda debajo. */
+    overscroll-behavior: none;
+    touch-action: none;
+  }
+
+  /* Sus hijos (escenario y controles) se ubican directamente en la cuadrícula de la sala. */
+  .columnaEscenario {
+    display: contents;
+  }
+
+  .escenario {
+    grid-area: escenario;
+    align-self: center;
+    /* Al alto completo, dejando a los lados sitio para el joystick y la columna derecha. */
+    width: min(
+      100vw - 21rem,
+      (100dvh - var(--borde-arriba) - var(--borde-abajo)) * var(--proporcion, 1.2)
+    );
+  }
+
+  .zonaControles {
+    grid-area: controles;
+    align-self: end;
+  }
+
+  .columnaLateral {
+    grid-area: lateral;
+    align-self: stretch;
+    align-content: start;
+    gap: var(--espacio-2);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
+
+  .panel,
+  .chat {
+    gap: var(--espacio-2);
+    padding: var(--espacio-3);
+  }
+
+  .accionesSala {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .accionesSala button {
+    white-space: normal;
+  }
+
+  .alternarChat {
+    display: inline-flex;
+  }
+
+  .chat:not([data-abierto]) .contenidoChat {
+    display: none;
+  }
+
+  /* Chat abierto: un panel encima del lado derecho de la sala, con su registro desplazable. */
+  .chat[data-abierto] {
+    position: fixed;
+    top: var(--borde-arriba);
+    right: var(--borde-derecho);
+    bottom: var(--borde-abajo);
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    width: min(24rem, 60vw);
+    background: var(--color-superficie-solida);
+    box-shadow: var(--sombra-3);
+  }
+
+  .chat[data-abierto] .contenidoChat {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
+
+  .chat[data-abierto] .registro {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 5rem;
   }
 }

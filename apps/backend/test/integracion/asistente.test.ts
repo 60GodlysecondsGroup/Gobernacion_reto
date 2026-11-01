@@ -5,7 +5,7 @@ import { crearApp } from '../../src/app.js';
 import { cargarConfig } from '../../src/config/env.js';
 import { crearPool, type PoolDeDatos } from '../../src/db/database.js';
 import { crearLogger } from '../../src/lib/logger.js';
-import { configPrueba } from '../apoyo.js';
+import { cookieDe, configPrueba } from '../apoyo.js';
 
 let pool: PoolDeDatos;
 let app: ReturnType<typeof crearApp>;
@@ -27,9 +27,7 @@ afterAll(async () => {
 });
 
 async function entrar(codigo: string) {
-  const inicio = await request(app).post('/api/sesion').send({ codigo });
-  expect(inicio.status).toBe(201);
-  return (inicio.headers['set-cookie'] as unknown as string[])[0]!.split(';')[0]!;
+  return cookieDe(pool, codigo);
 }
 
 describe('endpoint de asistente IA admin', () => {

@@ -1,5 +1,5 @@
 /**
- * Fase 7 · Moderación y administración, contra la base del .env.
+ * Fase 7 · Moderación y administración, contra la base local de pruebas (npm run test:db).
  * Todo lo que escribe corre en una transacción que se revierte al final: la base queda igual.
  */
 import request from 'supertest';
@@ -10,7 +10,7 @@ import { cargarConfig } from '../../src/config/env.js';
 import { crearPool, type PoolDeDatos } from '../../src/db/database.js';
 import { crearLogger } from '../../src/lib/logger.js';
 import { MENSAJE_BLOQUEO } from '../../src/modules/dlp/dlp.analizador.js';
-import { configPrueba } from '../apoyo.js';
+import { cookieDe, configPrueba } from '../apoyo.js';
 
 const logger = crearLogger('silencioso');
 type App = ReturnType<typeof crearApp>;
@@ -51,9 +51,7 @@ async function enTransaccionRevertida(prueba: (app: App, cliente: pg.PoolClient)
 }
 
 async function entrar(aplicacion: App, codigo: string) {
-  const res = await request(aplicacion).post('/api/sesion').send({ codigo });
-  expect(res.status).toBe(201);
-  const cookie = (res.headers['set-cookie'] as unknown as string[])[0]!.split(';')[0]!;
+  const cookie = await cookieDe(pool, codigo);
   return {
     get: (ruta: string) => request(aplicacion).get(ruta).set('Cookie', cookie),
     post: (ruta: string, cuerpo: object = {}) =>

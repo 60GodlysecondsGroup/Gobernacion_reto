@@ -1,5 +1,5 @@
 /**
- * Fase 5 · Salas interactivas, con WebSocket real y la base del .env (npm run test:db).
+ * Fase 5 · Salas interactivas, con WebSocket real y la base local de pruebas (npm run test:db).
  * Cada prueba usa un servidor propio cuyas consultas van a una transacción que se revierte.
  */
 import { createServer, type Server } from 'node:http';
@@ -15,7 +15,7 @@ import { crearLogger } from '../../src/lib/logger.js';
 import { MENSAJE_BLOQUEO } from '../../src/modules/dlp/dlp.analizador.js';
 import type { MensajeServidor } from '../../src/modules/salas/salas.protocolo.js';
 import { crearRepositorioSalas } from '../../src/modules/salas/salas.repository.js';
-import { crearToken } from '../../src/modules/seguridad/sesion.token.js';
+import { abrirSesionInterna } from '../../src/modules/seguridad/sesion.service.js';
 import { configPrueba, enCola, hasta } from '../apoyo.js';
 
 const logger = crearLogger('silencioso');
@@ -76,7 +76,9 @@ async function usuarios(cantidad: number, rango = 'B') {
        returning id_usuario`,
       [`Prueba_${rango}${i}`, `Prueba${rango}${i}`, rango],
     );
-    tokens.push(crearToken(rows[0].id_usuario, configPrueba.sesion.secreto, 600_000));
+    tokens.push(
+      await abrirSesionInterna(cliente, configPrueba.sesion.secreto, rows[0].id_usuario, 600_000),
+    );
   }
   return tokens;
 }
@@ -85,7 +87,7 @@ async function tokenDe(codigo: string) {
   const { rows } = await cliente.query('select id_usuario from app.usuario where codigo = $1', [
     codigo,
   ]);
-  return crearToken(rows[0].id_usuario, configPrueba.sesion.secreto, 600_000);
+  return abrirSesionInterna(cliente, configPrueba.sesion.secreto, rows[0].id_usuario, 600_000);
 }
 
 function conectar(idSala: string, token?: string, origen?: string) {

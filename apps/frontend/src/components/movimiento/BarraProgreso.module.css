@@ -5,8 +5,8 @@
   z-index: 90;
   width: 100%;
   height: 3px;
-  background: linear-gradient(90deg, var(--azul-500), var(--cian), var(--violeta));
-  box-shadow: 0 0 12px rgb(61 111 245 / 0.6);
+  background: linear-gradient(90deg, var(--morado-500), var(--cian), var(--violeta));
+  box-shadow: 0 0 12px rgb(115 80 234 / 0.6);
   opacity: 0;
   transform: scaleX(0);
   transform-origin: left;

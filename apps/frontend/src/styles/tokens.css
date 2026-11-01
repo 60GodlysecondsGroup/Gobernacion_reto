@@ -9,8 +9,21 @@
  * Los pares texto/fondo cumplen contraste AA (≥ 4.5:1); ver DECISIONES.md.
  */
 :root {
-  /* ── Paleta de marca ────────────────────────────────── */
-  --azul-noche: #0b1b3f; /* texto principal y fondos profundos */
+  /* ── Paleta de marca: el morado es protagonista ──────── */
+  --morado-950: #1a0f45;
+  --morado-900: #261463; /* secciones destacadas y fondos profundos */
+  --morado-800: #33198a;
+  --morado-700: #4823b8; /* hover de la acción principal (9.6:1 sobre blanco) */
+  --morado-600: #5b35d5; /* acción principal (7.3:1 sobre blanco) */
+  --morado-500: #7350ea;
+  --morado-400: #9579f3;
+  --morado-300: #b9a6f8;
+  --morado-100: #ece6ff;
+  --morado-50: #f6f3ff;
+  --tinta: #17123a; /* texto principal: tinta morada muy oscura (17:1) */
+
+  /* Azul: complementario (enlaces de apoyo, degradados y luz ambiental). */
+  --azul-noche: #0b1b3f;
   --azul-950: #0e2350;
   --azul-900: #13306e;
   --azul-800: #1a3f92;
@@ -34,24 +47,24 @@
   --coral: #c93a2f; /* solo «Necesito ayuda» */
 
   /* ── Roles de color ─────────────────────────────────── */
-  --color-fondo: #eef2fa;
-  --color-fondo-secundario: #e6ecf7;
+  --color-fondo: #f3f1fb;
+  --color-fondo-secundario: #ebe7f8;
   /* Superficies de lectura: blanco casi opaco sobre la atmósfera (cristal sin desenfoque). */
   --color-superficie: rgb(255 255 255 / 0.84);
   --color-superficie-solida: #ffffff;
-  --color-superficie-suave: rgb(236 242 255 / 0.7);
+  --color-superficie-suave: rgb(240 235 255 / 0.75);
   --color-superficie-elevada: rgb(255 255 255 / 0.9);
-  --color-borde: rgb(11 27 63 / 0.1);
-  --color-borde-fuerte: rgb(11 27 63 / 0.24);
-  --color-texto: var(--azul-noche);
-  --color-texto-suave: #4a5878;
-  --color-texto-tenue: #5b6785;
-  --color-texto-deshabilitado: #8b95ab;
+  --color-borde: rgb(38 20 99 / 0.1);
+  --color-borde-fuerte: rgb(38 20 99 / 0.24);
+  --color-texto: var(--tinta);
+  --color-texto-suave: #4d4870;
+  --color-texto-tenue: #5e5980;
+  --color-texto-deshabilitado: #918cae;
 
-  --color-primario: var(--azul-600);
-  --color-primario-hover: var(--azul-700);
-  --color-primario-suave: var(--azul-100);
-  --color-primario-oscuro: var(--azul-900);
+  --color-primario: var(--morado-600);
+  --color-primario-hover: var(--morado-700);
+  --color-primario-suave: var(--morado-100);
+  --color-primario-oscuro: var(--morado-900);
   --color-sobre-primario: #ffffff;
 
   /* «Necesito ayuda» (F18): el único elemento coral de la interfaz. */
@@ -68,25 +81,24 @@
   --color-peligro-suave: #fde8e7;
   --color-info: var(--azul-600);
   --color-info-suave: var(--azul-100);
-  --color-carga: rgb(11 27 63 / 0.06);
+  --color-carga: rgb(38 20 99 / 0.06);
 
-  --color-foco: #2457e6;
+  --color-foco: var(--morado-600);
   --color-ventana: var(--ambar);
   --color-cielo-alto: var(--azul-noche);
   --color-cielo-bajo: #3d3f9a;
 
   /* Compatibilidad con nombres anteriores (componentes que aún los usan). */
-  --tinta: var(--azul-noche);
-  --indigo-950: var(--azul-950);
-  --indigo-900: var(--azul-900);
-  --indigo-700: var(--azul-700);
-  --indigo-600: var(--azul-600);
-  --indigo-500: var(--azul-500);
-  --indigo-100: var(--azul-100);
-  --indigo-50: var(--azul-50);
-  --anil-noche: var(--azul-noche);
-  --anil: var(--azul-600);
-  --anil-claro: var(--azul-100);
+  --indigo-950: var(--morado-950);
+  --indigo-900: var(--morado-900);
+  --indigo-700: var(--morado-700);
+  --indigo-600: var(--morado-600);
+  --indigo-500: var(--morado-500);
+  --indigo-100: var(--morado-100);
+  --indigo-50: var(--morado-50);
+  --anil-noche: var(--tinta);
+  --anil: var(--morado-600);
+  --anil-claro: var(--morado-100);
   --moriche: var(--menta);
   --atardecer: var(--ambar);
   --coral-ayuda: var(--coral);
@@ -94,15 +106,17 @@
 
   /* ── Atmósfera: luz ambiental del fondo (fija, sin animación) ── */
   --atmosfera:
-    radial-gradient(60rem 36rem at 8% -10%, rgb(61 111 245 / 0.22), transparent 62%),
-    radial-gradient(48rem 32rem at 98% 0%, rgb(139 124 246 / 0.18), transparent 60%),
-    radial-gradient(44rem 30rem at 70% 55%, rgb(94 211 243 / 0.12), transparent 60%),
-    linear-gradient(180deg, #f3f6fd 0%, var(--color-fondo) 40%, var(--color-fondo-secundario) 100%);
+    radial-gradient(60rem 36rem at 8% -10%, rgb(115 80 234 / 0.2), transparent 62%),
+    radial-gradient(48rem 32rem at 98% 0%, rgb(61 111 245 / 0.13), transparent 60%),
+    radial-gradient(44rem 30rem at 70% 60%, rgb(185 166 248 / 0.16), transparent 60%),
+    linear-gradient(180deg, #f8f6fe 0%, var(--color-fondo) 40%, var(--color-fondo-secundario) 100%);
   --fondo-profundo:
-    radial-gradient(40rem 24rem at 15% 0%, rgb(61 111 245 / 0.45), transparent 65%),
-    radial-gradient(36rem 24rem at 100% 100%, rgb(139 124 246 / 0.35), transparent 65%),
-    linear-gradient(160deg, #13306e 0%, var(--azul-noche) 70%);
-  --degradado-marca: linear-gradient(135deg, var(--azul-500) 0%, var(--azul-900) 100%);
+    radial-gradient(40rem 24rem at 15% 0%, rgb(115 80 234 / 0.5), transparent 65%),
+    radial-gradient(36rem 24rem at 100% 100%, rgb(61 111 245 / 0.32), transparent 65%),
+    linear-gradient(160deg, var(--morado-900) 0%, var(--morado-950) 70%);
+  --degradado-marca: linear-gradient(135deg, var(--morado-500) 0%, var(--morado-800) 100%);
+  /* Morado con un toque de azul: acciones principales y elementos de identidad. */
+  --degradado-accion: linear-gradient(135deg, var(--morado-500) 0%, var(--morado-600) 55%, #4a4fe0 100%);
   --degradado-noche: var(--fondo-profundo);
   --degradado-ventanas: linear-gradient(
     90deg,
@@ -126,7 +140,7 @@
   --cristal-borde-oscuro: rgb(255 255 255 / 0.14);
   /* Reflejo superior y borde interior: dan el volumen del cristal sin sombras duras. */
   --cristal-brillo: inset 0 1px 0 rgb(255 255 255 / 0.85), inset 0 0 0 1px rgb(255 255 255 / 0.25);
-  --cristal-sombra: 0 1px 2px rgb(11 27 63 / 0.06), 0 12px 32px -12px rgb(19 48 110 / 0.22);
+  --cristal-sombra: 0 1px 2px rgb(38 20 99 / 0.06), 0 12px 32px -12px rgb(51 25 138 / 0.22);
 
   /* ── Tipografía ─────────────────────────────────────── */
   --fuente-base:
@@ -163,40 +177,41 @@
   --espacio-9: 6rem;
 
   /* ── Forma: radios continuos, como en iOS ───────────── */
-  --radio-sm: 12px;
-  --radio-md: 16px;
-  --radio-lg: 22px;
-  --radio-xl: 30px;
+  --radio-sm: 10px;
+  --radio-md: 14px;
+  --radio-lg: 18px;
+  --radio-xl: 24px;
   --radio-total: 999px;
 
-  --sombra-1: 0 1px 2px rgb(11 27 63 / 0.05);
-  --sombra-2: 0 1px 2px rgb(11 27 63 / 0.05), 0 8px 24px -10px rgb(19 48 110 / 0.18);
-  --sombra-3: 0 2px 8px rgb(11 27 63 / 0.08), 0 24px 56px -16px rgb(19 48 110 / 0.32);
-  --sombra-primario: 0 8px 20px -8px rgb(36 87 230 / 0.6);
-  --sombra-foco: 0 0 0 4px rgb(36 87 230 / 0.22);
+  --sombra-1: 0 1px 2px rgb(38 20 99 / 0.05);
+  --sombra-2: 0 1px 2px rgb(38 20 99 / 0.05), 0 8px 24px -10px rgb(51 25 138 / 0.18);
+  --sombra-3: 0 2px 8px rgb(38 20 99 / 0.08), 0 24px 56px -16px rgb(51 25 138 / 0.3);
+  --sombra-primario: 0 8px 20px -8px rgb(91 53 213 / 0.55);
+  --sombra-foco: 0 0 0 4px rgb(91 53 213 / 0.24);
   --anillo-interior: inset 0 1px 0 rgb(255 255 255 / 0.6);
 
   /* ── Movimiento: curvas tipo resorte de iOS ─────────── */
   --transicion: 180ms cubic-bezier(0.25, 0.1, 0.25, 1);
   --transicion-lenta: 360ms cubic-bezier(0.16, 1, 0.3, 1);
   --curva-salida: cubic-bezier(0.16, 1, 0.3, 1);
-  --curva-resorte: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --curva-resorte: cubic-bezier(0.34, 1.22, 0.64, 1);
   --curva-entrada: cubic-bezier(0.4, 0, 1, 1);
 
+  /* ── Espaciado fluido de la página (se ajusta solo entre móvil y pantallas grandes) ── */
+  --padding-pagina: clamp(1rem, 0.5rem + 2.6vw, 3rem);
+  --separacion-seccion: clamp(3.5rem, 2rem + 5vw, 7rem);
+  --padding-tarjeta: clamp(1.125rem, 0.9rem + 1vw, 1.75rem);
+  --separacion-elementos: clamp(0.75rem, 0.6rem + 0.6vw, 1.25rem);
+
   /* ── Estructura ─────────────────────────────────────── */
-  --ancho-contenido: 76rem;
+  --ancho-contenido: 84rem;
   --ancho-lectura: 46rem;
-  --margen-lateral: 1rem;
+  --margen-lateral: var(--padding-pagina);
   --alto-encabezado: 4.75rem;
   /* Barra inferior flotante del móvil (0 en escritorio), incluido su margen. */
   --alto-barra-inferior: 5.5rem;
 }
 
-@media (min-width: 48rem) {
-  :root {
-    --margen-lateral: 2rem;
-  }
-}
 
 /* En móviles el desenfoque es más ligero: menos coste de GPU con el mismo efecto. */
 @media (max-width: 47.99rem) {

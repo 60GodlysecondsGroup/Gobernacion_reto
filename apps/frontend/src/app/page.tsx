@@ -1,33 +1,14 @@
-import { ArrowRight, Check, EyeOff, Layers, LifeBuoy, UserRoundCheck } from 'lucide-react';
+import { ArrowRight, Check, LifeBuoy, ShieldCheck, Sparkles, Users } from 'lucide-react';
 import Link from 'next/link';
-import { Aparecer } from '@/components/movimiento/Aparecer';
-import { ElementoEscalonado, ListaEscalonada } from '@/components/movimiento/Escalonado';
+import { Chigui } from '@/components/guia/Chigui';
 import { AtajosOrientacion } from '@/components/inicio/AtajosOrientacion';
-import { EdificioLlanero } from '@/components/inicio/EdificioLlanero';
+import { ComoFunciona } from '@/components/inicio/ComoFunciona';
+import { ValleComunidades } from '@/components/inicio/ValleComunidades';
 import { AccionesInicio } from '@/components/sesion/AccionesInicio';
-import { EstadoSistema } from '@/components/sistema/EstadoSistema';
+import { OBJETOS_SALA } from '@/config/salas-mundo';
 import estilos from './page.module.css';
 
-const CAPAS = [
-  {
-    icono: Layers,
-    titulo: 'Cada edad en su propio piso',
-    texto:
-      'Cuatro comunidades separadas: de 10 a 12, de 13 a 15, de 16 a 17 y de 18 a 22 años. Nadie ve ni busca a personas de otro rango.',
-  },
-  {
-    icono: EyeOff,
-    titulo: 'Lo personal no se publica',
-    texto:
-      'Un filtro revisa cada mensaje antes de publicarlo. Teléfonos, direcciones, redes sociales o la edad exacta se bloquean y puedes corregir el texto.',
-  },
-  {
-    icono: UserRoundCheck,
-    titulo: 'Personas que revisan',
-    texto:
-      'Si algo te incomoda, repórtalo. Moderación lo revisa y puede ocultar el contenido, sin contarle a nadie quién reportó.',
-  },
-];
+const ACTIVIDADES = OBJETOS_SALA.map((o) => o.titulo);
 
 const GARANTIAS = [
   'Participas con alias, sin datos personales',
@@ -38,15 +19,16 @@ const GARANTIAS = [
 export default function Inicio() {
   return (
     <div className={estilos.pagina}>
+      {/* ── Héroe ─────────────────────────────────────── */}
       <section className={estilos.heroe} aria-labelledby="titulo-inicio">
         <div className={estilos.textoHeroe}>
-          <p className={estilos.antetitulo}>Para jóvenes de 10 a 22 años en Villavicencio</p>
           <h1 id="titulo-inicio" className={estilos.titulo}>
-            Información confiable y un lugar seguro para hablar con gente de tu edad
+            Un espacio para <span className={estilos.resalte}>crecer, conectar y compartir</span> en
+            Villavicencio
           </h1>
           <p className={estilos.entradilla}>
-            Encuentra canales de apoyo de instituciones, siempre con su fuente y la fecha en que se
-            verificaron. Y conversa en una comunidad protegida, con alias y avatar.
+            Una comunidad digital para jóvenes de 10 a 22 años, donde puedes encontrar orientación,
+            participar de forma segura y compartir experiencias.
           </p>
           <div className={estilos.acciones}>
             <AccionesInicio />
@@ -54,78 +36,85 @@ export default function Inicio() {
           <ul className={estilos.garantias}>
             {GARANTIAS.map((texto) => (
               <li key={texto}>
-                <Check aria-hidden="true" size={16} strokeWidth={2.5} />
+                <Check aria-hidden="true" size={15} strokeWidth={2.6} />
                 {texto}
               </li>
             ))}
           </ul>
         </div>
-        <div className={estilos.ilustracion}>
-          <EdificioLlanero />
+
+        <div className={estilos.visual}>
+          <div className={estilos.ilustracion}>
+            <ValleComunidades />
+          </div>
+          <p className={`${estilos.chip} ${estilos.chipA}`} aria-hidden="true">
+            <Users size={15} />4 comunidades separadas
+          </p>
+          <p className={`${estilos.chip} ${estilos.chipB}`} aria-hidden="true">
+            <ShieldCheck size={15} />
+            Filtro de privacidad activo
+          </p>
         </div>
       </section>
 
-      <Aparecer>
-        <section className={estilos.seccion} aria-labelledby="titulo-orientacion">
-          <div className={estilos.cabeceraSeccion}>
-            <h2 id="titulo-orientacion">¿Qué información buscas hoy?</h2>
-            <p>
-              No necesitas iniciar sesión. Aquí no hay preguntas sobre ti ni resultados: solo
-              información de instituciones.
-            </p>
-          </div>
-          <AtajosOrientacion />
-          <Link href="/ayuda" className={estilos.ayuda}>
-            <span className={estilos.iconoAyuda} aria-hidden="true">
-              <LifeBuoy size={22} />
-            </span>
-            <span className={estilos.textoAyuda}>
-              <strong>¿Necesitas hablar con alguien ahora?</strong>
-              <span>Líneas y canales institucionales, sin pasos intermedios.</span>
-            </span>
-            <span className={estilos.irAyuda}>
-              Ver canales de ayuda
-              <ArrowRight aria-hidden="true" size={18} />
-            </span>
-          </Link>
-        </section>
-      </Aparecer>
-
-      <Aparecer>
-        <section className={`${estilos.seccion} ${estilos.cuidado}`} aria-labelledby="titulo-capas">
-          <div className={estilos.cabeceraSeccion}>
-            <h2 id="titulo-capas">Cómo te cuidamos</h2>
-            <p>
-              Tres capas que trabajan juntas. El sistema las aplica siempre, no solo la pantalla.
-            </p>
-          </div>
-          <ListaEscalonada al="scroll" className={estilos.capas}>
-            {CAPAS.map(({ icono: Icono, titulo, texto }) => (
-              <ElementoEscalonado key={titulo} className={estilos.capa}>
-                <Icono
-                  aria-hidden="true"
-                  size={24}
-                  strokeWidth={1.75}
-                  className={estilos.iconoCapa}
-                />
-                <h3>{titulo}</h3>
-                <p>{texto}</p>
-              </ElementoEscalonado>
-            ))}
-          </ListaEscalonada>
-          <Link href="/reglas" className={estilos.enlace}>
-            Leer las reglas de la comunidad
-            <ArrowRight aria-hidden="true" size={16} />
-          </Link>
-        </section>
-      </Aparecer>
-
-      <details className={estilos.estado}>
-        <summary>Estado del prototipo</summary>
-        <div className={estilos.cuerpoEstado}>
-          <EstadoSistema />
+      {/* ── Orientación ───────────────────────────────── */}
+      <section className={`${estilos.seccion} revelar`} aria-labelledby="titulo-orientacion">
+        <div className={estilos.cabeceraSeccion}>
+          <p className={estilos.antetituloSeccion}>Orientación</p>
+          <h2 id="titulo-orientacion">¿Qué información buscas hoy?</h2>
+          <p>
+            No necesitas iniciar sesión. Aquí no hay preguntas sobre ti ni resultados: solo
+            información de instituciones.
+          </p>
         </div>
-      </details>
+        <AtajosOrientacion />
+        <Link href="/ayuda" className={estilos.ayuda}>
+          <span className={estilos.iconoAyuda} aria-hidden="true">
+            <LifeBuoy size={22} />
+          </span>
+          <span className={estilos.textoAyuda}>
+            <strong>¿Necesitas hablar con alguien ahora?</strong>
+            <span>Líneas y canales institucionales, sin pasos intermedios.</span>
+          </span>
+          <span className={estilos.irAyuda}>
+            Ver canales de ayuda
+            <ArrowRight aria-hidden="true" size={18} />
+          </span>
+        </Link>
+      </section>
+
+      {/* ── Cómo funciona ─────────────────────────────── */}
+      <div className="revelar">
+        <ComoFunciona />
+      </div>
+
+      {/* ── Salas vivas ───────────────────────────────── */}
+      <section className={`${estilos.juegos} revelar`} aria-labelledby="titulo-salas">
+        <div className={estilos.personajeJuegos} aria-hidden="true">
+          <Chigui tamano={96} />
+        </div>
+        <div className={estilos.textoJuegos}>
+          <p className={estilos.antetituloSeccion}>
+            <Sparkles aria-hidden="true" size={16} />
+            Salas de tu comunidad
+          </p>
+          <h2 id="titulo-salas">Cada sala es un pequeño mundo para descubrir</h2>
+          <p>
+            Entra con tu avatar y toca los objetos de la sala: una pizarra, un tablero de ideas, una
+            máquina de café… Cada uno abre una actividad corta, y dos bots te acompañan. Todo es
+            opcional y nada se publica.
+          </p>
+          <ul className={estilos.listaJuegos}>
+            {ACTIVIDADES.map((titulo) => (
+              <li key={titulo}>{titulo}</li>
+            ))}
+          </ul>
+        </div>
+        <Link href="/salas" className={estilos.irJuegos}>
+          Explorar las salas
+          <ArrowRight aria-hidden="true" size={18} />
+        </Link>
+      </section>
     </div>
   );
 }

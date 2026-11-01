@@ -16,6 +16,7 @@ import {
 import { ErrorApi, mensajeDeError } from '@/lib/api/cliente';
 import { CIERRE, obtenerSala, type SalaDetalle } from '@/lib/api/salas';
 import comun from '../comun.module.css';
+import { IdentidadSala } from './IdentidadSala';
 import { OcupacionSala } from './OcupacionSala';
 import { SalaEnVivo } from './SalaEnVivo';
 import estilos from './Salas.module.css';
@@ -89,10 +90,15 @@ function Sala({ id }: { id: string }) {
   const enSala = iniciado && vivo.fase !== 'fuera';
 
   if (enSala) {
+    const propio = vivo.participantes.find((p) => p.id === vivo.yo);
     return (
       <div className={estilos.paginaSala}>
-        {volver}
-        <EncabezadoPagina antetitulo="Sala temática" titulo={sala.nombre} />
+        {/* Dentro de la sala, el encabezado ocupa una sola línea: el espacio es del escenario. */}
+        <div className={estilos.cabeceraSala}>
+          {volver}
+          <EncabezadoPagina antetitulo="Sala temática" titulo={sala.nombre} />
+          {propio && <IdentidadSala participante={propio} />}
+        </div>
         {vivo.fase === 'conectando' ? (
           <p className={comun.cargando} aria-busy="true">
             Entrando a la sala…

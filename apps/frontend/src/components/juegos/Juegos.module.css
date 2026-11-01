@@ -1,0 +1,608 @@
+/* Minijuegos: portada, tarjetas de juego y partida. */
+.pagina {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  max-width: 60rem;
+  margin-inline: auto;
+}
+
+/* ── Portada ─────────────────────────────────────────── */
+.portada {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espacio-6);
+  padding: var(--padding-tarjeta) clamp(1.25rem, 1rem + 2vw, 2.5rem);
+  overflow: hidden;
+  border-radius: var(--radio-xl);
+  background: var(--fondo-profundo);
+  color: #fff;
+  box-shadow: var(--sombra-3);
+  animation: asentar 520ms var(--curva-salida) backwards;
+}
+
+.textosPortada {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.antetitulo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  color: var(--morado-300);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.titulo {
+  font-size: clamp(1.75rem, 1.3rem + 2vw, 2.75rem);
+  text-wrap: balance;
+}
+
+.entradilla {
+  max-width: 34rem;
+  color: rgb(255 255 255 / 0.82);
+}
+
+/* Escena con los dos asistentes: se mueven muy poco y solo mientras se ven. */
+.escena {
+  position: relative;
+  height: 9rem;
+}
+
+.personajeA,
+.personajeB {
+  position: absolute;
+  bottom: 0;
+}
+
+.personajeA {
+  left: 22%;
+  bottom: 3.5rem;
+  /* Unas pocas veces al entrar; no queda animando para siempre. */
+  animation: flotar 2.2s ease-in-out 6 alternate;
+}
+
+.personajeB {
+  left: 42%;
+  filter: drop-shadow(0 6px 10px rgb(0 0 0 / 0.25));
+}
+
+/* ── Tarjetas de juego ───────────────────────────────── */
+.lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16.5rem), 1fr));
+  gap: var(--espacio-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lista li {
+  animation: asentar 480ms var(--curva-salida) backwards;
+}
+
+.lista li:nth-child(2) {
+  animation-delay: 70ms;
+}
+
+.lista li:nth-child(3) {
+  animation-delay: 140ms;
+}
+
+.tarjeta {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto auto;
+  gap: var(--espacio-2);
+  width: 100%;
+  height: 100%;
+  padding: var(--padding-tarjeta);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie-solida);
+  box-shadow: var(--sombra-1);
+  color: var(--color-texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform var(--transicion-lenta),
+    box-shadow var(--transicion-lenta),
+    border-color var(--transicion);
+}
+
+.tarjeta:hover {
+  border-color: rgb(91 53 213 / 0.35);
+  box-shadow: var(--sombra-3);
+  transform: translateY(-3px);
+}
+
+.tarjeta:active {
+  transform: scale(0.985);
+}
+
+.tarjeta:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 3px;
+}
+
+.iconoTarjeta {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: var(--espacio-2);
+  border-radius: var(--radio-md);
+  background: var(--degradado-accion);
+  color: #fff;
+  box-shadow: var(--sombra-primario);
+  transition: transform 260ms var(--curva-resorte);
+}
+
+.tarjeta:hover .iconoTarjeta {
+  transform: rotate(-6deg) scale(1.06);
+}
+
+.tituloTarjeta {
+  font-family: var(--fuente-titulos);
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-fuerte);
+}
+
+.descripcionTarjeta {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.metaTarjeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2) var(--espacio-3);
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+}
+
+.metaTarjeta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.jugar {
+  justify-self: start;
+  margin-top: var(--espacio-2);
+  padding: var(--espacio-1) var(--espacio-4);
+  border-radius: var(--radio-total);
+  background: var(--morado-50);
+  color: var(--color-primario);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  transition:
+    background var(--transicion),
+    color var(--transicion);
+}
+
+.tarjeta:hover .jugar {
+  background: var(--color-primario);
+  color: #fff;
+}
+
+/* ── Partida ─────────────────────────────────────────── */
+.volver {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: 2.75rem;
+  padding: 0 var(--espacio-3);
+  border: 0;
+  border-radius: var(--radio-total);
+  background: transparent;
+  color: var(--color-texto-suave);
+  font: inherit;
+  font-weight: var(--peso-fuerte);
+  cursor: pointer;
+}
+
+.volver:hover {
+  background: var(--morado-50);
+  color: var(--color-texto);
+}
+
+.cabeceraJuego {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+.cabeceraJuego .antetitulo {
+  color: var(--color-primario);
+}
+
+.tituloJuego {
+  font-size: var(--texto-2xl);
+}
+
+.partida {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.cabeceraPartida {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.contador {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+}
+
+.progreso,
+.barraMedidor {
+  height: 8px;
+  overflow: hidden;
+  border-radius: var(--radio-total);
+  background: var(--morado-100);
+}
+
+.progreso span,
+.barraMedidor span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--degradado-accion);
+  transform-origin: left;
+  transition: transform 500ms var(--curva-salida);
+}
+
+.tarjetaPaso {
+  display: grid;
+  gap: var(--espacio-4);
+  padding: var(--padding-tarjeta);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-xl);
+  background: var(--color-superficie-solida);
+  box-shadow: var(--sombra-2);
+  animation: entrarPaso 420ms var(--curva-salida);
+}
+
+.enunciado {
+  font-size: clamp(1.15rem, 1rem + 0.8vw, 1.5rem);
+  line-height: 1.3;
+  outline: none;
+}
+
+.opciones {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.opcion {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espacio-3);
+  width: 100%;
+  min-height: 3.25rem;
+  padding: var(--espacio-3) var(--espacio-4);
+  border: 1.5px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: #fff;
+  color: var(--color-texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--transicion),
+    background var(--transicion),
+    transform 200ms var(--curva-resorte),
+    opacity var(--transicion);
+}
+
+.opcion:hover:not(:disabled):not([data-estado]) {
+  border-color: var(--morado-400);
+  background: var(--morado-50);
+  transform: translateX(2px);
+}
+
+.opcion:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.opcion:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.opcion[data-estado] {
+  cursor: default;
+}
+
+.opcion:disabled {
+  opacity: 0.55;
+}
+
+.marca {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  background: var(--morado-100);
+  color: var(--morado-800);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+}
+
+.opcion[data-estado='recomendada'] {
+  border-color: var(--color-exito);
+  background: var(--color-exito-suave);
+  animation: acierto 420ms var(--curva-salida);
+}
+
+.opcion[data-estado='recomendada'] .marca {
+  background: var(--color-exito);
+  color: #fff;
+}
+
+.opcion[data-estado='elegida'] {
+  border-color: var(--ambar);
+  background: var(--color-advertencia-suave);
+  animation: sacudir 380ms ease-out;
+}
+
+.opcion[data-estado='elegida'] .marca {
+  background: var(--ambar);
+  color: var(--tinta);
+}
+
+.retro {
+  display: grid;
+  justify-items: start;
+  gap: var(--espacio-2);
+  padding: var(--espacio-4);
+  border-radius: var(--radio-md);
+  background: var(--color-exito-suave);
+  animation: entrarPaso 320ms var(--curva-salida);
+}
+
+.retro[data-tono='revisar'] {
+  background: var(--color-advertencia-suave);
+}
+
+.tituloRetro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2);
+  font-weight: var(--peso-fuerte);
+}
+
+.impacto {
+  padding: 0 var(--espacio-2);
+  border-radius: var(--radio-total);
+  background: rgb(255 255 255 / 0.7);
+  font-size: var(--texto-xs);
+}
+
+/* Medidor «Clima de la comunidad» */
+.medidor {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--espacio-3);
+  width: min(100%, 26rem);
+  margin-inline: auto;
+}
+
+.medidor[data-compacto] {
+  width: 100%;
+}
+
+.etiquetaMedidor,
+.valorMedidor {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+}
+
+.barraMedidor span {
+  background: linear-gradient(90deg, var(--ambar), var(--color-exito));
+}
+
+/* ── Final ───────────────────────────────────────────── */
+.final {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--espacio-3);
+  padding: clamp(1.5rem, 1rem + 3vw, 3rem) var(--padding-tarjeta);
+  overflow: hidden;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-xl);
+  background:
+    radial-gradient(30rem 14rem at 50% 0%, rgb(115 80 234 / 0.16), transparent 70%),
+    var(--color-superficie-solida);
+  box-shadow: var(--sombra-2);
+  text-align: center;
+  animation: entrarPaso 480ms var(--curva-salida);
+}
+
+.personajeFinal {
+  animation: salto 700ms var(--curva-salida) 150ms backwards;
+}
+
+.tituloFinal {
+  font-size: var(--texto-2xl);
+  outline: none;
+}
+
+.puntaje,
+.textoFinal {
+  max-width: 32rem;
+  color: var(--color-texto-suave);
+}
+
+.puntaje strong {
+  color: var(--color-primario);
+  font-size: var(--texto-lg);
+}
+
+.privado {
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+}
+
+.botonesFinal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--espacio-3);
+  margin-top: var(--espacio-2);
+}
+
+/* Celebración: piezas que caen una vez. */
+.celebracion {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.celebracion span {
+  position: absolute;
+  top: -12px;
+  left: calc(4% + var(--i) * 6.8%);
+  width: 8px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--morado-500);
+  opacity: 0;
+  animation: caer 1400ms var(--curva-salida) calc(var(--i) * 45ms) forwards;
+}
+
+.celebracion span:nth-child(3n) {
+  background: var(--ventana-ambar);
+}
+
+.celebracion span:nth-child(3n + 1) {
+  background: var(--ventana-menta);
+}
+
+@keyframes asentar {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes entrarPaso {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+}
+
+@keyframes acierto {
+  40% {
+    transform: scale(1.015);
+  }
+}
+
+@keyframes sacudir {
+  25% {
+    transform: translateX(-4px);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+}
+
+@keyframes salto {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.9);
+  }
+}
+
+@keyframes caer {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(260px) rotate(320deg);
+  }
+}
+
+@keyframes flotar {
+  to {
+    transform: translateY(-8px);
+  }
+}
+
+@media (max-width: 39.99rem) {
+  .portada {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .escena {
+    height: 6.5rem;
+  }
+
+  .personajeA {
+    left: 8%;
+    bottom: 2.5rem;
+  }
+
+  .personajeB {
+    left: 30%;
+  }
+
+  .medidor {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .etiquetaMedidor {
+    grid-column: 1 / -1;
+  }
+
+  .botonesFinal > * {
+    flex: 1 1 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portada,
+  .lista li,
+  .tarjetaPaso,
+  .retro,
+  .final,
+  .personajeFinal,
+  .personajeA,
+  .opcion[data-estado],
+  .celebracion span {
+    animation: none;
+  }
+
+  .celebracion {
+    display: none;
+  }
+
+  .tarjeta:hover,
+  .tarjeta:hover .iconoTarjeta,
+  .opcion:hover:not(:disabled):not([data-estado]) {
+    transform: none;
+  }
+}

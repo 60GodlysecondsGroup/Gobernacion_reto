@@ -6,8 +6,28 @@ import estilos from './Salas.module.css';
  * Escenario 2D de una sala: cuadrícula con suelo, pared y muebles dibujados por código
  * (pixel art original, RF28). Solo dibuja lo que anuncia el servidor; no decide posiciones.
  */
-const CELDA = 16;
+export const CELDA = 16;
 const PARED = 14;
+
+/**
+ * Dónde queda el suelo dentro del lienzo, en porcentajes: permite poner encima capas HTML
+ * (objetos interactivos y personajes) alineadas con las casillas, sin tocar el dibujo.
+ */
+export function geometriaEscenario(ancho: number, alto: number, pared = PARED) {
+  const anchoVista = ancho * CELDA + 12;
+  const altoVista = alto * CELDA + pared + 10;
+  return {
+    /** Ancho entre alto del lienzo completo: el escenario se dimensiona sin deformarse. */
+    proporcion: anchoVista / altoVista,
+    pared: { izquierda: (6 / anchoVista) * 100, alto: ((pared + 4) / altoVista) * 100 },
+    suelo: {
+      izquierda: (6 / anchoVista) * 100,
+      arriba: ((pared + 4) / altoVista) * 100,
+      ancho: ((ancho * CELDA) / anchoVista) * 100,
+      alto: ((alto * CELDA) / altoVista) * 100,
+    },
+  };
+}
 
 type Paleta = { suelo: [string, string]; pared: string; zocalo: string };
 
@@ -119,6 +139,8 @@ export function Escenario2D({
   descripcion,
   destino,
   onElegirCelda,
+  pared = PARED,
+  ventana = true,
 }: {
   tema: string;
   ancho: number;
@@ -132,7 +154,12 @@ export function Escenario2D({
   destino?: { x: number; y: number } | null;
   /** F40: clic en una casilla. El servidor calcula el camino y valida cada paso. */
   onElegirCelda?: (celda: { x: number; y: number }) => void;
+  /** Alto de la pared (en la sala en vivo es más alta: ahí cuelgan los objetos interactivos). */
+  pared?: number;
+  /** Ventana decorativa de la pared. */
+  ventana?: boolean;
 }) {
+  const PARED = pared;
   const paleta = PALETAS[tema] ?? PALETA_BASE;
   const anchoPx = ancho * CELDA;
   const altoPx = alto * CELDA;
@@ -171,9 +198,20 @@ export function Escenario2D({
       <rect x={anchoPx} y="0" width="6" height={altoPx + 6} fill={paleta.zocalo} />
       <rect x="0" y={altoPx} width={anchoPx} height="6" fill={paleta.zocalo} />
       {/* Ventana decorativa */}
-      <rect x={anchoPx / 2 - 18} y={-PARED} width="36" height="9" fill="#f4f1e8" />
-      <rect x={anchoPx / 2 - 16} y={-PARED + 1} width="15" height="7" fill="#bfe0ef" />
-      <rect x={anchoPx / 2 + 1} y={-PARED + 1} width="15" height="7" fill="#bfe0ef" />
+      {ventana && (
+        <>
+          <rect x={anchoPx / 2 - 18} y={-PARED} width="36" height="9" fill="#f4f1e8" />
+          <rect x={anchoPx / 2 - 16} y={-PARED + 1} width="15" height="7" fill="#bfe0ef" />
+          <rect x={anchoPx / 2 + 1} y={-PARED + 1} width="15" height="7" fill="#bfe0ef" />
+        </>
+      )}
+      {/* Friso de la pared: da profundidad cuando la pared es alta */}
+      {PARED > 20 && (
+        <>
+          <rect x="-6" y={-PARED - 4} width={anchoPx + 12} height="3" fill={paleta.zocalo} opacity="0.55" />
+          <rect x="-6" y="-9" width={anchoPx + 12} height="6" fill="rgb(255 255 255 / 0.18)" />
+        </>
+      )}
 
       {/* Suelo a cuadros */}
       {Array.from({ length: alto }, (_, y) =>

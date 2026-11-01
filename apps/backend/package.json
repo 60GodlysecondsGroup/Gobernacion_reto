@@ -14,10 +14,12 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --exclude \"test/integracion/**\"",
-    "test:db": "vitest run test/integracion --no-file-parallelism",
+    "test:db": "tsx scripts/pruebas-db.ts",
     "db:local": "tsx scripts/db-local.ts",
     "dev:esperando-db": "tsx scripts/esperar-db-local.ts",
-    "db:reset:local": "tsx scripts/con-db-local.ts reiniciar"
+    "db:reset:local": "tsx scripts/con-db-local.ts reiniciar",
+    "admin:contrasena": "tsx scripts/contrasena-admin.ts",
+    "usuarios:limpiar-prueba": "tsx scripts/limpiar-usuarios-prueba.ts"
   },
   "dependencies": {
     "cors": "^2.8.6",

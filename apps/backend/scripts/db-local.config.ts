@@ -11,6 +11,9 @@ export const NOMBRE_DB_LOCAL = 'comunidad';
 const BASE_URL_LOCAL = `postgresql://postgres:postgres@localhost:${PUERTO_DB_LOCAL}`;
 export const URL_ADMIN_DB_LOCAL = `${BASE_URL_LOCAL}/postgres`;
 export const URL_DB_LOCAL = `${BASE_URL_LOCAL}/${NOMBRE_DB_LOCAL}`;
+/** Base desechable de `npm run test:db`, en el mismo clúster: se reconstruye en cada ejecución. */
+export const NOMBRE_DB_PRUEBAS = 'comunidad_pruebas';
+export const URL_DB_PRUEBAS = `${BASE_URL_LOCAL}/${NOMBRE_DB_PRUEBAS}`;
 export const DIRECTORIO_DB_LOCAL = path.resolve(
   fileURLToPath(new URL('../../../', import.meta.url)),
   '.postgres-local',

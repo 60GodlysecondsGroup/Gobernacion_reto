@@ -1,0 +1,708 @@
+.figura {
+  display: grid;
+  gap: var(--espacio-4);
+  margin: 0;
+}
+
+.lienzo {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radio-lg);
+}
+
+/* ── Escena ──────────────────────────────────────────── */
+.escena {
+  /* Ritmo del cambio de estación: dura algo más de un segundo y avanza de casa en casa. */
+  --duracion-temporada: 1100ms;
+  --curva-temporada: cubic-bezier(0.45, 0, 0.25, 1);
+  --paso-retraso: 240ms;
+  /* Cielo cuando cada casa conserva su propia estación */
+  --sol: #ffe9a3;
+  --sol-y: 0px;
+  --sol-escala: 1;
+  --nube: #ffffff;
+
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radio-lg);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/*
+ * Paletas de estación. Cada elemento con `data-t` (la escena, cada zona, las paradas de los
+ * degradados y las partículas) toma de aquí sus colores y qué capas de temporada se ven.
+ */
+.escena[data-t='invierno'],
+.escena [data-t='invierno'] {
+  --cielo-alto: #9db4d0;
+  --cielo-bajo: #e4edf6;
+  --colina: #c3d2e0;
+  --bosque: #8fa5b8;
+  --cesped: #edf3f9;
+  --cesped-sombra: #cfdbe8;
+  --camino: #cdd6e0;
+  --tierra: #dde6ef;
+  --cultivo: #f7fafd;
+  --cultivo-detalle: #b9c7d6;
+  --copa: #e9f1f8;
+  --copa-luz: #ffffff;
+  --copa-sombra: #c9d6e3;
+  --copa-detalle: #ffffff;
+  --copa-op: 0;
+  --arbusto: #e3ecf5;
+  --arbusto-luz: #ffffff;
+  --flor-1: #f1f6fb;
+  --flor-2: #d5e0eb;
+  --nieve-op: 1;
+  --flores-op: 0;
+  --verano-op: 0;
+  --hojarasca-op: 0;
+  --luz: #5d8fd0;
+  --luz-op: 0.16;
+  --particula: #ffffff;
+  --sol: #f2f6fb;
+  --sol-y: 8px;
+  --sol-escala: 0.85;
+  --nube: #dfe7f0;
+}
+
+.escena[data-t='primavera'],
+.escena [data-t='primavera'] {
+  --cielo-alto: #79c3ee;
+  --cielo-bajo: #e3f5fc;
+  --colina: #9fd884;
+  --bosque: #5eae6b;
+  --cesped: #93d672;
+  --cesped-sombra: #77bf5a;
+  --camino: #ddbb8c;
+  --tierra: #9a6b45;
+  --cultivo: #7fd05f;
+  --cultivo-detalle: #f59ac0;
+  --copa: #f5b6cf;
+  --copa-luz: #fcdbe7;
+  --copa-sombra: #e08cb0;
+  --copa-detalle: #8fd36e;
+  --copa-op: 1;
+  --arbusto: #6fbf5a;
+  --arbusto-luz: #95d97a;
+  --flor-1: #f58fb8;
+  --flor-2: #fff1a8;
+  --nieve-op: 0;
+  --flores-op: 1;
+  --verano-op: 0;
+  --hojarasca-op: 0;
+  --luz: #ffc2da;
+  --luz-op: 0.1;
+  --particula: #f7a8c8;
+  --sol: #fff4c0;
+  --sol-y: 2px;
+  --sol-escala: 0.95;
+  --nube: #ffffff;
+}
+
+.escena[data-t='verano'],
+.escena [data-t='verano'] {
+  --cielo-alto: #2f9be3;
+  --cielo-bajo: #a9e3ff;
+  --colina: #52b057;
+  --bosque: #2e7d3e;
+  --cesped: #5dbd4e;
+  --cesped-sombra: #46a33c;
+  --camino: #e2b571;
+  --tierra: #8a5a35;
+  --cultivo: #3f9e45;
+  --cultivo-detalle: #e8483c;
+  --copa: #3e9c45;
+  --copa-luz: #66c158;
+  --copa-sombra: #2b7834;
+  --copa-detalle: #2b7834;
+  --copa-op: 1;
+  --arbusto: #3e9c45;
+  --arbusto-luz: #66c158;
+  --flor-1: #ff5e5b;
+  --flor-2: #ffd23f;
+  --nieve-op: 0;
+  --flores-op: 0;
+  --verano-op: 1;
+  --hojarasca-op: 0;
+  --luz: #ffcf4d;
+  --luz-op: 0.14;
+  --particula: #fff27a;
+  --sol: #ffe04d;
+  --sol-y: -6px;
+  --sol-escala: 1.15;
+  --nube: #ffffff;
+}
+
+.escena[data-t='otono'],
+.escena [data-t='otono'] {
+  --cielo-alto: #e39b62;
+  --cielo-bajo: #fbe2b8;
+  --colina: #c98540;
+  --bosque: #a1532b;
+  --cesped: #c7a24e;
+  --cesped-sombra: #a8873c;
+  --camino: #cf9a5e;
+  --tierra: #7a4c2c;
+  --cultivo: #ee8a2a;
+  --cultivo-detalle: #4d7a2e;
+  --copa: #e0782c;
+  --copa-luz: #f4a841;
+  --copa-sombra: #b5461f;
+  --copa-detalle: #f7c948;
+  --copa-op: 1;
+  --arbusto: #b9612a;
+  --arbusto-luz: #e08a3a;
+  --flor-1: #e2582f;
+  --flor-2: #f2a93b;
+  --nieve-op: 0;
+  --flores-op: 0;
+  --verano-op: 0;
+  --hojarasca-op: 1;
+  --luz: #ff9a3d;
+  --luz-op: 0.14;
+  --particula: #e0782c;
+  --sol: #ffb54d;
+  --sol-y: 10px;
+  --sol-escala: 1;
+  --nube: #fde3c6;
+}
+
+/*
+ * Transición de estación: colores y capas se funden y cada zona espera según su distancia a la
+ * casa elegida, así la nueva estación se extiende desde esa casa hacia las demás.
+ */
+.zona :is(rect, polygon, ellipse, circle, g),
+.parada {
+  transition-property: fill, opacity, stop-color, stop-opacity;
+  transition-duration: var(--duracion-temporada);
+  transition-timing-function: var(--curva-temporada);
+  transition-delay: calc(var(--distancia, 0) * var(--paso-retraso));
+}
+
+.sol {
+  transform: translateY(var(--sol-y)) scale(var(--sol-escala));
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 1400ms var(--curva-temporada);
+}
+
+.sol circle,
+.nube {
+  transition: fill 1400ms var(--curva-temporada);
+}
+
+.luz {
+  pointer-events: none;
+}
+
+.zonaSensible {
+  cursor: pointer;
+}
+
+/* ── Casa elegida ────────────────────────────────────── */
+.letra {
+  fill: var(--tinta);
+  font-family: var(--fuente-titulos);
+  font-size: 7px;
+  font-weight: 700;
+}
+
+.medallon {
+  fill: #fff7e6;
+}
+
+.vidrio {
+  fill: #ffd98a;
+}
+
+.brillo {
+  fill: var(--color-casa);
+  opacity: 0;
+}
+
+.cuerpoCasa {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.zona .puerta {
+  transform-box: fill-box;
+  transform-origin: left center;
+  transition-property: fill, opacity, transform;
+}
+
+.zona[data-activa] .medallon {
+  fill: var(--color-casa);
+}
+
+.zona[data-activa] .vidrio {
+  fill: #fff4c4;
+}
+
+.zona[data-activa] .brillo {
+  opacity: 0.6;
+  animation: latir 2.6s ease-in-out 600ms infinite alternate;
+}
+
+.zona[data-activa] .cuerpoCasa {
+  animation: saltar 620ms var(--curva-resorte);
+}
+
+.zona[data-activa] .puerta {
+  transform: scaleX(0.2);
+}
+
+.humo circle {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: humo 3.3s ease-out infinite;
+}
+
+/* Etiqueta de la casa elegida, sobre su tejado y con el color de su comunidad. */
+.etiqueta {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 8px;
+  border-radius: var(--radio-total);
+  background: rgb(255 255 255 / 0.94);
+  color: var(--tinta);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  white-space: nowrap;
+  box-shadow: 0 8px 20px -10px rgb(0 0 0 / 0.6);
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+  animation: aparecerEtiqueta 420ms var(--curva-salida);
+}
+
+.etiqueta[data-ancla='inicio'] {
+  transform: translate(-22%, -100%);
+}
+
+.etiqueta[data-ancla='fin'] {
+  transform: translate(-78%, -100%);
+}
+
+.etiqueta::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--color-casa);
+}
+
+/* Cocuyo vuela hasta la casa elegida; sin casa, espera bajo el sol en el centro del valle. */
+.cocuyo {
+  position: absolute;
+  z-index: 3;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition:
+    left 900ms var(--curva-salida),
+    top 900ms var(--curva-salida);
+}
+
+.cocuyoVuelo {
+  display: block;
+  filter: drop-shadow(0 0 6px rgb(242 169 59 / 0.7));
+  animation: aletear 1.6s ease-in-out infinite alternate;
+}
+
+.cocuyoVuelo[data-llega] {
+  animation:
+    llegar 700ms var(--curva-salida),
+    aletear 1.6s ease-in-out 700ms infinite alternate;
+}
+
+/* ── Ambiente: ramas, nubes y partículas de cada estación ── */
+.rama {
+  transform-box: view-box;
+  /* A pasos, como el pixel art: el dibujo se repinta solo unas veces por segundo. */
+  animation: viento 5.5s steps(5) infinite alternate;
+}
+
+.nube {
+  animation: deriva 96s linear infinite;
+}
+
+.particulas {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  container-type: size;
+  pointer-events: none;
+}
+
+.particulas i {
+  position: absolute;
+  top: 30%;
+  width: 4px;
+  height: 3px;
+  border-radius: 1px;
+  background: var(--particula);
+  opacity: 0;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  transition: background-color var(--duracion-temporada) var(--curva-temporada)
+    calc(var(--distancia, 0) * var(--paso-retraso));
+}
+
+.particulas i[data-t='invierno'] {
+  top: -2%;
+  width: 3px;
+  border-radius: 50%;
+  animation-name: nevar;
+}
+
+.particulas i[data-t='primavera'] {
+  border-radius: 3px 0;
+  animation-name: volar;
+}
+
+.particulas i[data-t='otono'] {
+  animation-name: volar;
+}
+
+.particulas i[data-t='verano'] {
+  top: 64%;
+  width: 3px;
+  border-radius: 50%;
+  box-shadow: 0 0 5px 1px var(--particula);
+  animation-name: luciernaga;
+  animation-timing-function: ease-in-out;
+}
+
+.escena[data-pausa] :is(.rama, .nube, .brillo, .humo circle, .particulas i, .cocuyoVuelo) {
+  animation-play-state: paused;
+}
+
+/* ── Leyenda ─────────────────────────────────────────── */
+.leyenda {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.cabeceraLeyenda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-2);
+}
+
+.ayudaLeyenda {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+/* El texto de ayuda habla del cursor o del toque según el dispositivo. */
+.ayudaTactil {
+  display: none;
+}
+
+@media (hover: none) {
+  .ayudaPuntero {
+    display: none;
+  }
+
+  .ayudaTactil {
+    display: inline;
+  }
+}
+
+.reiniciar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-total);
+  background: var(--color-superficie);
+  color: var(--color-texto-suave);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  cursor: pointer;
+  transition:
+    opacity var(--transicion),
+    visibility var(--transicion),
+    color var(--transicion);
+}
+
+.reiniciar:not([data-visible]) {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.botones {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espacio-2);
+}
+
+.botonCasa {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  min-height: 3.5rem;
+  padding: 8px 4px;
+  border: 1.5px solid var(--color-borde-fuerte);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  box-shadow: var(--sombra-1);
+  cursor: pointer;
+  transition:
+    background var(--transicion),
+    color var(--transicion),
+    border-color var(--transicion),
+    box-shadow var(--transicion),
+    transform 220ms var(--curva-resorte);
+}
+
+.letraBoton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--fuente-titulos);
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-titulo);
+  line-height: 1;
+}
+
+.letraBoton::before {
+  content: '';
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  background: var(--color-casa);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.12);
+}
+
+.temporadaBoton {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-xs);
+  white-space: nowrap;
+}
+
+.temporadaBoton svg {
+  flex-shrink: 0;
+}
+
+/* En pantallas estrechas el nombre de la estación cabe sin su icono. */
+@media (max-width: 29.99rem) {
+  .botonCasa {
+    padding-inline: 2px;
+  }
+
+  .temporadaBoton {
+    font-size: 0.6875rem;
+  }
+
+  .temporadaBoton svg {
+    display: none;
+  }
+}
+
+@media (hover: hover) {
+  .botonCasa:hover {
+    border-color: var(--color-primario);
+    background: var(--indigo-50);
+  }
+
+  .reiniciar:hover {
+    color: var(--color-texto);
+  }
+}
+
+.botonCasa:active {
+  transform: scale(0.95);
+}
+
+.botonCasa[aria-pressed='true'] {
+  border-color: var(--morado-700);
+  background: var(--degradado-accion);
+  color: #fff;
+  box-shadow: var(--sombra-primario);
+}
+
+.botonCasa[aria-pressed='true'] .temporadaBoton {
+  color: rgb(255 255 255 / 0.9);
+}
+
+.explicacion {
+  min-height: 4.8em;
+  color: var(--color-texto);
+  font-size: var(--texto-sm);
+}
+
+/* ── Animaciones ─────────────────────────────────────── */
+@keyframes latir {
+  to {
+    opacity: 0.3;
+  }
+}
+
+@keyframes saltar {
+  35% {
+    transform: translateY(-3px);
+  }
+  65% {
+    transform: translateY(0.5px);
+  }
+}
+
+@keyframes humo {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.6);
+  }
+  20% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(4px, -12px) scale(1.5);
+  }
+}
+
+@keyframes aparecerEtiqueta {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}
+
+@keyframes aletear {
+  to {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes llegar {
+  40% {
+    transform: translateY(-6px) rotate(-8deg);
+  }
+}
+
+@keyframes viento {
+  from {
+    transform: rotate(-1.2deg);
+  }
+  to {
+    transform: rotate(1.4deg);
+  }
+}
+
+@keyframes deriva {
+  from {
+    transform: translateX(-30px);
+  }
+  to {
+    transform: translateX(290px);
+  }
+}
+
+@keyframes nevar {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  10% {
+    opacity: 0.95;
+  }
+  50% {
+    transform: translate(5px, 50cqh);
+  }
+  90% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-3px, 100cqh);
+  }
+}
+
+/* Pétalos y hojas caen girando, solo durante una parte de su ciclo: «de vez en cuando». */
+@keyframes volar {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  6% {
+    opacity: 1;
+  }
+  30% {
+    transform: translate(12px, 22cqh) rotate(170deg);
+  }
+  52% {
+    opacity: 0.9;
+    transform: translate(-4px, 46cqh) rotate(330deg);
+  }
+  60%,
+  100% {
+    opacity: 0;
+    transform: translate(6px, 56cqh) rotate(400deg);
+  }
+}
+
+@keyframes luciernaga {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  25% {
+    opacity: 1;
+    transform: translate(4px, -5px);
+  }
+  50% {
+    opacity: 0.35;
+    transform: translate(-3px, -9px);
+  }
+  75% {
+    opacity: 1;
+    transform: translate(5px, -3px);
+  }
+}
+
+/* Con movimiento reducido la estación cambia con un fundido breve y sin nada que se desplace. */
+@media (prefers-reduced-motion: reduce) {
+  .escena {
+    --duracion-temporada: 400ms;
+    --paso-retraso: 0ms;
+  }
+
+  .rama,
+  .nube,
+  .cocuyoVuelo,
+  .cocuyoVuelo[data-llega],
+  .etiqueta,
+  .zona[data-activa] .brillo,
+  .zona[data-activa] .cuerpoCasa {
+    animation: none;
+  }
+
+  .sol {
+    transition-duration: 400ms;
+  }
+
+  .cocuyo {
+    transition: none;
+  }
+
+  .particulas,
+  .humo {
+    display: none;
+  }
+}

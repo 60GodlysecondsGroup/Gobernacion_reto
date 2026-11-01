@@ -1,0 +1,130 @@
+/*
+ * Controles de movimiento debajo del escenario. Con ratón: instrucciones y cruceta. En pantallas
+ * táctiles el joystick reemplaza a la cruceta y va a la izquierda, al alcance del pulgar.
+ */
+.controles {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'instrucciones mando';
+  align-items: center;
+  gap: var(--espacio-3) var(--espacio-5);
+}
+
+.instrucciones {
+  grid-area: instrucciones;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.instrucciones kbd {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0 0.3em;
+  border: 1px solid var(--color-borde-fuerte);
+  border-bottom-width: 2px;
+  border-radius: var(--radio-sm);
+  background: var(--color-superficie);
+  color: var(--color-texto);
+  font-family: var(--fuente-mono);
+  font-size: 0.85em;
+  text-align: center;
+}
+
+.mando {
+  grid-area: mando;
+  display: flex;
+  justify-content: center;
+}
+
+.cruceta {
+  display: grid;
+  grid-template-columns: repeat(3, 2.75rem);
+  grid-template-rows: repeat(2, 2.75rem);
+  grid-template-areas:
+    '. arriba .'
+    'izquierda abajo derecha';
+  gap: var(--espacio-1);
+}
+
+.cruceta > button {
+  min-height: 0;
+  padding: 0;
+}
+
+.arriba {
+  grid-area: arriba;
+}
+
+.izquierda {
+  grid-area: izquierda;
+}
+
+.abajo {
+  grid-area: abajo;
+}
+
+.derecha {
+  grid-area: derecha;
+}
+
+.joystick,
+.textoTactil {
+  display: none;
+}
+
+@media (max-width: 30rem) {
+  .controles {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'instrucciones'
+      'mando';
+    justify-items: center;
+  }
+}
+
+/* Pantalla táctil: joystick en lugar de la cruceta (no se cambia por el ancho, sino por el puntero). */
+@media (hover: none) and (pointer: coarse) {
+  .controles {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: 'mando instrucciones';
+    justify-items: stretch;
+  }
+
+  .joystick {
+    --tamano-joystick: clamp(6.5rem, 30vw, 8.5rem);
+    display: grid;
+  }
+
+  .textoTactil {
+    display: inline;
+  }
+
+  .cruceta,
+  .textoPuntero {
+    display: none;
+  }
+}
+
+/*
+ * Móvil en horizontal (misma condición que la sala inmersiva de `Salas.module.css`): solo el
+ * joystick, abajo. Las instrucciones siguen disponibles para lectores de pantalla.
+ */
+@media (orientation: landscape) and (max-height: 32rem) and (hover: none) and (pointer: coarse) {
+  .controles {
+    grid-template-columns: auto;
+    grid-template-areas: 'mando';
+  }
+
+  .instrucciones {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .joystick {
+    --tamano-joystick: clamp(5.5rem, 34dvh, 7.5rem);
+  }
+}

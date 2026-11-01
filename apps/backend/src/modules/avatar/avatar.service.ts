@@ -36,7 +36,44 @@ const avatarInvalido = (detalles: { campo: string; mensaje: string }[]) =>
   );
 
 export function crearServicioAvatar(repositorio: RepositorioAvatar) {
+  /**
+   * Configuración válida o 400 AVATAR_INVALIDO: solo identificadores, y cada capa un elemento
+   * activo del catálogo del tipo que le corresponde. La usan «Mi avatar» y el registro.
+   */
+  async function validarConfiguracion(entrada: unknown): Promise<ConfiguracionAvatar> {
+    const resultado = esquemaAvatar.safeParse(entrada);
+    if (!resultado.success) {
+      throw avatarInvalido(
+        resultado.error.issues.map((issue) => ({
+          campo: issue.path.join('.') || '(raíz)',
+          mensaje: issue.message,
+        })),
+      );
+    }
+    const configuracion: ConfiguracionAvatar = resultado.data;
+
+    const catalogo = await repositorio.catalogo();
+    const fueraDelCatalogo = CAPAS.filter((capa) => {
+      const id = configuracion[capa];
+      return (
+        id !== null &&
+        !catalogo.some((elemento) => elemento.id === id && elemento.tipo === TIPO_DE_CAPA[capa])
+      );
+    });
+    if (fueraDelCatalogo.length > 0) {
+      throw avatarInvalido(
+        fueraDelCatalogo.map((campo) => ({ campo, mensaje: 'Elige una opción del catálogo.' })),
+      );
+    }
+    return configuracion;
+  }
+
   return {
+    validarConfiguracion,
+
+    /** Catálogo activo, sin sesión: lo necesita el formulario de registro. */
+    catalogo: () => repositorio.catalogo(),
+
     /** «Mi avatar»: la configuración guardada (o null) y el catálogo activo. */
     async obtenerPropio(sesion: Sesion) {
       const [configuracion, catalogo] = await Promise.all([
@@ -51,32 +88,7 @@ export function crearServicioAvatar(repositorio: RepositorioAvatar) {
      * sale de la sesión y el esquema no admite campos extra.
      */
     async guardarPropio(sesion: Sesion, entrada: unknown) {
-      const resultado = esquemaAvatar.safeParse(entrada);
-      if (!resultado.success) {
-        throw avatarInvalido(
-          resultado.error.issues.map((issue) => ({
-            campo: issue.path.join('.') || '(raíz)',
-            mensaje: issue.message,
-          })),
-        );
-      }
-      const configuracion: ConfiguracionAvatar = resultado.data;
-
-      // Cada capa debe ser un elemento activo del catálogo y del tipo que le corresponde.
-      const catalogo = await repositorio.catalogo();
-      const fueraDelCatalogo = CAPAS.filter((capa) => {
-        const id = configuracion[capa];
-        return (
-          id !== null &&
-          !catalogo.some((elemento) => elemento.id === id && elemento.tipo === TIPO_DE_CAPA[capa])
-        );
-      });
-      if (fueraDelCatalogo.length > 0) {
-        throw avatarInvalido(
-          fueraDelCatalogo.map((campo) => ({ campo, mensaje: 'Elige una opción del catálogo.' })),
-        );
-      }
-
+      const configuracion = await validarConfiguracion(entrada);
       await repositorio.guardar(sesion.idUsuario, configuracion);
       return { configuracion, apariencia: await repositorio.apariencia(sesion.idUsuario) };
     },

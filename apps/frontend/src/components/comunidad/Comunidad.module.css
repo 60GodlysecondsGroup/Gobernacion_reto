@@ -175,7 +175,7 @@
 }
 
 .hilo:hover {
-  border-color: rgb(36 87 230 / 0.28);
+  border-color: rgb(91 53 213 / 0.28);
   box-shadow: var(--cristal-brillo), var(--sombra-3);
   transform: translateY(-2px);
 }

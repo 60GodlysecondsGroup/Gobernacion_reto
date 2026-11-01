@@ -10,6 +10,17 @@ html {
   color-scheme: light;
 }
 
+/*
+ * Escala de la interfaz en pantallas anchas: todo se mide en rem, así que bajar la raíz al 90 %
+ * da el aire de un zoom reducido sin pedirle a nadie que cambie su navegador. Es un porcentaje:
+ * si la persona agrandó la letra en su navegador, se respeta.
+ */
+@media (min-width: 80rem) {
+  html {
+    font-size: 90%;
+  }
+}
+
 body {
   position: relative;
   margin: 0;
@@ -74,7 +85,7 @@ a:hover {
 }
 
 ::selection {
-  background: rgb(61 111 245 / 0.25);
+  background: rgb(115 80 234 / 0.25);
 }
 
 code {
@@ -285,7 +296,7 @@ body::after {
   background: radial-gradient(
     16rem circle at var(--luz-x, 50%) var(--luz-y, 0%),
     rgb(255 255 255 / 0.75),
-    rgb(107 147 255 / 0.13) 40%,
+    rgb(149 121 243 / 0.13) 40%,
     transparent 70%
   );
   opacity: 0;
@@ -302,5 +313,27 @@ body::after {
 @media (prefers-reduced-motion: reduce) {
   .con-luz::before {
     display: none;
+  }
+}
+
+/*
+ * Revelado al hacer scroll sin JavaScript: el navegador anima la sección mientras entra en la
+ * vista. Sin soporte (o con «reducir movimiento») el contenido simplemente está visible: nunca
+ * queda oculto esperando a que cargue un script.
+ */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .revelar {
+      animation: revelar linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
+  }
+}
+
+@keyframes revelar {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
   }
 }

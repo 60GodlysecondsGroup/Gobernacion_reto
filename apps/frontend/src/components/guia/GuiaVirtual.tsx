@@ -3,11 +3,18 @@
 import { ArrowLeft, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ACOMPANANTES, mensajesDeRuta } from '@/config/acompanantes';
 import { PRESENTACION_GUIA, TEMAS_GUIA } from '@/config/guia';
 import { Cocuyo } from './Cocuyo';
 import { ContenidoTema } from './ContenidoTema';
 import estilos from './Guia.module.css';
+import {
+  consejosSilenciados,
+  MensajeContextual,
+  PersonajeAcompanante,
+  silenciarConsejos,
+} from './MensajeContextual';
 
 /** Rutas donde la guía flotante estorbaría (el escenario de las salas y el panel de trabajo). */
 const OCULTA_EN = [/^\/salas\/[^/]+/, /^\/panel/, /^\/gestion/, /^\/guia$/];
@@ -22,6 +29,11 @@ export function GuiaVirtual() {
   const [tema, setTema] = useState<string | null>(null);
   const titulo = useRef<HTMLHeadingElement>(null);
   const boton = useRef<HTMLButtonElement>(null);
+  // Consejo pedido desde la guía; solo vale en la página donde se pidió.
+  const [pedido, setPedido] = useState<{ ruta: string; indice: number } | null>(null);
+  const [silencio, setSilencio] = useState(false);
+  const cerrarPedido = useCallback(() => setPedido(null), []);
+  const consejos = mensajesDeRuta(ruta);
 
   useEffect(() => {
     if (abierta) titulo.current?.focus();
@@ -40,11 +52,18 @@ export function GuiaVirtual() {
   }, [abierta]);
 
   if (OCULTA_EN.some((patron) => patron.test(ruta))) return null;
+  const pedidoAqui = pedido?.ruta === ruta ? pedido.indice : null;
 
   const elegido = TEMAS_GUIA.find((t) => t.id === tema);
 
   return (
     <div className={estilos.flotante}>
+      <MensajeContextual
+        key={ruta}
+        bloqueado={abierta}
+        pedido={pedidoAqui}
+        alCerrarPedido={cerrarPedido}
+      />
       <AnimatePresence>
         {abierta && (
           <motion.section
@@ -91,6 +110,43 @@ export function GuiaVirtual() {
               ) : (
                 <>
                   <p className={estilos.burbuja}>{PRESENTACION_GUIA}</p>
+                  {consejos.length > 0 && (
+                    <section className={estilos.consejos} aria-labelledby="guia-consejos">
+                      <h3 id="guia-consejos" className={estilos.tituloConsejos}>
+                        Consejos de esta página
+                      </h3>
+                      <ul className={estilos.listaConsejos}>
+                        {consejos.map((consejo, i) => (
+                          <li key={consejo.texto}>
+                            <button
+                              type="button"
+                              className={estilos.consejo}
+                              onClick={() => {
+                                setAbierta(false);
+                                setPedido({ ruta, indice: i });
+                              }}
+                            >
+                              <PersonajeAcompanante id={consejo.de} tamano={24} />
+                              <span>
+                                <strong>{ACOMPANANTES[consejo.de].nombre}:</strong> {consejo.texto}
+                              </span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                      <label className={estilos.interruptor}>
+                        <input
+                          type="checkbox"
+                          checked={!silencio}
+                          onChange={(evento) => {
+                            silenciarConsejos(!evento.target.checked);
+                            setSilencio(!evento.target.checked);
+                          }}
+                        />
+                        Mostrar consejos automáticos al navegar
+                      </label>
+                    </section>
+                  )}
                   <ul className={estilos.preguntas} aria-label="Preguntas frecuentes">
                     {TEMAS_GUIA.map((t) => (
                       <li key={t.id}>
@@ -119,6 +175,7 @@ export function GuiaVirtual() {
         aria-controls="guia-virtual"
         onClick={() => {
           setTema(null);
+          setSilencio(consejosSilenciados());
           setAbierta((a) => !a);
         }}
       >

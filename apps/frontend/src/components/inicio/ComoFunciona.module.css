@@ -1,0 +1,565 @@
+/*
+ * «Cómo funciona»: composición asimétrica. A la izquierda la lista de pasos con su progreso; a la
+ * derecha, el paso activo sobre morado profundo con su ilustración.
+ */
+.seccion {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  align-items: stretch;
+  gap: clamp(1.25rem, 0.8rem + 2.5vw, 3rem);
+  scroll-margin-top: calc(var(--alto-encabezado) + var(--espacio-4));
+}
+
+.seccion {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Profundidad detrás del vidrio: dos luces moradas muy suaves. */
+.seccion::before {
+  content: '';
+  position: absolute;
+  inset: -8% 0;
+  z-index: -1;
+  background:
+    radial-gradient(40% 50% at 12% 60%, rgb(149 121 243 / 0.28), transparent 70%),
+    radial-gradient(30% 40% at 40% 10%, rgb(143 211 255 / 0.22), transparent 70%);
+  pointer-events: none;
+}
+
+.guia {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-4);
+}
+
+/* Vidrio solo en la lista de pasos: es la superficie que flota sobre la luz de fondo. */
+.pasosVidrio {
+  padding: var(--espacio-2);
+  border: 1px solid rgb(255 255 255 / 0.45);
+  border-radius: var(--radio-xl);
+  background: rgb(255 255 255 / 0.72);
+  box-shadow: 0 10px 30px -18px rgb(38 20 99 / 0.35);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.antetitulo {
+  color: var(--color-primario);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.titulo {
+  font-size: clamp(1.75rem, 1.35rem + 1.6vw, 2.5rem);
+  text-wrap: balance;
+}
+
+/* Lista de pasos con una línea que se llena hasta el paso activo. */
+.pasos {
+  position: relative;
+  display: grid;
+  gap: var(--espacio-2);
+  margin-top: var(--espacio-2);
+  padding-left: 0;
+}
+
+.pasos::before,
+.pasos::after {
+  content: '';
+  position: absolute;
+  top: calc(var(--espacio-2) + var(--espacio-3) + 1.125rem);
+  bottom: calc(var(--espacio-2) + var(--espacio-3) + 1.125rem);
+  left: calc(var(--espacio-2) + var(--espacio-3) + 1.125rem - 1px);
+  width: 2px;
+  border-radius: 2px;
+  background: var(--morado-100);
+}
+
+.pasos::after {
+  background: var(--degradado-accion);
+  transform: scaleY(var(--avance));
+  transform-origin: top;
+  transition: transform 520ms var(--curva-salida);
+}
+
+.paso {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espacio-3);
+  width: 100%;
+  padding: var(--espacio-3);
+  border: 1px solid transparent;
+  border-radius: var(--radio-md);
+  background: transparent;
+  color: var(--color-texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--transicion),
+    border-color var(--transicion),
+    box-shadow var(--transicion-lenta);
+}
+
+.paso:hover {
+  background: rgb(255 255 255 / 0.6);
+}
+
+.fondoActivo {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: #fff;
+  box-shadow: var(--sombra-2);
+}
+
+.paso:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.numero {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 2px solid var(--morado-100);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--color-texto-suave);
+  font-weight: var(--peso-fuerte);
+  transition:
+    background var(--transicion-lenta),
+    color var(--transicion-lenta),
+    border-color var(--transicion-lenta),
+    transform 300ms var(--curva-resorte);
+}
+
+.paso[data-hecho] .numero {
+  border-color: var(--morado-300);
+  color: var(--color-primario);
+}
+
+.paso[aria-selected='true'] .numero {
+  border-color: transparent;
+  background: var(--degradado-accion);
+  color: #fff;
+  transform: scale(1.08);
+}
+
+.textosPaso {
+  display: grid;
+  min-width: 0;
+}
+
+.tituloPaso {
+  font-weight: var(--peso-fuerte);
+}
+
+.resumenPaso {
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-sm);
+}
+
+/* ── Panel del paso activo ───────────────────────────── */
+.panel {
+  position: relative;
+  min-height: 26rem;
+  overflow: hidden;
+  border-radius: var(--radio-xl);
+  background: var(--fondo-profundo);
+  color: #fff;
+  box-shadow: var(--sombra-3);
+}
+
+.contenidoPanel {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-3);
+  height: 100%;
+  padding: clamp(1.25rem, 1rem + 2vw, 2.5rem);
+}
+
+.ilustracion {
+  display: grid;
+  place-items: center;
+  height: 9.5rem;
+  margin-bottom: var(--espacio-2);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: var(--radio-lg);
+  background: rgb(255 255 255 / 0.06);
+}
+
+.etapa {
+  color: var(--morado-300);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tituloPanel {
+  font-size: clamp(1.4rem, 1.15rem + 1vw, 1.9rem);
+}
+
+.texto {
+  max-width: 36rem;
+  color: rgb(255 255 255 / 0.85);
+}
+
+.puntos {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.puntos li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-2);
+  color: rgb(255 255 255 / 0.9);
+  font-size: var(--texto-sm);
+}
+
+.puntos svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--morado-300);
+}
+
+.accionesPanel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3);
+  margin-top: var(--espacio-2);
+}
+
+.enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: 2.75rem;
+  padding: 0 var(--espacio-5);
+  border-radius: var(--radio-total);
+  background: #fff;
+  color: var(--morado-900);
+  font-weight: var(--peso-fuerte);
+  text-decoration: none;
+  transition:
+    transform 220ms var(--curva-resorte),
+    box-shadow var(--transicion);
+}
+
+.enlace:hover {
+  color: var(--morado-900);
+  box-shadow: 0 8px 20px -8px rgb(0 0 0 / 0.5);
+  transform: translateY(-1px);
+}
+
+.enlace svg {
+  transition: transform var(--transicion);
+}
+
+.enlace:hover svg {
+  transform: translateX(3px);
+}
+
+.siguiente {
+  min-height: 2.75rem;
+  padding: 0 var(--espacio-4);
+  border: 1px solid rgb(255 255 255 / 0.3);
+  border-radius: var(--radio-total);
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-weight: var(--peso-fuerte);
+  cursor: pointer;
+  transition: background var(--transicion);
+}
+
+.siguiente:hover {
+  background: rgb(255 255 255 / 0.1);
+}
+
+.enlace:focus-visible,
+.siguiente:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+/* ── Ilustraciones ───────────────────────────────────── */
+.iconosIlus {
+  display: flex;
+  gap: var(--espacio-3);
+}
+
+.iconoIlus {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 0.12);
+  color: #fff;
+  box-shadow: inset 0 -3px 0 rgb(0 0 0 / 0.15);
+  animation: aparecerFicha 480ms var(--curva-salida) calc(var(--i) * 80ms) backwards;
+}
+
+.iconoIlus[data-destacado] {
+  background: var(--degradado-accion);
+  box-shadow:
+    inset 0 -3px 0 rgb(0 0 0 / 0.18),
+    0 0 26px rgb(149 121 243 / 0.55);
+  transform: translateY(-6px);
+}
+
+.pisos {
+  display: grid;
+  gap: 4px;
+  width: 9rem;
+}
+
+.pisoIlus {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 1.75rem;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 0.12);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  animation: aparecerPiso 500ms var(--curva-salida) backwards;
+}
+
+.pisoIlus:nth-child(2) {
+  animation-delay: 60ms;
+}
+
+.pisoIlus:nth-child(3) {
+  animation-delay: 120ms;
+}
+
+.pisoIlus:nth-child(4) {
+  animation-delay: 180ms;
+}
+
+.pisoIlus span {
+  width: 1rem;
+}
+
+.pisoIlus i {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: rgb(255 200 87 / 0.35);
+}
+
+.pisoIlus[data-tuyo] {
+  background: var(--morado-500);
+  box-shadow: 0 0 24px rgb(149 121 243 / 0.6);
+}
+
+.pisoIlus[data-tuyo] i {
+  background: var(--ventana-ambar);
+}
+
+.pisoIlus em {
+  position: absolute;
+  left: calc(100% + 10px);
+  padding: 2px 8px;
+  border-radius: var(--radio-total);
+  background: #fff;
+  color: var(--morado-900);
+  font-size: 0.6875rem;
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.fichas {
+  position: relative;
+  width: 12rem;
+  height: 7rem;
+}
+
+.fichaIlus {
+  position: absolute;
+  left: calc(var(--i) * 1.6rem);
+  top: calc(var(--i) * 0.9rem);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+  width: 8.5rem;
+  padding: 10px;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--color-exito);
+  box-shadow: 0 10px 24px -12px rgb(0 0 0 / 0.5);
+  animation: aparecerFicha 520ms var(--curva-salida) calc(var(--i) * 90ms) backwards;
+}
+
+.fichaIlus i,
+.fichaIlus b {
+  display: block;
+  grid-column: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--morado-100);
+}
+
+.fichaIlus b {
+  width: 60%;
+}
+
+.fichaIlus svg {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+}
+
+.participa,
+.apoyo {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+
+.burbujaIlus,
+.canalIlus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 12px 12px 12px 4px;
+  background: #fff;
+  color: var(--tinta);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  animation: aparecerFicha 480ms var(--curva-salida) backwards;
+}
+
+.burbujaIlus[data-bloqueada] {
+  background: rgb(255 255 255 / 0.15);
+  color: rgb(255 255 255 / 0.75);
+  text-decoration: line-through;
+  animation-delay: 120ms;
+}
+
+.escudo,
+.salvavidas {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--degradado-accion);
+  box-shadow: 0 0 0 6px rgb(255 255 255 / 0.08);
+  animation: aparecerFicha 480ms var(--curva-salida) 220ms backwards;
+}
+
+.salvavidas {
+  width: 3.75rem;
+  height: 3.75rem;
+  background: var(--coral);
+  animation-delay: 0ms;
+}
+
+.canalIlus {
+  border-radius: var(--radio-total);
+  color: var(--color-exito);
+}
+
+.canalIlus:nth-of-type(3) {
+  animation-delay: 100ms;
+}
+
+@keyframes cambiarPaso {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes aparecerPiso {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+
+@keyframes aparecerFicha {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+}
+
+/* ── Pantallas pequeñas: los pasos siguen en vertical y el panel va debajo ── */
+@media (max-width: 55.99rem) {
+  .seccion {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .paso {
+    padding: var(--espacio-2) var(--espacio-3);
+  }
+
+  .numero {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .pasos::before,
+  .pasos::after {
+    top: calc(var(--espacio-2) + var(--espacio-2) + 1rem);
+    bottom: calc(var(--espacio-2) + var(--espacio-2) + 1rem);
+    left: calc(var(--espacio-2) + var(--espacio-3) + 1rem - 1px);
+  }
+
+  .panel {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 39.99rem) {
+  .resumenPaso {
+    display: none;
+  }
+
+  .iconosIlus {
+    gap: var(--espacio-2);
+  }
+
+  .iconoIlus {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iconoIlus,
+  .pisoIlus,
+  .fichaIlus,
+  .burbujaIlus,
+  .canalIlus,
+  .escudo,
+  .salvavidas {
+    animation: none;
+  }
+
+  .pasos::after,
+  .numero {
+    transition: none;
+  }
+}

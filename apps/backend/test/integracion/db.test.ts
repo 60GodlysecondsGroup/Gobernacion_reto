@@ -1,7 +1,7 @@
 /**
- * Pruebas de integración contra la base real del .env (npm run test:db).
+ * Pruebas de integración contra la base local de pruebas (npm run test:db).
  * Solo leen datos; lo que escriben se hace dentro de transacciones que se revierten.
- * Requieren haber ejecutado antes `npm run db:reset`.
+ * `npm run test:db` reconstruye esa base antes de cada ejecución.
  */
 import type pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
