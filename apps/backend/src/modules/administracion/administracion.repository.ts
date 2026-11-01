@@ -1,6 +1,6 @@
 import type { Database } from '../../db/database.js';
 import { cteAuditoria, parametrosAuditoria } from '../auditoria/auditoria.js';
-import type { Rol } from '../seguridad/permisos.js';
+import { ROLES_PERSONAL, type Rol, type RolPersonal } from '../seguridad/permisos.js';
 import { leerObstaculos, type Obstaculo, type Posicion } from '../salas/salas.escenario.js';
 
 export const ESTADOS_USUARIO = ['activo', 'suspendido', 'bloqueado'] as const;
@@ -22,6 +22,24 @@ export type UsuarioAdministrado = {
   /** Bloqueos del DLP en los últimos 30 días. */
   bloqueosDlp30d: number;
 };
+
+/**
+ * Cuenta de personal (moderación, gestión de fuentes) tal como la ve la administración. El
+ * nombre es el alias de la cuenta. Nunca incluye la contraseña ni su hash.
+ */
+export type CuentaPersonal = {
+  id: string;
+  nombre: string;
+  /** null en cuentas antiguas sin correo: no pueden entrar hasta tener uno. */
+  correo: string | null;
+  rol: RolPersonal;
+  estado: EstadoUsuario;
+  fechaRegistro: string;
+};
+
+const SELECT_PERSONAL = `
+  select u.id_usuario as id, u.alias as nombre, u.correo, u.rol, u.estado,
+         u.fecha_registro as "fechaRegistro"`;
 
 export type ComunidadAdministrada = {
   id: string;
@@ -256,7 +274,11 @@ export function crearRepositorioAdministracion(db: Database) {
       return rows[0] ?? null;
     },
 
-    /** Medida administrativa sobre una cuenta (suspender, bloquear, reactivar), con su registro. */
+    /**
+     * Medida administrativa sobre una cuenta (suspender, bloquear, reactivar), con su registro.
+     * Suspender o bloquear revoca además todas sus sesiones abiertas: al reactivarla, una cookie
+     * anterior no vuelve a servir y la persona tiene que entrar de nuevo.
+     */
     async cambiarEstadoUsuario(cambio: {
       idUsuario: string;
       anterior: EstadoUsuario;
@@ -269,6 +291,10 @@ export function crearRepositorioAdministracion(db: Database) {
            update app.usuario set estado = $2
            where id_usuario = $1 and estado = $3
            returning id_usuario
+         ), cierre as (
+           update app.sesion s set fecha_revocacion = now()
+           from cambio
+           where $2 <> 'activo' and s.id_usuario = cambio.id_usuario and s.fecha_revocacion is null
          ), ${cteAuditoria('cambio', 'id_usuario::text', 4)}
          select 1 from cambio`,
         [
@@ -284,6 +310,96 @@ export function crearRepositorioAdministracion(db: Database) {
               estadoNuevo: cambio.nuevo,
               ...(cambio.idReporte && { reporte: cambio.idReporte }),
             },
+          }),
+        ],
+      );
+      return rows.length > 0;
+    },
+
+    // ── Cuentas de personal ────────────────────────────────────────────────────
+
+    async listarPersonal(): Promise<CuentaPersonal[]> {
+      const { rows } = await db.query<CuentaPersonal>(
+        `${SELECT_PERSONAL}
+         from app.usuario u
+         where u.rol = any($1::text[])
+         order by u.estado = 'activo' desc, lower(u.alias)`,
+        [ROLES_PERSONAL],
+      );
+      return rows;
+    },
+
+    async cuentaPersonal(idUsuario: string): Promise<CuentaPersonal | null> {
+      const { rows } = await db.query<CuentaPersonal>(
+        `${SELECT_PERSONAL} from app.usuario u where u.id_usuario = $1 and u.rol = any($2::text[])`,
+        [idUsuario, ROLES_PERSONAL],
+      );
+      return rows[0] ?? null;
+    },
+
+    /**
+     * Crea la cuenta y su credencial (solo el hash) con su registro, en una sola sentencia.
+     * Nombre o correo repetidos fallan por `usuario_alias_unico` o `usuario_correo_unico`.
+     * El registro de auditoría guarda solo el rol: ni el correo ni el nombre.
+     */
+    async crearCuentaPersonal(cuenta: {
+      codigo: string;
+      nombre: string;
+      correo: string;
+      rol: RolPersonal;
+      hashContrasena: string;
+      actor: string;
+    }): Promise<CuentaPersonal> {
+      const { rows } = await db.query<CuentaPersonal>(
+        `with u as (
+           insert into app.usuario (codigo, alias, rol, correo)
+           values ($1, $2, $3, $4)
+           returning *
+         ), credencial as (
+           insert into app.credencial (id_usuario, hash_contrasena)
+           select id_usuario, $5 from u
+         ), ${cteAuditoria('u', 'id_usuario::text', 6)}
+         ${SELECT_PERSONAL} from u`,
+        [
+          cuenta.codigo,
+          cuenta.nombre,
+          cuenta.rol,
+          cuenta.correo,
+          cuenta.hashContrasena,
+          ...parametrosAuditoria({
+            actor: cuenta.actor,
+            accion: 'crear_cuenta_personal',
+            entidad: 'usuario',
+            detalle: { rolNuevo: cuenta.rol },
+          }),
+        ],
+      );
+      return rows[0]!;
+    },
+
+    /** Cambia el rol de una cuenta de personal por otro rol de personal, con su registro. */
+    async cambiarRolPersonal(cambio: {
+      idUsuario: string;
+      anterior: RolPersonal;
+      nuevo: RolPersonal;
+      actor: string;
+    }): Promise<boolean> {
+      const { rows } = await db.query(
+        `with cambio as (
+           update app.usuario set rol = $2
+           where id_usuario = $1 and rol = $3
+           returning id_usuario
+         ), ${cteAuditoria('cambio', 'id_usuario::text', 4)}
+         select 1 from cambio`,
+        [
+          cambio.idUsuario,
+          cambio.nuevo,
+          cambio.anterior,
+          ...parametrosAuditoria({
+            actor: cambio.actor,
+            accion: 'cambiar_rol_usuario',
+            entidad: 'usuario',
+            detalle: { rolAnterior: cambio.anterior, rolNuevo: cambio.nuevo },
           }),
         ],
       );

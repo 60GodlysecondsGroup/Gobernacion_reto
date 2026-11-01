@@ -10,9 +10,18 @@ import {
   type Escenario,
   type Posicion,
 } from '../salas/salas.escenario.js';
-import { ROLES, tienePermiso } from '../seguridad/permisos.js';
-import type { Sesion } from '../seguridad/sesion.service.js';
-import { ESTADOS_USUARIO, type RepositorioAdministracion } from './administracion.repository.js';
+import {
+  hashearContrasena,
+  LARGO_MAXIMO_CONTRASENA,
+  problemaDeContrasena,
+} from '../seguridad/contrasena.js';
+import { esRolPersonal, ROLES, ROLES_PERSONAL, tienePermiso } from '../seguridad/permisos.js';
+import { esquemaCorreo, nuevoCodigo, type Sesion } from '../seguridad/sesion.service.js';
+import {
+  ESTADOS_USUARIO,
+  type CuentaPersonal,
+  type RepositorioAdministracion,
+} from './administracion.repository.js';
 
 export const USUARIOS_POR_PAGINA = 20;
 
@@ -26,6 +35,37 @@ const esquemaListadoUsuarios = z.object({
 });
 
 const esquemaEstadoUsuario = z.object({ estado: z.enum(ESTADOS_USUARIO) }).strict();
+
+const esquemaRolPersonal = z.enum(ROLES_PERSONAL, {
+  error: 'Elige el rol: moderación o gestión de fuentes.',
+});
+
+/**
+ * Cuenta de personal nueva. `.strict()` rechaza cualquier otro campo (`estado`, `codigo`, `rango`…)
+ * y el rol solo puede ser de personal: nadie crea por aquí otra administración ni un joven.
+ */
+const esquemaCuentaPersonal = z
+  .object({
+    // Es el alias de la cuenta: lo que se ve en el panel y en sus respuestas en la comunidad.
+    nombre: z
+      .string({ error: 'Escribe el nombre.' })
+      .trim()
+      .min(3, 'Usa al menos 3 caracteres.')
+      .max(30, 'Usa máximo 30 caracteres.')
+      .regex(
+        /^[\p{L}\p{N}._-]+( [\p{L}\p{N}._-]+)*$/u,
+        'Usa letras, números, punto, guion o guion bajo, con un solo espacio entre palabras.',
+      ),
+    correo: esquemaCorreo,
+    contrasena: z
+      .string({ error: 'Escribe la contraseña.' })
+      .max(LARGO_MAXIMO_CONTRASENA, `Usa máximo ${LARGO_MAXIMO_CONTRASENA} caracteres.`),
+    confirmacion: z.string({ error: 'Repite la contraseña.' }),
+    rol: esquemaRolPersonal,
+  })
+  .strict();
+
+const esquemaCambioRolPersonal = z.object({ rol: esquemaRolPersonal }).strict();
 
 const esquemaComunidad = z
   .object({
@@ -220,6 +260,82 @@ export function crearServicioAdministracion({ repositorio, salas, dlp }: Depende
     async actualizarUsuario(sesion: Sesion, idUsuario: string, entrada: unknown) {
       const { estado } = validar(esquemaEstadoUsuario, entrada);
       return cambiarEstadoUsuario(sesion, idUsuario, estado);
+    },
+
+    // ── Cuentas de personal: solo la administración (`gestionar_personal`) ──
+    // Activar y desactivar usan `cambiarEstadoUsuario`, igual que cualquier otra cuenta.
+
+    listarPersonal: () => repositorio.listarPersonal(),
+
+    async crearCuentaPersonal(sesion: Sesion, entrada: unknown): Promise<CuentaPersonal> {
+      if (!tienePermiso(sesion.rol, 'gestionar_personal')) throw errores.prohibido();
+      const datos = validar(esquemaCuentaPersonal, entrada);
+      const problema = problemaDeContrasena(
+        datos.contrasena,
+        datos.nombre,
+        'La contraseña no puede contener el nombre de la cuenta.',
+      );
+      if (problema) throw errores.solicitudInvalida([{ campo: 'contrasena', mensaje: problema }]);
+      if (datos.confirmacion !== datos.contrasena) {
+        throw errores.solicitudInvalida([
+          { campo: 'confirmacion', mensaje: 'Las contraseñas no coinciden.' },
+        ]);
+      }
+
+      const hashContrasena = await hashearContrasena(datos.contrasena);
+      for (let intento = 0; ; intento++) {
+        try {
+          return await repositorio.crearCuentaPersonal({
+            codigo: nuevoCodigo(),
+            nombre: datos.nombre,
+            correo: datos.correo,
+            rol: datos.rol,
+            hashContrasena,
+            actor: sesion.idUsuario,
+          });
+        } catch (error) {
+          const { code, constraint } = error as { code?: string; constraint?: string };
+          if (code === '23505' && constraint === 'usuario_correo_unico') {
+            throw new ErrorApp(409, 'CORREO_EN_USO', 'Ya existe una cuenta con ese correo.', {
+              campo: 'correo',
+            });
+          }
+          if (code === '23505' && constraint === 'usuario_alias_unico') {
+            throw new ErrorApp(409, 'NOMBRE_EN_USO', 'Ese nombre ya lo usa otra cuenta.', {
+              campo: 'nombre',
+            });
+          }
+          // Choque (improbable) del código interno aleatorio: se intenta con otro.
+          if (code === '23505' && constraint === 'usuario_codigo_key' && intento < 2) continue;
+          throw error;
+        }
+      }
+    },
+
+    /**
+     * Cambia una cuenta de personal a otro rol de personal. Una cuenta que no es de personal
+     * (joven o administración) no existe para esta ruta. El rol se lee de la base en cada
+     * solicitud, así que el cambio rige de inmediato; si el nuevo rol no entra a salas, sale de
+     * las que tenga abiertas.
+     */
+    async cambiarRolPersonal(sesion: Sesion, idUsuario: string, entrada: unknown) {
+      if (!tienePermiso(sesion.rol, 'gestionar_personal')) throw errores.prohibido();
+      const { rol: nuevo } = validar(esquemaCambioRolPersonal, entrada);
+      const cuenta = esUuid(idUsuario) ? await repositorio.usuario(idUsuario) : null;
+      if (!cuenta || !esRolPersonal(cuenta.rol)) throw errores.noEncontrado();
+      if (cuenta.rol === nuevo) return { rol: nuevo, cambio: false };
+
+      const aplicado = await repositorio.cambiarRolPersonal({
+        idUsuario: cuenta.id,
+        anterior: cuenta.rol,
+        nuevo,
+        actor: sesion.idUsuario,
+      });
+      if (!aplicado) throw conflicto('CAMBIO_CONCURRENTE', 'La cuenta cambió. Vuelve a cargarla.');
+      if (!tienePermiso(nuevo, 'acceder_salas')) {
+        await salas.retirarUsuario(cuenta.id, 'Tu rol cambió: ya no tienes acceso a las salas.');
+      }
+      return { rol: nuevo, cambio: true };
     },
 
     listarComunidades: () => repositorio.listarComunidades(),

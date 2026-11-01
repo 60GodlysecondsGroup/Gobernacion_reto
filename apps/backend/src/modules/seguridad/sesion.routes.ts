@@ -8,7 +8,8 @@ type Opciones = {
 };
 
 /**
- * «Iniciar con mi Avatar»: registro, inicio y cierre de sesión. El token viaja solo en la cookie
+ * «Iniciar con mi Avatar» (y el acceso del personal con correo): registro, inicio y cierre de
+ * sesión. El token viaja solo en la cookie
  * HttpOnly (el JavaScript del navegador no puede leerlo) y nunca en el cuerpo de la respuesta.
  */
 export function rutasSesion(servicio: ServicioSesion, opciones: Opciones): Router {
@@ -48,6 +49,13 @@ export function rutasSesion(servicio: ServicioSesion, opciones: Opciones): Route
 
   router.post('/sesion', async (req, res) => {
     const abierta = await servicio.iniciar(req.body, req.ip ?? 'desconocida');
+    await cerrarAnterior(req);
+    await responderConSesion(res, abierta);
+  });
+
+  // Acceso del personal (moderación, gestión de fuentes): correo y contraseña, misma sesión.
+  router.post('/sesion/personal', async (req, res) => {
+    const abierta = await servicio.iniciarPersonal(req.body, req.ip ?? 'desconocida');
     await cerrarAnterior(req);
     await responderConSesion(res, abierta);
   });

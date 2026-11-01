@@ -1,12 +1,13 @@
 'use client';
 
-import { ArrowRight, Check, Eye, EyeOff, LogOut, Plus, Shuffle } from 'lucide-react';
+import { ArrowRight, Check, Plus, Shuffle } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useId, useState, useSyncExternalStore, type FormEvent } from 'react';
 import { Avatar } from '@/components/avatar/Avatar';
 import { aparienciaDe, CATEGORIAS, SelectorCapa } from '@/components/avatar/EditorAvatar';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
-import { Aviso, Boton, BotonEnlace, CampoTexto, CargandoLista, EstadoError } from '@/components/ui';
+import { Aviso, Boton, CampoTexto, CargandoLista, EstadoError } from '@/components/ui';
 import { HOBBIES_SUGERIDOS, MAXIMO_HOBBIES } from '@/config/hobbies';
 import type { ConfiguracionAvatar, ElementoAvatar, TipoElemento } from '@/lib/api/avatar';
 import { campoDelError, erroresPorCampo, ErrorApi, mensajeDeError } from '@/lib/api/cliente';
@@ -16,21 +17,17 @@ import {
   type RangoEdad,
   type SesionPublica,
 } from '@/lib/api/sesion';
+import {
+  CampoContrasena,
+  CasillaRecordar,
+  destinoInicial,
+  rutaSegura,
+  SesionYaAbierta,
+} from './PiezasAcceso';
 import { useSesion } from './ProveedorSesion';
 import estilos from './Acceso.module.css';
 
 type Modo = 'entrar' | 'registro';
-
-/** Solo rutas internas: evita redirecciones abiertas a otros sitios. */
-const rutaSegura = (ruta: string | null) =>
-  ruta && ruta.startsWith('/') && !ruta.startsWith('//') ? ruta : null;
-
-function destinoInicial(usuario: SesionPublica): string {
-  if (usuario.comunidad) return '/comunidad';
-  if (usuario.permisos.includes('revisar_reportes')) return '/panel';
-  if (usuario.permisos.includes('gestionar_fuentes')) return '/gestion/fuentes';
-  return '/perfil';
-}
 
 /*
  * Este navegador ya tuvo una cuenta: entonces se abre en «Ya tengo cuenta»; si no, en «Soy nuevo».
@@ -83,26 +80,12 @@ export function Acceso() {
   // Caso A: ya hay sesión. No se piden credenciales de nuevo.
   if (usuario) {
     return (
-      <div className={estilos.pagina}>
-        <EncabezadoPagina antetitulo="Iniciar con mi Avatar" titulo={`¡Hola, ${usuario.alias}!`}>
-          Tu sesión sigue abierta en este dispositivo.
-        </EncabezadoPagina>
-        <div className={estilos.tarjeta}>
-          <p>
-            Puedes seguir donde ibas. Si este dispositivo no es tuyo, cierra la sesión al terminar.
-          </p>
-          <div className={estilos.acciones}>
-            <BotonEnlace href={siguiente ?? destinoInicial(usuario)} tamano="lg">
-              Continuar
-              <ArrowRight aria-hidden="true" size={18} />
-            </BotonEnlace>
-            <Boton variante="secundario" tamano="lg" onClick={() => void salir('/acceso')}>
-              <LogOut aria-hidden="true" size={18} />
-              Cerrar sesión
-            </Boton>
-          </div>
-        </div>
-      </div>
+      <SesionYaAbierta
+        antetitulo="Iniciar con mi Avatar"
+        usuario={usuario}
+        destino={siguiente ?? destinoInicial(usuario)}
+        alSalir={() => void salir('/acceso')}
+      />
     );
   }
 
@@ -157,6 +140,16 @@ export function Acceso() {
           <FormularioRegistro alEntrar={alEntrar} alTenerCuenta={() => setModoElegido('entrar')} />
         )}
       </div>
+
+      <p className={estilos.nota}>
+        ¿Eres del equipo de moderación o de gestión de fuentes?{' '}
+        <Link
+          className={estilos.enlaceTexto}
+          href={`/acceso/personal${siguiente ? `?siguiente=${encodeURIComponent(siguiente)}` : ''}`}
+        >
+          Entra con tu correo
+        </Link>
+      </p>
     </div>
   );
 }
@@ -610,73 +603,5 @@ function FormularioRegistro({
         </p>
       </div>
     </form>
-  );
-}
-
-// ─── Piezas compartidas ──────────────────────────────────────────────────────
-
-function CampoContrasena({
-  etiqueta,
-  valor,
-  alCambiar,
-  error,
-  ayuda,
-  autoComplete,
-  obligatorio,
-}: {
-  etiqueta: string;
-  valor: string;
-  alCambiar: (valor: string) => void;
-  error?: string;
-  ayuda?: string;
-  autoComplete: 'current-password' | 'new-password';
-  obligatorio?: boolean;
-}) {
-  const [visible, setVisible] = useState(false);
-  return (
-    <div className={estilos.contrasena}>
-      <CampoTexto
-        etiqueta={etiqueta}
-        type={visible ? 'text' : 'password'}
-        name="password"
-        autoComplete={autoComplete}
-        autoCapitalize="none"
-        spellCheck={false}
-        maxLength={128}
-        obligatorio={obligatorio}
-        ayuda={ayuda}
-        value={valor}
-        onChange={(e) => alCambiar(e.target.value)}
-        error={error}
-      />
-      <button
-        type="button"
-        className={estilos.mostrar}
-        aria-pressed={visible}
-        onClick={() => setVisible((v) => !v)}
-      >
-        {visible ? <EyeOff aria-hidden="true" size={16} /> : <Eye aria-hidden="true" size={16} />}
-        {visible ? 'Ocultar' : 'Mostrar'}
-        <span className="visualmente-oculto"> contraseña</span>
-      </button>
-    </div>
-  );
-}
-
-function CasillaRecordar({
-  marcada,
-  alCambiar,
-}: {
-  marcada: boolean;
-  alCambiar: (valor: boolean) => void;
-}) {
-  return (
-    <label className={estilos.casilla}>
-      <input type="checkbox" checked={marcada} onChange={(e) => alCambiar(e.target.checked)} />
-      <span>
-        Recordarme en este dispositivo
-        <small>Tu sesión dura 30 días. No lo marques en un dispositivo compartido.</small>
-      </span>
-    </label>
   );
 }

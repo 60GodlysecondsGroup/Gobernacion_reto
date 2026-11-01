@@ -89,8 +89,15 @@ const DEMASIADO_COMUNES = new Set([
 export const LARGO_MINIMO_CONTRASENA = 8;
 export const LARGO_MAXIMO_CONTRASENA = 128;
 
-/** Motivo por el que una contraseña no sirve, o null si es aceptable. */
-export function problemaDeContrasena(contrasena: string, alias?: string): string | null {
+/**
+ * Motivo por el que una contraseña no sirve, o null si es aceptable. `alias` es el nombre de la
+ * cuenta, que la contraseña no puede contener; `mensajeAlias` explica ese caso.
+ */
+export function problemaDeContrasena(
+  contrasena: string,
+  alias?: string,
+  mensajeAlias = 'Tu contraseña no puede contener tu nametag.',
+): string | null {
   if (contrasena.length < LARGO_MINIMO_CONTRASENA) {
     return `Usa al menos ${LARGO_MINIMO_CONTRASENA} caracteres.`;
   }
@@ -101,8 +108,6 @@ export function problemaDeContrasena(contrasena: string, alias?: string): string
   if (DEMASIADO_COMUNES.has(minuscula) || /^(.)\1+$/.test(contrasena)) {
     return 'Esa contraseña es muy fácil de adivinar. Prueba con otra.';
   }
-  if (alias && minuscula.includes(alias.toLowerCase())) {
-    return 'Tu contraseña no puede contener tu nametag.';
-  }
+  if (alias && minuscula.includes(alias.toLowerCase())) return mensajeAlias;
   return null;
 }

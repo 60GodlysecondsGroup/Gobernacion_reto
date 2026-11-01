@@ -58,6 +58,24 @@ export function rutasAdministracion(
     res.json(await servicio.actualizarUsuario(sesion, req.params.id, req.body));
   });
 
+  // ── Cuentas de personal: solo la administración las crea y les cambia el rol ──
+  // (activar y desactivar: PATCH /admin/usuarios/:id, como cualquier otra cuenta)
+  router.get('/admin/personal', async (_req, res) => {
+    exigirPermiso(res, 'gestionar_personal');
+    res.set(sinCache).json({ cuentas: await servicio.listarPersonal() });
+  });
+  router.post('/admin/personal', async (req, res) => {
+    const sesion = exigirPermiso(res, 'gestionar_personal');
+    res
+      .set(sinCache)
+      .status(201)
+      .json({ cuenta: await servicio.crearCuentaPersonal(sesion, req.body) });
+  });
+  router.patch('/admin/personal/:id', async (req, res) => {
+    const sesion = exigirPermiso(res, 'gestionar_personal');
+    res.json(await servicio.cambiarRolPersonal(sesion, req.params.id, req.body));
+  });
+
   // ── Comunidades (F27) y categorías (F28) ──
   router.get('/admin/comunidades', async (_req, res) => {
     exigirPermiso(res, 'configurar_comunidades');

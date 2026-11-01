@@ -5,6 +5,16 @@ import type { Sesion } from './sesion.service.js';
 export const ROLES = ['usuario', 'moderador', 'admin_plataforma', 'gestor_fuentes'] as const;
 export type Rol = (typeof ROLES)[number];
 
+/**
+ * Roles de personal que la administración crea y asigna desde el panel. Entran con correo y
+ * contraseña (`POST /api/sesion/personal`), nunca por «Iniciar con mi Avatar».
+ */
+export const ROLES_PERSONAL = ['moderador', 'gestor_fuentes'] as const satisfies readonly Rol[];
+export type RolPersonal = (typeof ROLES_PERSONAL)[number];
+
+export const esRolPersonal = (rol: string): rol is RolPersonal =>
+  (ROLES_PERSONAL as readonly string[]).includes(rol);
+
 const TODOS: readonly Rol[] = ROLES;
 
 /**
@@ -27,6 +37,8 @@ const MATRIZ = {
   revisar_reportes: ['moderador', 'admin_plataforma'],
   revisar_incidencias_dlp: ['moderador', 'admin_plataforma'],
   gestionar_usuarios: ['moderador', 'admin_plataforma'],
+  // Crear cuentas de personal y cambiar su rol: nadie se asigna privilegios a sí mismo.
+  gestionar_personal: ['admin_plataforma'],
   consultar_reglas_dlp: ['moderador', 'admin_plataforma'],
   gestionar_reglas_dlp: ['admin_plataforma'],
   gestionar_fuentes: ['admin_plataforma', 'gestor_fuentes'],

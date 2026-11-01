@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  esRolPersonal,
   permisosDe,
   ROLES,
+  ROLES_PERSONAL,
   tienePermiso,
   type Permiso,
   type Rol,
@@ -60,10 +62,39 @@ describe('Matriz de permisos (Anexo A.2)', () => {
     ['gestor_fuentes', 'revisar_reportes', false],
     ['admin_plataforma', 'gestionar_reglas_dlp', true],
     ['admin_plataforma', 'configurar_comunidades', true],
+    // Cuentas de personal: solo la administración las crea o les cambia el rol.
+    ['admin_plataforma', 'gestionar_personal', true],
+    ['moderador', 'gestionar_personal', false],
+    ['gestor_fuentes', 'gestionar_personal', false],
+    ['usuario', 'gestionar_personal', false],
   ];
 
   it.each(casos)('%s → %s: %s', (rol, permiso, esperado) => {
     expect(tienePermiso(rol, permiso)).toBe(esperado);
+  });
+
+  it('ningún rol de personal tiene permisos exclusivos de la administración', () => {
+    const exclusivos = permisosDe('admin_plataforma').filter((permiso) =>
+      ROLES.every((rol) => rol === 'admin_plataforma' || !tienePermiso(rol, permiso)),
+    );
+    expect(exclusivos).toEqual(
+      expect.arrayContaining([
+        'gestionar_personal',
+        'gestionar_reglas_dlp',
+        'configurar_comunidades',
+        'crear_sala_tematica',
+        'usar_asistente_admin',
+      ]),
+    );
+    for (const rol of ROLES_PERSONAL) {
+      for (const permiso of exclusivos) expect(tienePermiso(rol, permiso), permiso).toBe(false);
+    }
+  });
+
+  it('los roles de personal son moderación y gestión de fuentes, nunca administración', () => {
+    expect([...ROLES_PERSONAL]).toEqual(['moderador', 'gestor_fuentes']);
+    expect(esRolPersonal('admin_plataforma')).toBe(false);
+    expect(esRolPersonal('usuario')).toBe(false);
   });
 
   it('todos los roles consultan orientación y editan su propio perfil', () => {

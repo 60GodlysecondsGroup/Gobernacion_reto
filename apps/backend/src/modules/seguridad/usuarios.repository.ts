@@ -1,7 +1,7 @@
 import type { Database } from '../../db/database.js';
 import { esUuid } from '../../http/validacion.js';
 import type { ConfiguracionAvatar } from '../avatar/avatar.repository.js';
-import type { Rol } from './permisos.js';
+import { ROLES_PERSONAL, type Rol } from './permisos.js';
 import type { CodigoRango } from './rango-edad.js';
 
 export type UsuarioRegistrado = {
@@ -26,7 +26,26 @@ export type CuentaNueva = {
 const COLUMNAS = `
   u.id_usuario as "idUsuario", u.codigo, u.alias, u.rol, u.rango_edad as "rangoEdad", u.estado`;
 
+type CuentaParaIniciar = { usuario: UsuarioRegistrado; hash: string | null };
+
 export function crearRepositorioUsuarios(db: Database) {
+  /** Una cuenta (con el hash de su contraseña, o null si no tiene) según la condición dada. */
+  async function cuentaConHash(
+    condicion: string,
+    parametros: unknown[],
+  ): Promise<CuentaParaIniciar | null> {
+    const { rows } = await db.query<UsuarioRegistrado & { hash: string | null }>(
+      `select ${COLUMNAS}, c.hash_contrasena as hash
+       from app.usuario u left join app.credencial c on c.id_usuario = u.id_usuario
+       where ${condicion}`,
+      parametros,
+    );
+    const fila = rows[0];
+    if (!fila) return null;
+    const { hash, ...usuario } = fila;
+    return { usuario, hash };
+  }
+
   return {
     async porId(idUsuario: string): Promise<UsuarioRegistrado | null> {
       if (!esUuid(idUsuario)) return null;
@@ -40,22 +59,22 @@ export function crearRepositorioUsuarios(db: Database) {
     /**
      * Cuenta por nametag (sin distinguir mayúsculas) y el hash de su contraseña, o null si no hay
      * una cuenta con ese nametag. `hash` es null si la cuenta no tiene contraseña.
+     * Las cuentas de personal (con correo o con rol de moderación o gestión de fuentes) no
+     * existen para este acceso: entran solo con correo (`paraIniciarSesionConCorreo`).
      * Solo lo usa el inicio de sesión: el hash nunca sale del backend.
      */
-    async paraIniciarSesion(
-      alias: string,
-    ): Promise<{ usuario: UsuarioRegistrado; hash: string | null } | null> {
-      const { rows } = await db.query<UsuarioRegistrado & { hash: string | null }>(
-        `select ${COLUMNAS}, c.hash_contrasena as hash
-         from app.usuario u left join app.credencial c on c.id_usuario = u.id_usuario
-         where lower(u.alias) = lower($1)`,
-        [alias],
-      );
-      const fila = rows[0];
-      if (!fila) return null;
-      const { hash, ...usuario } = fila;
-      return { usuario, hash };
-    },
+    paraIniciarSesion: (alias: string) =>
+      cuentaConHash(
+        'lower(u.alias) = lower($1) and u.correo is null and u.rol <> all($2::text[])',
+        [alias, ROLES_PERSONAL],
+      ),
+
+    /**
+     * Cuenta de personal por correo (ya normalizado en minúsculas) y el hash de su contraseña.
+     * Los jóvenes nunca tienen correo (restricción `usuario_correo_solo_personal`).
+     */
+    paraIniciarSesionConCorreo: (correo: string) =>
+      cuentaConHash(`u.correo = $1 and u.rol <> 'usuario'`, [correo]),
 
     /**
      * Crea la cuenta, su contraseña y su avatar en una sola sentencia: o se guarda todo o nada.

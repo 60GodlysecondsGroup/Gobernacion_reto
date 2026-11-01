@@ -10,6 +10,7 @@ import {
   Layers,
   Library,
   ShieldCheck,
+  UserCog,
   Users,
 } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -58,6 +59,13 @@ const SECCIONES: Seccion[] = [
     etiqueta: 'Usuarios',
     icono: Users,
     permiso: 'gestionar_usuarios',
+    grupo: 'Administración',
+  },
+  {
+    href: '/panel/personal',
+    etiqueta: 'Cuentas de personal',
+    icono: UserCog,
+    permiso: 'gestionar_personal',
     grupo: 'Administración',
   },
   {

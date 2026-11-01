@@ -4,9 +4,11 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import {
   cerrarSesion,
   iniciarSesion,
+  iniciarSesionPersonal,
   obtenerSesion,
   registrarse,
   type DatosInicio,
+  type DatosInicioPersonal,
   type DatosRegistro,
   type Permiso,
   type SesionPublica,
@@ -19,6 +21,8 @@ type ContextoSesion = {
   puede: (permiso: Permiso) => boolean;
   /** Inicia sesión con nametag y contraseña. */
   entrar: (datos: DatosInicio) => Promise<SesionPublica>;
+  /** Inicia sesión con correo y contraseña (cuentas de personal). */
+  entrarPersonal: (datos: DatosInicioPersonal) => Promise<SesionPublica>;
   /** Crea la cuenta y deja la sesión iniciada. */
   registrarse: (datos: DatosRegistro) => Promise<SesionPublica>;
   /** Cierra la sesión y recarga en `destino` (por defecto, el inicio). */
@@ -58,6 +62,11 @@ export function ProveedorSesion({ children }: { children: React.ReactNode }) {
       puede: (permiso) => usuario?.permisos.includes(permiso) ?? false,
       entrar: async (datos) => {
         const { usuario: nuevo } = await iniciarSesion(datos);
+        setUsuario(nuevo);
+        return nuevo;
+      },
+      entrarPersonal: async (datos) => {
+        const { usuario: nuevo } = await iniciarSesionPersonal(datos);
         setUsuario(nuevo);
         return nuevo;
       },

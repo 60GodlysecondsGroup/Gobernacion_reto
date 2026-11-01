@@ -17,6 +17,7 @@ export type Permiso =
   | 'revisar_reportes'
   | 'revisar_incidencias_dlp'
   | 'gestionar_usuarios'
+  | 'gestionar_personal'
   | 'consultar_reglas_dlp'
   | 'gestionar_reglas_dlp'
   | 'gestionar_fuentes'
@@ -39,6 +40,9 @@ export type RangoEdad = { codigo: CodigoRango; etiqueta: string };
 /** «Iniciar con mi Avatar» — cuenta existente: nametag (alias) y contraseña. */
 export type DatosInicio = { alias: string; contrasena: string; recordar: boolean };
 
+/** Acceso del personal (moderación, gestión de fuentes): correo y contraseña. */
+export type DatosInicioPersonal = { correo: string; contrasena: string; recordar: boolean };
+
 /** «Iniciar con mi Avatar» — cuenta nueva. La cuenta siempre nace como joven (rol `usuario`). */
 export type DatosRegistro = DatosInicio & {
   rango: CodigoRango;
@@ -58,6 +62,10 @@ export const obtenerSesion = () => api.get<{ usuario: SesionPublica | null }>('/
 /** El token de sesión llega solo en una cookie HttpOnly: el JavaScript nunca lo ve. */
 export const iniciarSesion = (datos: DatosInicio) =>
   api.post<{ usuario: SesionPublica }>('/api/sesion', datos);
+
+/** Misma sesión y cookie que el acceso con nametag; solo cambia el identificador. */
+export const iniciarSesionPersonal = (datos: DatosInicioPersonal) =>
+  api.post<{ usuario: SesionPublica }>('/api/sesion/personal', datos);
 
 export const registrarse = (datos: DatosRegistro) =>
   api.post<{ usuario: SesionPublica }>('/api/sesion/registro', datos);

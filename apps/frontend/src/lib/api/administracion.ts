@@ -30,6 +30,28 @@ export type UsuarioAdministrado = {
   bloqueosDlp30d: number;
 };
 
+/** Roles de personal que la administración asigna desde el panel. */
+export type RolPersonal = Extract<Rol, 'moderador' | 'gestor_fuentes'>;
+
+/** Cuenta de personal: el nombre es el alias de la cuenta. Nunca trae la contraseña. */
+export type CuentaPersonal = {
+  id: string;
+  nombre: string;
+  /** null en cuentas antiguas sin correo: no pueden entrar. */
+  correo: string | null;
+  rol: RolPersonal;
+  estado: EstadoUsuario;
+  fechaRegistro: string;
+};
+
+export type DatosCuentaPersonal = {
+  nombre: string;
+  correo: string;
+  contrasena: string;
+  confirmacion: string;
+  rol: RolPersonal;
+};
+
 export type ComunidadAdministrada = {
   id: string;
   codigoRango: string;
@@ -122,6 +144,18 @@ export const cambiarEstadoUsuario = (id: string, estado: EstadoUsuario) =>
   api.patch<{ estado: EstadoUsuario; cambio: boolean }>(
     `/api/admin/usuarios/${encodeURIComponent(id)}`,
     { estado },
+  );
+
+export const listarPersonal = () => api.get<{ cuentas: CuentaPersonal[] }>('/api/admin/personal');
+
+export const crearCuentaPersonal = (datos: DatosCuentaPersonal) =>
+  api.post<{ cuenta: CuentaPersonal }>('/api/admin/personal', datos);
+
+/** Activar o desactivar una cuenta de personal usa `cambiarEstadoUsuario`, como cualquier otra. */
+export const cambiarRolPersonal = (id: string, rol: RolPersonal) =>
+  api.patch<{ rol: RolPersonal; cambio: boolean }>(
+    `/api/admin/personal/${encodeURIComponent(id)}`,
+    { rol },
   );
 
 export const listarComunidades = () =>

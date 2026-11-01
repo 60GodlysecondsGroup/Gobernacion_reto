@@ -60,6 +60,29 @@ const esquemaInicio = z
   })
   .strict();
 
+/** Correo de una cuenta de personal: se guarda y se busca sin espacios y en minúsculas. */
+export const esquemaCorreo = z
+  .string({ error: 'Escribe el correo.' })
+  .trim()
+  .toLowerCase()
+  .min(1, 'Escribe el correo.')
+  .max(254, 'Usa máximo 254 caracteres.')
+  .pipe(z.email({ error: 'Escribe un correo válido (nombre@dominio.co).' }));
+
+/** Acceso del personal: correo y contraseña. Sin avatar ni nametag. */
+const esquemaInicioPersonal = z
+  .object({
+    correo: z
+      .string({ error: 'Escribe tu correo.' })
+      .trim()
+      .toLowerCase()
+      .min(1, 'Escribe tu correo.')
+      .max(254),
+    contrasena,
+    recordar: z.boolean().default(false),
+  })
+  .strict();
+
 /**
  * Registro: nametag, contraseña, rango de edad, hobbies y avatar. `.strict()` rechaza cualquier
  * otro campo, en particular `rol`, `estado` o `codigo`: la cuenta siempre nace como joven activo.
@@ -76,8 +99,8 @@ const esquemaRegistro = z
   })
   .strict();
 
-const credencialesInvalidas = () =>
-  new ErrorApp(401, 'CREDENCIALES_INVALIDAS', 'El nametag o la contraseña no son correctos.');
+const credencialesInvalidas = (identificador = 'El nametag') =>
+  new ErrorApp(401, 'CREDENCIALES_INVALIDAS', `${identificador} o la contraseña no son correctos.`);
 
 const demasiadosIntentos = (segundos: number) =>
   new ErrorApp(
@@ -117,7 +140,8 @@ type Dependencias = {
   limites?: LimitesAcceso;
 };
 
-const nuevoCodigo = () => `Cuenta_${randomBytes(5).toString('hex').toUpperCase()}`;
+/** Código interno de una cuenta creada por la plataforma (registro o administración). */
+export const nuevoCodigo = () => `Cuenta_${randomBytes(5).toString('hex').toUpperCase()}`;
 
 export function crearServicioSesion({
   usuarios,
@@ -158,6 +182,57 @@ export function crearServicioSesion({
     };
   }
 
+  /**
+   * Verificación común a los dos accesos (nametag y correo). Si la cuenta no existe o no tiene
+   * contraseña, se hace igual una verificación de relleno y se responde el mismo 401: ni el
+   * mensaje ni el tiempo revelan qué cuentas existen.
+   */
+  async function autenticar({
+    ip,
+    clave,
+    contrasena,
+    recordar,
+    buscar,
+    identificador,
+  }: {
+    ip: string;
+    /** Clave del límite de intentos por cuenta (junto a la IP). */
+    clave: string;
+    contrasena: string;
+    recordar: boolean;
+    buscar: () => ReturnType<RepositorioUsuarios['paraIniciarSesion']>;
+    /** Sujeto del mensaje de error: «El nametag» o «El correo». */
+    identificador: string;
+  }): Promise<SesionAbierta> {
+    const claveCuenta = `${ip}|${clave}`;
+    const espera = Math.max(
+      fallosPorCuenta.bloqueadoPor(claveCuenta),
+      fallosPorIp.bloqueadoPor(ip),
+    );
+    if (espera > 0) throw demasiadosIntentos(espera);
+
+    const encontrada = await buscar();
+    const correcta = await verificarContrasena(
+      contrasena,
+      encontrada?.hash ?? (await hashDeRelleno()),
+    );
+    if (!encontrada?.hash || !correcta) {
+      fallosPorCuenta.registrar(claveCuenta);
+      fallosPorIp.registrar(ip);
+      throw credencialesInvalidas(identificador);
+    }
+
+    fallosPorCuenta.reiniciar(claveCuenta);
+    if (encontrada.usuario.estado !== 'activo') {
+      throw new ErrorApp(
+        403,
+        'CUENTA_NO_ACTIVA',
+        'Tu cuenta no está activa en este momento. Si crees que es un error, habla con quien administra la plataforma.',
+      );
+    }
+    return abrir(encontrada.usuario, recordar);
+  }
+
   return {
     /**
      * Sesión vigente a partir del token de la cookie, o null. Exige que la sesión exista en la
@@ -172,39 +247,35 @@ export function crearServicioSesion({
     },
 
     /**
-     * Inicio de sesión con nametag y contraseña. Si el nametag no existe o la cuenta no tiene
-     * contraseña, se hace igual una verificación de relleno y se responde el mismo 401: ni el
-     * mensaje ni el tiempo revelan qué cuentas existen.
+     * «Iniciar con mi Avatar»: nametag y contraseña. Las cuentas de personal no entran por aquí
+     * (responden como si no existieran): tienen su propio acceso con correo.
      */
     async iniciar(entrada: unknown, ip: string): Promise<SesionAbierta> {
       const datos = validar(esquemaInicio, entrada);
-      const claveCuenta = `${ip}|${datos.alias.toLowerCase()}`;
-      const espera = Math.max(
-        fallosPorCuenta.bloqueadoPor(claveCuenta),
-        fallosPorIp.bloqueadoPor(ip),
-      );
-      if (espera > 0) throw demasiadosIntentos(espera);
+      return autenticar({
+        ip,
+        clave: datos.alias.toLowerCase(),
+        contrasena: datos.contrasena,
+        recordar: datos.recordar,
+        buscar: () => usuarios.paraIniciarSesion(datos.alias),
+        identificador: 'El nametag',
+      });
+    },
 
-      const encontrada = await usuarios.paraIniciarSesion(datos.alias);
-      const correcta = await verificarContrasena(
-        datos.contrasena,
-        encontrada?.hash ?? (await hashDeRelleno()),
-      );
-      if (!encontrada?.hash || !correcta) {
-        fallosPorCuenta.registrar(claveCuenta);
-        fallosPorIp.registrar(ip);
-        throw credencialesInvalidas();
-      }
-
-      fallosPorCuenta.reiniciar(claveCuenta);
-      if (encontrada.usuario.estado !== 'activo') {
-        throw new ErrorApp(
-          403,
-          'CUENTA_NO_ACTIVA',
-          'Tu cuenta no está activa en este momento. Si crees que es un error, habla con quien administra la plataforma.',
-        );
-      }
-      return abrir(encontrada.usuario, datos.recordar);
+    /**
+     * Acceso del personal (moderación, gestión de fuentes): correo y contraseña. Usa las mismas
+     * sesiones, cookie y límites de intentos que el acceso con nametag.
+     */
+    async iniciarPersonal(entrada: unknown, ip: string): Promise<SesionAbierta> {
+      const datos = validar(esquemaInicioPersonal, entrada);
+      return autenticar({
+        ip,
+        clave: `correo:${datos.correo}`,
+        contrasena: datos.contrasena,
+        recordar: datos.recordar,
+        buscar: () => usuarios.paraIniciarSesionConCorreo(datos.correo),
+        identificador: 'El correo',
+      });
     },
 
     /** Crea una cuenta de joven y abre su sesión. */

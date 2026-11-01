@@ -6,7 +6,7 @@ import { Aviso, Boton } from '@/components/ui';
 import { listarAuditoria, type RegistroAuditoria } from '@/lib/api/administracion';
 import { mensajeDeError } from '@/lib/api/cliente';
 import { formatearFechaHora } from '@/lib/fechas';
-import { NOMBRES_ROL } from '@/lib/api/sesion';
+import { NOMBRES_ROL, type Rol } from '@/lib/api/sesion';
 import estilos from './Panel.module.css';
 
 const ACCIONES: Record<string, string> = {
@@ -14,6 +14,8 @@ const ACCIONES: Record<string, string> = {
   ocultar_contenido: 'Ocultó contenido',
   restaurar_contenido: 'Restauró contenido',
   cambiar_estado_usuario: 'Cambió el estado de una cuenta',
+  crear_cuenta_personal: 'Creó una cuenta de personal',
+  cambiar_rol_usuario: 'Cambió el rol de una cuenta',
   actualizar_sala: 'Actualizó una sala',
   actualizar_escenario: 'Cambió el escenario de una sala',
   crear_sala: 'Habilitó una sala temática',
@@ -48,6 +50,9 @@ function resumirDetalle(registro: RegistroAuditoria): string {
   } else if (d.estadoNuevo) {
     partes.push(`quedó ${ESTADOS[String(d.estadoNuevo)] ?? d.estadoNuevo}`);
   }
+  const rol = (valor: unknown) => NOMBRES_ROL[valor as Rol]?.toLowerCase() ?? String(valor);
+  if (d.rolAnterior && d.rolNuevo) partes.push(`de ${rol(d.rolAnterior)} a ${rol(d.rolNuevo)}`);
+  else if (d.rolNuevo) partes.push(`rol ${rol(d.rolNuevo)}`);
   if (typeof d.habilitada === 'boolean') partes.push(d.habilitada ? 'habilitada' : 'deshabilitada');
   if (typeof d.capacidad === 'number') partes.push(`capacidad ${d.capacidad}`);
   if (typeof d.obstaculos === 'number') partes.push(`${d.obstaculos} muebles`);
