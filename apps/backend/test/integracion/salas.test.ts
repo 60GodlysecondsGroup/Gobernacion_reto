@@ -20,6 +20,8 @@ import { configPrueba, enCola, hasta } from '../apoyo.js';
 
 const logger = crearLogger('silencioso');
 const CIERRE_SEGUNDOS = 2;
+/** Presencias cortas: una conexión cortada sale de la sala en ~1,5 s si no vuelve. */
+const PRESENCIA_MS = 1_500;
 
 let pool: PoolDeDatos;
 let cliente: pg.PoolClient;
@@ -47,7 +49,10 @@ beforeEach(async () => {
   servidor = crearServidor({
     db: enCola(cliente),
     logger,
-    config: { ...configPrueba, salas: { cierreSegundos: CIERRE_SEGUNDOS } },
+    config: {
+      ...configPrueba,
+      salas: { cierreSegundos: CIERRE_SEGUNDOS, latidoMs: 300, presenciaMs: PRESENCIA_MS },
+    },
     ttlReglasDlpMs: 0,
     intervalosSalas: { movimientoMs: 0, mensajeMs: 0, guardadoMs: 20, pasoMs: 10 },
   });
@@ -251,7 +256,7 @@ describe('AV-04, AV-06, AV-07 y AV-08 · Movimiento compartido', () => {
     luna.enviar({ tipo: 'mover', direccion: 'abajo' });
     luna.enviar({ tipo: 'mover', direccion: 'abajo' });
     await luna.esperar('movimiento_rechazado', (m) => m.motivo === 'limite');
-    expect(servidor.salas.participantes(sala).find((p) => p.id === yo)).toMatchObject({
+    expect((await servidor.salas.participantes(sala)).find((p) => p.id === yo)).toMatchObject({
       x: 4,
       y: 7,
     });
@@ -297,7 +302,7 @@ describe('AV-05 · Movimiento por clic (Fase 8)', () => {
       expect(Math.abs(paso.x - anterior.x) + Math.abs(paso.y - anterior.y)).toBe(1);
       anterior = paso;
     }
-    expect(servidor.salas.participantes(sala).find((p) => p.id === yo)).toMatchObject({
+    expect((await servidor.salas.participantes(sala)).find((p) => p.id === yo)).toMatchObject({
       x: 6,
       y: 3,
     });
@@ -352,7 +357,7 @@ describe('F14 · Chat de sala con DLP', () => {
 });
 
 describe('Conexión perdida', () => {
-  it('si se corta la conexión, la persona sale y los demás lo ven', async () => {
+  it('si se corta la conexión y no vuelve, su presencia vence: sale y los demás lo ven', async () => {
     const sala = salas['B:Bienestar cotidiano']!;
     const luna = conectar(sala, await tokenDe('Usuario_001'));
     const { yo } = await luna.esperar('estado');
@@ -360,6 +365,9 @@ describe('Conexión perdida', () => {
     await sol.esperar('estado');
 
     luna.ws.terminate();
+    // No sale en el acto: tiene margen para reconectarse.
+    await new Promise((r) => setTimeout(r, PRESENCIA_MS / 3));
+    expect(sol.mensajes.some((m) => m.tipo === 'salio')).toBe(false);
     await sol.esperar('salio', (m) => m.id === yo && m.ocupacion === 1);
     const fila = await hasta(
       () => ocupacionEnBase(sala),
@@ -423,27 +431,37 @@ describe('TRL-08 y AV-10 · Cierre automático', () => {
   }, 30_000);
 });
 
-describe('Reconciliación al arrancar', () => {
-  it('cierra participaciones abiertas y deja vacías las salas que tenían gente', async () => {
-    const sala = salas['C:Vida académica']!;
+describe('Limpieza sin destruir (varias instancias)', () => {
+  it('libera solo los cupos que ninguna presencia sostiene; quien está conectado sigue dentro', async () => {
+    // Un cupo huérfano: una instancia cayó entre ocupar el cupo y registrar la presencia.
+    const huerfana = salas['C:Vida académica']!;
     await cliente.query(
-      `update app.sala set usuarios_actuales = 3, estado = 'disponible' where id_sala = $1`,
-      [sala],
+      `update app.sala set usuarios_actuales = 1, estado = 'disponible' where id_sala = $1`,
+      [huerfana],
     );
     await cliente.query(
       `insert into app.participacion_sala (id_sala, id_usuario)
        select $1, id_usuario from app.usuario where codigo = 'Usuario_004'`,
-      [sala],
+      [huerfana],
     );
+    // Y alguien conectado de verdad en otra sala.
+    const viva = salas['B:Bienestar cotidiano']!;
+    const luna = conectar(viva, await tokenDe('Usuario_001'));
+    await luna.esperar('estado');
 
-    const vacias = await crearRepositorioSalas(cliente).reconciliar();
-    expect(vacias.map((v) => v.id)).toContain(sala);
-    expect(await ocupacionEnBase(sala)).toEqual({ usuarios_actuales: 0, estado: 'vacia' });
+    expect(
+      await hasta(
+        () => ocupacionEnBase(huerfana),
+        (fila) => fila.usuarios_actuales === 0,
+      ),
+    ).toEqual({ usuarios_actuales: 0, estado: 'vacia' });
     const abiertas = await cliente.query(
-      'select count(*)::int as n from app.participacion_sala where hora_salida is null',
+      'select id_sala from app.participacion_sala where hora_salida is null',
     );
-    expect(abiertas.rows[0].n).toBe(0);
-  });
+    expect(abiertas.rows).toEqual([{ id_sala: viva }]);
+    expect(await ocupacionEnBase(viva)).toEqual({ usuarios_actuales: 1, estado: 'disponible' });
+    expect(luna.ws.readyState).toBe(WebSocket.OPEN);
+  }, 30_000);
 });
 
 describe('Concurrencia real en la base', () => {

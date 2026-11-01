@@ -37,11 +37,16 @@ export type MensajeServidor =
   | { tipo: 'mensaje_bloqueado'; mensaje: string }
   | { tipo: 'error'; codigo: string; mensaje: string };
 
-/** Códigos de cierre del WebSocket (4000–4999 son de la aplicación). */
+/**
+ * Códigos de cierre del WebSocket (4000–4999 son de la aplicación). Ante 1001, 1011, 1012 o un
+ * corte sin código, el cliente se reconecta solo; los demás terminan la visita a la sala.
+ */
 export const CIERRE = {
   SALIDA: 1000,
   SERVIDOR_DETENIDO: 1001,
   ERROR_INTERNO: 1011,
+  /** La conexión perdió su presencia (venció o falló el tiempo real): reconectar y volver a entrar. */
+  REINTENTAR: 1012,
   REEMPLAZADA: 4000,
   NO_AUTENTICADO: 4401,
   PROHIBIDO: 4403,

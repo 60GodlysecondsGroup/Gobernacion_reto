@@ -2,6 +2,7 @@
  * Cliente HTTP centralizado. Toda llamada al backend pasa por aquí: URL base, cookies de sesión,
  * tiempo máximo de espera y formato de error únicos para todo el frontend.
  * El frontend nunca habla con la base de datos: solo con el backend.
+ * URL_API vacía (Vercel) = el backend comparte dominio con el frontend y se llama por /api.
  */
 export const URL_API = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000').replace(
   /\/$/,

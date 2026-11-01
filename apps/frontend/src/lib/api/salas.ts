@@ -70,6 +70,11 @@ export type MotivoRechazo = 'limite' | 'obstaculo' | 'destino_invalido' | 'sin_c
 /** Códigos de cierre del WebSocket que usa el backend. */
 export const CIERRE = {
   SALIDA: 1000,
+  /** El servidor se detuvo (una instancia que se reinicia): el cliente se reconecta solo. */
+  SERVIDOR_DETENIDO: 1001,
+  ERROR_INTERNO: 1011,
+  /** La conexión perdió su lugar en la sala: el cliente se reconecta y vuelve a entrar. */
+  REINTENTAR: 1012,
   REEMPLAZADA: 4000,
   NO_AUTENTICADO: 4401,
   PROHIBIDO: 4403,
@@ -87,6 +92,12 @@ export const listarSalas = () => api.get<{ salas: SalaResumen[] }>('/api/salas')
 export const obtenerSala = (id: string) =>
   api.get<{ sala: SalaDetalle }>(`/api/salas/${encodeURIComponent(id)}`);
 
-/** Misma URL del backend con ws:// o wss://; la sesión viaja en la cookie. */
-export const urlTiempoRealSala = (id: string) =>
-  `${URL_API.replace(/^http/, 'ws')}/ws/salas/${encodeURIComponent(id)}`;
+/**
+ * Misma URL del backend con ws:// o wss:// (el dominio de la página si URL_API está vacía, como en
+ * Vercel); la sesión viaja en la cookie.
+ */
+export function urlTiempoRealSala(id: string) {
+  const url = new URL(`${URL_API}/ws/salas/${encodeURIComponent(id)}`, window.location.href);
+  url.protocol = url.protocol.replace(/^http/, 'ws');
+  return url.href;
+}

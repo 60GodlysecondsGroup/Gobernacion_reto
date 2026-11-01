@@ -99,9 +99,15 @@ function Sala({ id }: { id: string }) {
           <EncabezadoPagina antetitulo="Sala temática" titulo={sala.nombre} />
           {propio && <IdentidadSala participante={propio} />}
         </div>
-        {vivo.fase === 'conectando' ? (
+        {vivo.fase === 'reconectando' && vivo.escenario && (
+          <Aviso tono="advertencia">
+            Se cortó la conexión. Reconectando…
+            {vivo.reintento && vivo.reintento > 1 ? ` (intento ${vivo.reintento})` : ''}
+          </Aviso>
+        )}
+        {vivo.fase === 'conectando' || !vivo.escenario ? (
           <p className={comun.cargando} aria-busy="true">
-            Entrando a la sala…
+            {vivo.fase === 'reconectando' ? 'Reconectando con la sala…' : 'Entrando a la sala…'}
           </p>
         ) : (
           <SalaEnVivo

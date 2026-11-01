@@ -1,4 +1,5 @@
 import type pg from 'pg';
+import { createClient } from 'redis';
 import type { Dependencias } from '../src/app.js';
 import type { Database } from '../src/db/database.js';
 import { NOMBRE_COOKIE_SESION } from '../src/modules/seguridad/sesion.middleware.js';
@@ -16,7 +17,7 @@ export const configPrueba: Dependencias['config'] = {
     duracionRecordadaMs: 24 * 60 * 60 * 1000,
     cookieSegura: false,
   },
-  salas: { cierreSegundos: 180 },
+  salas: { cierreSegundos: 180, latidoMs: 10_000, presenciaMs: 30_000 },
   openai: { model: 'gpt-5.4-mini' },
 };
 
@@ -53,6 +54,30 @@ export function enCola(cliente: pg.PoolClient): Database {
       return resultado;
     }) as Database['query'],
   };
+}
+
+/** Redis de las pruebas con varias instancias (npm run redis:local). */
+export const URL_REDIS_PRUEBAS = process.env.REDIS_URL_PRUEBAS ?? 'redis://localhost:6379';
+
+/** true si responde el Redis de pruebas; si no, esas pruebas se omiten diciendo por qué. */
+export async function redisDisponible(): Promise<boolean> {
+  const cliente = createClient({
+    url: URL_REDIS_PRUEBAS,
+    socket: { connectTimeout: 1500, reconnectStrategy: false },
+  });
+  cliente.on('error', () => {});
+  try {
+    await cliente.connect();
+    await cliente.ping();
+    return true;
+  } catch {
+    console.warn(
+      `Sin Redis en ${URL_REDIS_PRUEBAS}: se omiten las pruebas con varias instancias (npm run redis:local).`,
+    );
+    return false;
+  } finally {
+    if (cliente.isOpen) await cliente.close();
+  }
 }
 
 /** Espera hasta que `obtener()` cumpla la condición (o falla al vencer el plazo). */

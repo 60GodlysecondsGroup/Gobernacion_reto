@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "vercel-dev",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "vercel@65.9.0", "dev", "--local", "--yes", "--listen", "3100"],
+      "port": 3100
     }
   ]
 }

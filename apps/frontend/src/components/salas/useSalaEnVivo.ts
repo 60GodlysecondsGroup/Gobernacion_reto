@@ -22,7 +22,8 @@ export type EntradaChat =
   | { tipo: 'aviso'; id: string; texto: string };
 
 export type EstadoSalaEnVivo = {
-  fase: 'conectando' | 'dentro' | 'fuera';
+  /** «reconectando»: la conexión se cortó y se vuelve a abrir sola, sin perder lo que se ve. */
+  fase: 'conectando' | 'dentro' | 'reconectando' | 'fuera';
   yo: string | null;
   escenario: { ancho: number; alto: number; obstaculos: Obstaculo[] } | null;
   capacidad: number;
@@ -39,6 +40,8 @@ export type EstadoSalaEnVivo = {
   /** Por qué terminó la conexión, cuando la fase es «fuera». */
   fin: { codigo: number; mensaje: string } | null;
   ultimoError: string | null;
+  /** Número del reintento en curso mientras la fase es «reconectando». */
+  reintento: number | null;
 };
 
 const INICIAL: EstadoSalaEnVivo = {
@@ -55,6 +58,7 @@ const INICIAL: EstadoSalaEnVivo = {
   publicados: 0,
   fin: null,
   ultimoError: null,
+  reintento: null,
 };
 
 /** Solo se conservan las últimas entradas del chat: no se guarda historial. */
@@ -74,8 +78,36 @@ const MENSAJES_CIERRE: Record<number, string> = {
 type Accion =
   | { tipo: 'reiniciar' }
   | { tipo: 'servidor'; mensaje: MensajeServidor }
+  | { tipo: 'reconectando'; reintento: number }
   | { tipo: 'cerrada'; codigo: number }
   | { tipo: 'limpiar_avisos_chat' };
+
+/**
+ * Cierres tras los que el cliente vuelve a conectarse solo: corte de red, una instancia del
+ * servidor que se reinicia o cae, la conexión que llega a su duración máxima en Vercel, o el
+ * tiempo real que no responde un momento. Los demás (salir, otra pestaña, sala llena…) terminan.
+ */
+const CIERRES_CON_REINTENTO: ReadonlySet<number> = new Set([
+  CIERRE.SERVIDOR_DETENIDO,
+  1005, // sin código de cierre
+  1006, // corte sin cierre ordenado
+  CIERRE.ERROR_INTERNO,
+  CIERRE.REINTENTAR,
+  1013, // «intenta más tarde»
+]);
+/** Reintentos seguidos sin volver a entrar antes de rendirse (unos dos minutos en total). */
+const REINTENTOS_MAXIMOS = 8;
+const ESPERA_BASE_MS = 500;
+const ESPERA_MAXIMA_MS = 15_000;
+
+/**
+ * Espera antes del reintento n: crece al doble cada vez (con tope) y la mitad es al azar, para
+ * que muchas personas cortadas a la vez no vuelvan todas en el mismo instante.
+ */
+const esperaReintento = (reintento: number) => {
+  const tope = Math.min(ESPERA_MAXIMA_MS, ESPERA_BASE_MS * 2 ** (reintento - 1));
+  return tope / 2 + Math.random() * (tope / 2);
+};
 
 const conChat = (chat: EntradaChat[], entrada: EntradaChat) =>
   [...chat, entrada].slice(-MAXIMO_CHAT);
@@ -86,6 +118,7 @@ const idAviso = () => `aviso-${++contador}`;
 function alRecibir(estado: EstadoSalaEnVivo, mensaje: MensajeServidor): EstadoSalaEnVivo {
   switch (mensaje.tipo) {
     case 'estado':
+      // También al reconectarse: el estado completo reemplaza lo que pudo cambiar durante el corte.
       return {
         ...estado,
         fase: 'dentro',
@@ -95,6 +128,15 @@ function alRecibir(estado: EstadoSalaEnVivo, mensaje: MensajeServidor): EstadoSa
         participantes: mensaje.participantes,
         ocupacion: mensaje.ocupacion,
         ultimoError: null,
+        reintento: null,
+        chat:
+          estado.fase === 'reconectando'
+            ? conChat(estado.chat, {
+                tipo: 'aviso',
+                id: idAviso(),
+                texto: 'Se recuperó la conexión.',
+              })
+            : estado.chat,
       };
     case 'entro':
       return {
@@ -164,6 +206,8 @@ function reducir(estado: EstadoSalaEnVivo, accion: Accion): EstadoSalaEnVivo {
       return INICIAL;
     case 'servidor':
       return alRecibir(estado, accion.mensaje);
+    case 'reconectando':
+      return { ...estado, fase: 'reconectando', reintento: accion.reintento };
     case 'cerrada':
       return {
         ...estado,
@@ -186,15 +230,31 @@ function reducir(estado: EstadoSalaEnVivo, accion: Accion): EstadoSalaEnVivo {
 /**
  * Conexión en tiempo real a una sala. El servidor es la autoridad: este hook solo refleja lo
  * que el servidor anuncia y le envía intenciones (moverse, escribir, salir).
+ *
+ * Si la conexión se corta, se vuelve a abrir sola: la sesión viaja en la cookie, el servidor
+ * reconoce a la persona (sigue en la sala si vuelve a tiempo) y envía el estado completo.
  */
 export function useSalaEnVivo(idSala: string) {
   const [estado, despachar] = useReducer(reducir, INICIAL);
   const [intento, setIntento] = useState(0);
   const socket = useRef<WebSocket | null>(null);
+  /** Reintentos seguidos sin recibir el estado; vuelve a 0 al entrar. */
+  const reintentos = useRef(0);
+  /** Deja de reintentar (al salir durante un corte). */
+  const cancelarReintento = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (intento === 0) return;
     let ws: WebSocket | null = null;
+    let espera: ReturnType<typeof setTimeout> | undefined;
+    let alVolverLaRed: (() => void) | null = null;
+    const dejarDeEsperar = () => {
+      clearTimeout(espera);
+      if (alVolverLaRed) window.removeEventListener('online', alVolverLaRed);
+      alVolverLaRed = null;
+      cancelarReintento.current = null;
+    };
+
     // En desarrollo, React monta, desmonta y vuelve a montar: esperar un instante evita abrir
     // una conexión que se cerraría enseguida.
     const temporizador = setTimeout(() => {
@@ -203,22 +263,41 @@ export function useSalaEnVivo(idSala: string) {
       socket.current = actual;
       actual.onmessage = (evento) => {
         try {
-          despachar({
-            tipo: 'servidor',
-            mensaje: JSON.parse(String(evento.data)) as MensajeServidor,
-          });
+          const mensaje = JSON.parse(String(evento.data)) as MensajeServidor;
+          if (mensaje.tipo === 'estado') reintentos.current = 0;
+          despachar({ tipo: 'servidor', mensaje });
         } catch {
           // Un mensaje ilegible se ignora.
         }
       };
       actual.onclose = (evento) => {
         if (socket.current === actual) socket.current = null;
-        despachar({ tipo: 'cerrada', codigo: evento.code });
+        if (!CIERRES_CON_REINTENTO.has(evento.code) || reintentos.current >= REINTENTOS_MAXIMOS) {
+          reintentos.current = 0;
+          despachar({ tipo: 'cerrada', codigo: evento.code });
+          return;
+        }
+        const reintento = ++reintentos.current;
+        despachar({ tipo: 'reconectando', reintento });
+        const volver = () => {
+          dejarDeEsperar();
+          setIntento((n) => n + 1);
+        };
+        // Si la red vuelve antes de que pase la espera, se reintenta en ese momento.
+        alVolverLaRed = volver;
+        window.addEventListener('online', volver);
+        espera = setTimeout(volver, esperaReintento(reintento));
+        cancelarReintento.current = () => {
+          dejarDeEsperar();
+          reintentos.current = 0;
+          despachar({ tipo: 'cerrada', codigo: CIERRE.SALIDA });
+        };
       };
     }, 0);
 
     return () => {
       clearTimeout(temporizador);
+      dejarDeEsperar();
       if (!ws) return;
       ws.onmessage = null;
       ws.onclose = null;
@@ -233,6 +312,7 @@ export function useSalaEnVivo(idSala: string) {
   }, []);
 
   const entrar = useCallback(() => {
+    reintentos.current = 0;
     despachar({ tipo: 'reiniciar' });
     setIntento((n) => n + 1);
   }, []);
@@ -240,7 +320,9 @@ export function useSalaEnVivo(idSala: string) {
   const salir = useCallback(() => {
     const ws = socket.current;
     if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ tipo: 'salir' }));
-    else ws?.close(CIERRE.SALIDA);
+    else if (ws) ws.close(CIERRE.SALIDA);
+    // Durante un corte no hay conexión: se deja de reintentar y se vuelve a la antesala.
+    else cancelarReintento.current?.();
   }, []);
 
   const limpiarAvisosChat = useCallback(() => despachar({ tipo: 'limpiar_avisos_chat' }), []);

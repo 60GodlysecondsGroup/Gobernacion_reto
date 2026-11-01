@@ -218,25 +218,30 @@ export function crearRepositorioSalas(db: Database) {
     },
 
     /**
-     * Al arrancar el backend: nadie está conectado, así que se cierran las participaciones
-     * abiertas y las salas con gente quedan vacías desde ahora. Devuelve las salas vacías y
-     * cuántos segundos llevan así, para programar su cierre.
+     * Participaciones abiertas desde hace más de `segundos`. Con varias instancias no hay un
+     * «arranque» en el que nadie esté conectado: el mantenimiento compara estas con las
+     * presencias vivas y libera solo los cupos que ninguna conexión sostiene.
      */
-    async reconciliar(): Promise<{ id: string; segundosVacia: number }[]> {
-      await db.query(
-        'update app.participacion_sala set hora_salida = now() where hora_salida is null',
-      );
-      await db.query('delete from app.posicion_avatar_sala');
-      await db.query(
-        `update app.sala
-         set usuarios_actuales = 0, estado = 'vacia', vacia_desde = coalesce(vacia_desde, clock_timestamp())
-         where estado in ('disponible', 'llena') and usuarios_actuales > 0`,
-      );
-      const { rows } = await db.query<{ id: string; segundosVacia: number }>(
-        `select id_sala as id, extract(epoch from clock_timestamp() - vacia_desde)::float as "segundosVacia"
-         from app.sala where estado = 'vacia'`,
+    async participacionesAbiertas(
+      segundos: number,
+    ): Promise<{ idSala: string; idUsuario: string }[]> {
+      const { rows } = await db.query<{ idSala: string; idUsuario: string }>(
+        `select id_sala as "idSala", id_usuario as "idUsuario" from app.participacion_sala
+         where hora_salida is null and hora_entrada <= clock_timestamp() - make_interval(secs => $1)`,
+        [segundos],
       );
       return rows;
+    },
+
+    /** Salas vacías desde hace al menos `segundos`: su cierre (F13) ya debió ocurrir. */
+    async porCerrar(segundos: number): Promise<string[]> {
+      const { rows } = await db.query<{ id: string }>(
+        `select id_sala as id from app.sala
+         where estado = 'vacia' and usuarios_actuales = 0
+           and vacia_desde <= clock_timestamp() - make_interval(secs => $1)`,
+        [segundos],
+      );
+      return rows.map((fila) => fila.id);
     },
   };
 }

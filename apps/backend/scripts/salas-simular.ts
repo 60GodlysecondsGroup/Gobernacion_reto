@@ -5,6 +5,7 @@
  *   npm run salas:simular                                    → 9 en «Bienestar cotidiano» de la comunidad B
  *   npm run salas:simular -- --cantidad 10 --sala "Vida académica" --comunidad B
  *   npm run salas:simular -- --cantidad 1 --desde 10        → solo Simulado_010 (p. ej. la persona 11)
+ *   npm run salas:simular -- --puerto 4001                  → por la segunda instancia (dev:distribuido)
  *
  * Crea (o reutiliza) usuarios `Simulado_001…` del rango indicado, los conecta por WebSocket
  * como cualquier cliente y los mueve al azar. Ctrl+C los saca de la sala.
@@ -23,6 +24,8 @@ const { values } = parseArgs({
     desde: { type: 'string', default: '1' },
     sala: { type: 'string', default: 'Bienestar cotidiano' },
     comunidad: { type: 'string', default: 'B' },
+    // Con varias instancias (npm run dev:distribuido), entra por la indicada.
+    puerto: { type: 'string' },
   },
 });
 
@@ -30,6 +33,7 @@ const cantidad = Math.min(Math.max(Number(values.cantidad) || 9, 1), 20);
 const desde = Math.min(Math.max(Number(values.desde) || 1, 1), 99);
 const rango = values.comunidad.toUpperCase();
 const config = cargarConfig();
+const puerto = Number(values.puerto) || config.puerto;
 const logger = crearLogger('info');
 
 if (config.sesion.secretoGenerado) {
@@ -91,7 +95,7 @@ for (const usuario of usuarios) {
     usuario.id,
     2 * 60 * 60 * 1000,
   );
-  const ws = new WebSocket(`ws://localhost:${config.puerto}/ws/salas/${sala.id}`, {
+  const ws = new WebSocket(`ws://localhost:${puerto}/ws/salas/${sala.id}`, {
     headers: { Cookie: `${NOMBRE_COOKIE_SESION}=${token}` },
   });
   ws.on('message', (datos) => {

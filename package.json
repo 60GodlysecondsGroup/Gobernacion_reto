@@ -13,6 +13,9 @@
   "scripts": {
     "dev": "concurrently -k -n backend,frontend -c cyan,magenta \"npm run dev -w apps/backend\" \"npm run dev -w apps/frontend\"",
     "dev:local": "concurrently -k -n db,backend,frontend -c yellow,cyan,magenta \"npm run db:local -w apps/backend\" \"npm run dev:esperando-db -w apps/backend\" \"npm run dev -w apps/frontend\"",
+    "dev:distribuido": "concurrently -k -n backendA,backendB,frontend -c cyan,blue,magenta \"npm run dev:instancia -w apps/backend -- 4000\" \"npm run dev:instancia -w apps/backend -- 4001\" \"npm run dev -w apps/frontend\"",
+    "redis:local": "docker compose up -d --wait redis",
+    "redis:detener": "docker compose stop redis",
     "build": "npm run build -w apps/frontend",
     "db:migrate": "npm run db:migrate -w apps/backend",
     "db:seed": "npm run db:seed -w apps/backend",

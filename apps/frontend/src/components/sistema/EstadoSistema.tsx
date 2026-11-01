@@ -92,8 +92,8 @@ export function EstadoSistema() {
 
         {vista.tipo === 'error' && (
           <p className={estilos.aviso}>
-            {vista.mensaje} Verifica que el backend esté corriendo en <code>{URL_API}</code> (
-            <code>npm run dev</code>).
+            {vista.mensaje} Verifica que el backend esté corriendo en{' '}
+            <code>{URL_API || window.location.origin}</code> (<code>npm run dev</code>).
           </p>
         )}
 

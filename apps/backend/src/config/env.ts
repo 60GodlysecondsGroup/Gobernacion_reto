@@ -29,14 +29,37 @@ const esquemaEntorno = z.object({
   COOKIE_SAME_SITE: z.enum(['lax', 'none', 'strict']).optional(),
   // Segundos sin nadie antes de cerrar una sala (F13). 180 s por defecto; menos solo para ensayar.
   SALA_CIERRE_SEGUNDOS: z.coerce.number().int().min(1).max(3600).default(180),
+  // Salas entre varias instancias (Vercel): Redis comparte presencias y eventos. Sin REDIS_URL,
+  // solo un backend local (en memoria); en producción y en Vercel es obligatorio.
+  REDIS_URL: z
+    .union([
+      z.literal(''),
+      z.string().regex(/^rediss?:\/\//, 'REDIS_URL debe empezar por redis:// o rediss://'),
+    ])
+    .optional()
+    .transform((valor) => valor || undefined),
+  // Prefijo de claves y canales: permite compartir un Redis entre entornos sin mezclarlos.
+  REDIS_PREFIJO: z.string().trim().min(1).default('comunidad:'),
+  // Latido de las salas: ping del WebSocket y renovación de presencias.
+  SALAS_LATIDO_SEGUNDOS: z.coerce.number().int().min(1).max(60).default(10),
+  // Vida de una presencia sin renovar: margen para reconectarse sin salir de la sala.
+  SALAS_PRESENCIA_SEGUNDOS: z.coerce.number().int().min(2).max(300).default(30),
   // La demo ya tenía `openai` en el .env; OPENAI_API_KEY queda como nombre estándar opcional.
   OPENAI_API_KEY: z.string().optional(),
   openai: z.string().optional(),
   OPENAI_MODEL: z.string().trim().min(1).default('gpt-5.4-mini'),
+  // Variables de sistema de Vercel (vercel.json): allí no se abre puerto y el frontend se
+  // sirve en el mismo dominio que el backend.
+  VERCEL: z.string().optional(),
+  VERCEL_URL: z.string().optional(),
+  VERCEL_BRANCH_URL: z.string().optional(),
+  VERCEL_PROJECT_PRODUCTION_URL: z.string().optional(),
 });
 
 export type Config = {
   entorno: 'development' | 'test' | 'production';
+  /** true en Vercel (despliegue o `vercel dev`): la plataforma intercepta listen() y no abre puerto. */
+  enVercel: boolean;
   puerto: number;
   origenesPermitidos: string[];
   nivelLog: z.infer<typeof esquemaEntorno>['LOG_LEVEL'];
@@ -50,7 +73,15 @@ export type Config = {
     cookieSegura: boolean;
     sameSite?: 'lax' | 'none' | 'strict';
   };
-  salas: { cierreSegundos: number };
+  salas: {
+    cierreSegundos: number;
+    /** Cada cuánto se comprueba cada conexión y se renuevan las presencias. */
+    latidoMs: number;
+    /** Una presencia que nadie renueva en este tiempo vence: la persona sale de la sala. */
+    presenciaMs: number;
+  };
+  /** Sin `url`, las salas viven en la memoria del proceso (un solo backend local). */
+  redis: { url?: string; prefijo: string };
   openai: { apiKey?: string; model: string };
 };
 
@@ -86,11 +117,30 @@ export function cargarConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
       'Configuración de entorno inválida:\n  - SESSION_SECRET es obligatorio en producción.',
     );
   }
+  // Con varias instancias, salas en memoria serían salas distintas que nadie más ve.
+  if ((produccion || v.VERCEL) && !v.REDIS_URL) {
+    throw new Error(
+      'Configuración de entorno inválida:\n  - REDIS_URL es obligatorio en producción y en Vercel: las salas se comparten entre instancias.',
+    );
+  }
+  if (v.SALAS_PRESENCIA_SEGUNDOS < 2 * v.SALAS_LATIDO_SEGUNDOS) {
+    throw new Error(
+      'Configuración de entorno inválida:\n  - SALAS_PRESENCIA_SEGUNDOS debe ser al menos el doble de SALAS_LATIDO_SEGUNDOS.',
+    );
+  }
 
   return {
     entorno: v.NODE_ENV,
+    enVercel: Boolean(v.VERCEL),
     puerto: v.BACKEND_PORT,
-    origenesPermitidos: v.FRONTEND_ORIGIN.split(',')
+    origenesPermitidos: [
+      ...v.FRONTEND_ORIGIN.split(','),
+      // En Vercel el frontend comparte dominio con el backend: se aceptan las URLs del despliegue,
+      // de la rama y de producción sin repetirlas en FRONTEND_ORIGIN (un dominio propio sí va allí).
+      ...[v.VERCEL_URL, v.VERCEL_BRANCH_URL, v.VERCEL_PROJECT_PRODUCTION_URL].flatMap((dominio) =>
+        dominio ? [`https://${dominio}`] : [],
+      ),
+    ]
       .map((origen) => origen.trim().replace(/\/+$/, ''))
       .filter(Boolean),
     nivelLog: v.LOG_LEVEL,
@@ -103,7 +153,12 @@ export function cargarConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
       cookieSegura: produccion,
       sameSite: v.COOKIE_SAME_SITE,
     },
-    salas: { cierreSegundos: v.SALA_CIERRE_SEGUNDOS },
+    salas: {
+      cierreSegundos: v.SALA_CIERRE_SEGUNDOS,
+      latidoMs: v.SALAS_LATIDO_SEGUNDOS * 1000,
+      presenciaMs: v.SALAS_PRESENCIA_SEGUNDOS * 1000,
+    },
+    redis: { url: v.REDIS_URL, prefijo: v.REDIS_PREFIJO },
     openai: { apiKey: v.OPENAI_API_KEY || v.openai || undefined, model: v.OPENAI_MODEL },
   };
 }

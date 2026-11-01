@@ -25,3 +25,6 @@ Thumbs.db
 
 # Base de datos local de desarrollo (npm run db:local)
 .postgres-local/
+
+# Vercel (vercel link / vercel dev)
+.vercel/

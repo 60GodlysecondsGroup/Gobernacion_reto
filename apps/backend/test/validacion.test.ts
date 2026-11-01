@@ -74,6 +74,7 @@ describe('cargarConfig()', () => {
       DATABASE_URL: URL_PRUEBA,
       NODE_ENV: 'production',
       SESSION_SECRET: 'x'.repeat(32),
+      REDIS_URL: 'rediss://default:clave@redis.example:6379',
     });
     expect(produccion.sesion.cookieSegura).toBe(true);
   });
@@ -89,6 +90,70 @@ describe('cargarConfig()', () => {
       'https://gobernacion-reto-i8so.vercel.app',
       'http://127.0.0.1:3000',
     ]);
+  });
+
+  it('en Vercel acepta como origen los dominios del propio despliegue y no abre puerto', () => {
+    const local = cargarConfig({ DATABASE_URL: URL_PRUEBA });
+    expect(local.enVercel).toBe(false);
+
+    const vercel = cargarConfig({
+      DATABASE_URL: URL_PRUEBA,
+      FRONTEND_ORIGIN: 'https://comunidad.example.org',
+      REDIS_URL: 'rediss://default:clave@redis.example:6379',
+      VERCEL: '1',
+      VERCEL_URL: 'gobernacion-reto-abc123.vercel.app',
+      VERCEL_BRANCH_URL: 'gobernacion-reto-git-main.vercel.app',
+      VERCEL_PROJECT_PRODUCTION_URL: 'gobernacion-reto.vercel.app',
+    });
+    expect(vercel.enVercel).toBe(true);
+    expect(vercel.origenesPermitidos).toEqual([
+      'https://comunidad.example.org',
+      'https://gobernacion-reto-abc123.vercel.app',
+      'https://gobernacion-reto-git-main.vercel.app',
+      'https://gobernacion-reto.vercel.app',
+    ]);
+  });
+
+  it('salas: sin REDIS_URL solo en desarrollo; en producción y en Vercel es obligatorio', () => {
+    const local = cargarConfig({ DATABASE_URL: URL_PRUEBA });
+    expect(local.redis).toEqual({ url: undefined, prefijo: 'comunidad:' });
+    expect(local.salas).toEqual({ cierreSegundos: 180, latidoMs: 10_000, presenciaMs: 30_000 });
+
+    expect(() =>
+      cargarConfig({
+        DATABASE_URL: URL_PRUEBA,
+        NODE_ENV: 'production',
+        SESSION_SECRET: 'x'.repeat(32),
+      }),
+    ).toThrow(/REDIS_URL es obligatorio/);
+    expect(() => cargarConfig({ DATABASE_URL: URL_PRUEBA, VERCEL: '1' })).toThrow(
+      /REDIS_URL es obligatorio/,
+    );
+    expect(() => cargarConfig({ DATABASE_URL: URL_PRUEBA, REDIS_URL: 'http://redis' })).toThrow(
+      /redis:\/\/ o rediss:\/\//,
+    );
+    expect(
+      cargarConfig({
+        DATABASE_URL: URL_PRUEBA,
+        REDIS_URL: 'redis://localhost:6379',
+        REDIS_PREFIJO: 'vista-previa:',
+        SALAS_LATIDO_SEGUNDOS: '5',
+        SALAS_PRESENCIA_SEGUNDOS: '20',
+      }),
+    ).toMatchObject({
+      redis: { url: 'redis://localhost:6379', prefijo: 'vista-previa:' },
+      salas: { latidoMs: 5_000, presenciaMs: 20_000 },
+    });
+  });
+
+  it('la presencia dura al menos dos latidos (si no, vencería entre renovaciones)', () => {
+    expect(() =>
+      cargarConfig({
+        DATABASE_URL: URL_PRUEBA,
+        SALAS_LATIDO_SEGUNDOS: '10',
+        SALAS_PRESENCIA_SEGUNDOS: '15',
+      }),
+    ).toThrow(/al menos el doble/);
   });
 
   it('permite configurar COOKIE_SAME_SITE para despliegues entre dominios', () => {

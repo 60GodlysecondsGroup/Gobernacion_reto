@@ -158,7 +158,9 @@ La sesión es una cookie, así que dos pestañas del mismo navegador son la mism
 | `npm run admin:contrasena`           | Define (o con `-- --reemplazar`, cambia) la contraseña de la cuenta de administración. Entrada oculta; solo se guarda el hash.                                                                                                |
 | `npm run usuarios:limpiar-prueba`    | Inventario de las cuentas sintéticas de prueba en la base del `.env`; con `-- --confirmar` las borra y conserva la administración.                                                                                            |
 | `npm run fuentes:cargar`             | Sincroniza las fuentes con `db/seed/fuentes_institucionales.json` sin tocar el resto (ver `docs/FUENTES.md`).                                                                                                                 |
-| `npm run salas:simular`              | Conecta personas sintéticas a una sala (`--cantidad`, `--desde`, `--sala`, `--comunidad`) para la demo de capacidad.                                                                                                          |
+| `npm run salas:simular`              | Conecta personas sintéticas a una sala (`--cantidad`, `--desde`, `--sala`, `--comunidad`, `--puerto`) para la demo de capacidad.                                                                                              |
+| `npm run redis:local`                | Redis local en Docker para las salas con varias instancias (`npm run redis:detener` lo para).                                                                                                                                 |
+| `npm run dev:distribuido`            | Dos backends (4000 y 4001) con el mismo Redis y el frontend: para probar salas entre instancias.                                                                                                                              |
 | `npm test`                           | Pruebas unitarias y de humo del backend (DLP y evasión, permisos, sesión, guardianes, salas y clic). Sin red ni base de datos.                                                                                                |
 | `npm run test:db`                    | Integración contra una base local desechable (`comunidad_pruebas`, reconstruida en cada ejecución; nunca la del `.env`): autenticación, TRL-01 a 12, AV-01 a 12, DLP, reportes, moderación, administración, salas y permisos. |
 | `npm run lint` / `npm run typecheck` | ESLint y TypeScript en las dos aplicaciones.                                                                                                                                                                                  |
@@ -302,11 +304,48 @@ DEMO.md                         Guion de la demostración
 - **Tiempo real:** un WebSocket (`ws`) en el mismo servidor del backend, en `/ws/salas/:id`. Se autentica con la misma cookie de sesión y rechaza otros orígenes. **El servidor es la autoridad:** decide quién está, dónde está cada avatar y qué movimiento es válido; el cliente solo envía intenciones (`mover`, `mensaje`, `salir`). Quien llega tarde recibe el estado completo.
 - **Segmentación (AV-12):** solo se entra a salas de la comunidad propia; otra sala responde igual que una inexistente. La base lo refuerza con su disparador en participaciones y posiciones.
 - **Capacidad (TRL-07):** máximo 10. Ocupar un cupo es un único `UPDATE … WHERE usuarios_actuales < capacidad_maxima` y la tabla tiene un `CHECK`, así que entradas simultáneas nunca pasan de 10; la persona 11 recibe «La sala está llena.». Otra pestaña de la misma persona reemplaza su conexión sin ocupar otro cupo.
-- **Salida (F15):** salir o perder la conexión libera el cupo, cierra la participación y borra la posición. Al arrancar, el backend cierra lo que hubiera quedado abierto.
+- **Salida (F15):** salir libera el cupo, cierra la participación y borra la posición. Perder la conexión deja un margen (`SALAS_PRESENCIA_SEGUNDOS`, 30 por defecto) para reconectarse sin salir; si la persona no vuelve, sale sola. El cliente se reconecta por su cuenta. Ver «Salas con varias instancias».
 - **Cierre automático (TRL-08, F13):** con 0 personas empieza un contador (`SALA_CIERRE_SEGUNDOS`, 180 por defecto). Si nadie entra, la instancia se cierra y, en la misma sentencia, se abre una nueva del mismo tema con el mismo escenario. Entrar antes cancela el contador. Una instancia cerrada no admite entradas.
 - **Escenario 2D:** cuadrícula de 12×8 con muebles guardados como datos en `escenario_sala` y dibujados por código (pixel art original). Movimiento con W A S D, con las flechas si el escenario tiene el foco o con botones en pantalla; no hay clic para moverse. Las teclas se ignoran mientras se escribe en un campo. Cada movimiento válido se guarda en `posicion_avatar_sala` y se difunde; los rechazados (borde u obstáculo) solo los ve quien se movió.
 - **Chat (F14):** cada mensaje pasa por el DLP. Si se bloquea, solo su autor ve el aviso y su texto queda en el campo; nadie más lo recibe y el bloqueo queda en `evento_dlp` sin el texto. El chat no se guarda.
 - **En la sala:** lista de personas con `n/10`, **Salir de la sala**, **Necesito ayuda** (muestra un canal institucional sin salir de la sala) y **Reportar** la sala.
+
+## Salas con varias instancias (Vercel)
+
+En Vercel el backend puede correr en varias instancias a la vez, y cada conexión WebSocket queda en la instancia que la aceptó. Las salas no viven en la memoria de ninguna: el estado temporal se comparte por **Redis** y la base sigue siendo la autoridad de lo persistente.
+
+| Dónde               | Qué guarda                                                                                                                                                                                                                                                           |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PostgreSQL          | Cupos (`usuarios_actuales`, el `UPDATE` atómico y el `CHECK` de 10), participaciones, última posición, salas, escenarios, DLP. Sin cambios de esquema.                                                                                                               |
+| Redis (temporal)    | **Presencias**: quién está en cada sala, su posición, qué conexión (de qué instancia) la sostiene y cuándo vence. **Eventos** por sala (Pub/Sub, canal `eventos:{sala}`) y **órdenes** entre instancias (canal `control`). Nada de sesiones, contraseñas ni correos. |
+| Memoria de cada una | Solo lo de sus propias conexiones: límites de ritmo, recorrido por clic en curso y eventos pendientes de entregar.                                                                                                                                                   |
+
+- **Eventos entre instancias:** A (instancia 1) se mueve → su instancia valida sesión, sala y movimiento → un script Lua actualiza la presencia y publica `movio` en un solo paso → cada instancia entrega el evento solo a sus conexiones de esa sala. Cada evento lleva un número (`seq`) que crece por sala: quien ya lo recibió, o lo tiene en su estado, lo descarta. El orden de los pasos de una persona se conserva.
+- **Presencia con vencimiento:** cada conexión tiene su propio identificador. Cada latido (`SALAS_LATIDO_SEGUNDOS`), la instancia renueva las presencias de sus conexiones vivas; una presencia que nadie renueva vence (`SALAS_PRESENCIA_SEGUNDOS`) y la persona sale una sola vez, la retire la instancia que sea. Los vencimientos usan la hora del servidor Redis.
+- **Misma persona, varias conexiones:** entrar o salir de una sala se hace de a una vez por persona (bloqueo en Redis, desde cualquier instancia). Otra pestaña o una reconexión **toman** la presencia (sin otro cupo ni avisos de entrada) y la conexión anterior se cierra con «Entraste a esta sala desde otra pestaña.». Cerrar una conexión reemplazada no saca a nadie.
+- **Reconexión:** ante un corte (red, instancia que se reinicia, fin del tiempo máximo de una conexión en Vercel), el navegador reintenta con espera exponencial y componente al azar, hasta 8 veces. Si vuelve antes de que venza su presencia, sigue en la sala en el mismo lugar; recibe el estado completo y el chat que ya veía se conserva. Lo publicado durante el corte no se recupera: el chat no tiene historial.
+- **Arranque sin limpiezas globales:** una instancia que arranca no toca presencias ni cupos de nadie. El mantenimiento (cada latido) solo actúa sobre lo vencido: presencias sin renovar, cupos de la base que ninguna presencia sostiene (una instancia cayó a mitad de una entrada) y cierres automáticos que programó una instancia que ya no está. Las migraciones no corren al arrancar (`npm run db:migrate`).
+- **Si Redis falla:** no se sigue con un estado local que las demás instancias no verían. Las entradas nuevas y las acciones se rechazan con un cierre que el cliente reintenta; al volver Redis, cada conexión recibe de nuevo el estado completo.
+- **Seguridad:** la sala de cada conexión sale de la URL validada contra la base (sesión, permiso y comunidad) y queda fija; los mensajes del cliente no pueden nombrar otra sala. Las credenciales de Redis solo existen en el backend.
+- **Sin Redis** (`REDIS_URL` vacía) las salas viven en la memoria de un solo backend: sirve para `npm run dev` de siempre. En producción y en Vercel la configuración exige `REDIS_URL`.
+
+### Probar con dos instancias en local
+
+1. `npm run redis:local`: Redis en Docker (`docker-compose.yml`, `127.0.0.1:6379`, sin persistencia).
+2. `npm run dev:distribuido`: backend A en el 4000, backend B en el 4001 (los dos con el Redis local) y el frontend en el 3000 contra A.
+3. Entra a una sala desde el navegador (A) y conecta personas por B: `npm run salas:simular -- --puerto 4001 --cantidad 3`. Las ves entrar y moverse aunque estén en otra instancia.
+4. `npm run redis:detener` al terminar.
+
+Pruebas: `npm test` incluye el contrato de la coordinación y los casos con dos instancias en memoria. `npm run test:db` (con `npm run redis:local` en marcha) añade el mismo contrato contra Redis y **dos procesos backend reales** que comparten Redis y la base: mensajes y movimientos entre instancias, salida y vencimiento, misma persona en las dos, reconexión, caída y reinicio de una instancia, aislamiento entre salas y comunidades, y Redis sin responder. Sin Redis, esas pruebas se omiten y lo dicen.
+
+### Despliegue en Vercel
+
+`vercel.json` (en la raíz) define dos servicios: `backend` (Express, `apps/backend`, entrada `index.ts`) y `frontend` (Next.js, `apps/frontend`). Rutas públicas: `/api/*` y `/ws/*` al backend; todo lo demás al frontend. Sin bindings: el navegador llama al backend por el mismo dominio y el frontend no lo llama desde el servidor.
+
+1. Proyecto de Vercel con **Root Directory** en la raíz del repositorio (ahí están `package-lock.json` y `node_modules`; con `apps/` el build de Next no encuentra `next`). Fluid compute activo (lo está por defecto en proyectos nuevos).
+2. Un Redis administrado con TLS (`rediss://`), por ejemplo Upstash desde el Marketplace de Vercel, que inyecta `REDIS_URL`.
+3. Variables del proyecto (privadas, sin `NEXT_PUBLIC_`): `DATABASE_URL`, `DATABASE_SSL`, `SESSION_SECRET`, `REDIS_URL`, `REDIS_PREFIJO` (uno distinto para Preview y Production si comparten Redis), `OPENAI_API_KEY` y, si hace falta, `FRONTEND_ORIGIN` con un dominio propio. `NEXT_PUBLIC_API_URL` no se usa en Vercel.
+4. Una conexión WebSocket dura como mucho lo que permita la función (300 s por defecto); el cliente se reconecta solo. En planes Pro puede subirse con `functions.maxDuration` en el servicio `backend`.
 
 ## Avatar (Fase 6)
 

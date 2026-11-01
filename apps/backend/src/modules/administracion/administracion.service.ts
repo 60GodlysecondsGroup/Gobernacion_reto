@@ -232,8 +232,8 @@ export function crearServicioAdministracion({ repositorio, salas, dlp }: Depende
         'Hay más personas dentro que la capacidad indicada. Intenta cuando salgan.',
       );
     }
+    // La capacidad nueva se anuncia en la próxima entrada: cada entrada la lee de la base.
     if (datos.habilitada === false) await salas.retirarTodos(idSala);
-    if (datos.capacidad !== undefined) salas.actualizarCapacidad(idSala, datos.capacidad);
     return repositorio.sala(idSala);
   }
 
@@ -418,7 +418,7 @@ export function crearServicioAdministracion({ repositorio, salas, dlp }: Depende
         throw errores.solicitudInvalida([{ campo: 'obstaculos', mensaje: problema }]);
       }
       // Solo con la sala vacía: quien está dentro no ve aparecer un mueble encima.
-      if (sala.ocupacion > 0 || !salas.olvidar(idSala)) {
+      if (sala.ocupacion > 0 || !(await salas.olvidar(idSala))) {
         throw conflicto('SALA_OCUPADA', 'Solo se puede cambiar el escenario con la sala vacía.');
       }
       const ok = await repositorio.actualizarEscenario({

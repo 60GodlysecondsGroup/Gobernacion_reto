@@ -40,6 +40,10 @@ import { crearServicioPerfil } from './modules/perfil/perfil.service.js';
 import { crearRepositorioReportes } from './modules/reportes/reportes.repository.js';
 import { rutasReportes } from './modules/reportes/reportes.routes.js';
 import { crearServicioReportes } from './modules/reportes/reportes.service.js';
+import {
+  crearCoordinacionMemoria,
+  type CoordinacionSalas,
+} from './modules/salas/salas.coordinacion.js';
 import { crearGestorSalas, type GestorSalas } from './modules/salas/salas.gestor.js';
 import { crearRepositorioSalas } from './modules/salas/salas.repository.js';
 import { rutasSalas } from './modules/salas/salas.routes.js';
@@ -61,6 +65,11 @@ export type Dependencias = {
   db: Database;
   logger: Logger;
   config: Pick<Config, 'origenesPermitidos' | 'sesion' | 'salas' | 'openai'>;
+  /**
+   * Estado compartido de las salas entre instancias (Redis, ver server.ts). Sin indicarla, cada
+   * servidor tiene la suya en memoria: sirve para pruebas y para un solo backend local.
+   */
+  coordinacion?: CoordinacionSalas;
   /** Reemplazable cuando exista la verificación de edad definitiva. */
   proveedorRango?: ProveedorRangoEdad;
   /** Límites de intentos de inicio de sesión y registro (las pruebas los ajustan). */
@@ -95,6 +104,7 @@ export function crearServidor({
   db,
   logger,
   config,
+  coordinacion = crearCoordinacionMemoria({ presenciaMs: config.salas.presenciaMs }),
   proveedorRango = proveedorRangoSintetico,
   limitesAcceso,
   ttlReglasDlpMs,
@@ -185,12 +195,16 @@ export function crearServidor({
       }),
     ),
   );
+  const latidoMs = intervalosSalas.latidoMs ?? config.salas.latidoMs;
   const salas = crearGestorSalas({
     repositorio: repositorioSalas,
     comunidades: servicioComunidad,
     dlp,
     logger,
+    coordinacion,
     cierreSegundos: config.salas.cierreSegundos,
+    latidoMs,
+    presenciaMs: config.salas.presenciaMs,
     intervaloMovimientoMs: intervalosSalas.movimientoMs,
     intervaloMensajeMs: intervalosSalas.mensajeMs,
     retrasoGuardadoMs: intervalosSalas.guardadoMs,
@@ -201,7 +215,7 @@ export function crearServidor({
     sesiones,
     origenesPermitidos: config.origenesPermitidos,
     logger,
-    latidoMs: intervalosSalas.latidoMs,
+    latidoMs,
   });
 
   // Moderación y administración (Fase 7): necesitan el gestor de salas para retirar personas

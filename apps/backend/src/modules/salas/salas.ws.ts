@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { IncomingMessage } from 'node:http';
 import type { Duplex } from 'node:stream';
 import { WebSocketServer, type WebSocket } from 'ws';
@@ -5,6 +6,7 @@ import type { Logger } from '../../lib/logger.js';
 import { leerCookie, NOMBRE_COOKIE_SESION } from '../seguridad/sesion.middleware.js';
 import type { ServicioSesion } from '../seguridad/sesion.service.js';
 import type { Conexion, GestorSalas } from './salas.gestor.js';
+import { CIERRE } from './salas.protocolo.js';
 
 type Dependencias = {
   gestor: GestorSalas;
@@ -37,7 +39,8 @@ export function crearTiempoRealSalas({
   const vivas = new WeakMap<WebSocket, boolean>();
   let latido: NodeJS.Timeout | null = null;
 
-  // Una conexión que no responde al ping se da por perdida: la persona sale de la sala.
+  // Una conexión que no responde al ping se da por perdida: su presencia deja de renovarse y
+  // vence si la persona no vuelve a tiempo.
   function iniciarLatido() {
     if (latido) return;
     latido = setInterval(() => {
@@ -63,6 +66,7 @@ export function crearTiempoRealSalas({
     ws.on('pong', () => vivas.set(ws, true));
 
     const conexion: Conexion = {
+      id: randomUUID(),
       enviar: (mensaje) => {
         if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(mensaje));
       },
@@ -79,9 +83,13 @@ export function crearTiempoRealSalas({
         if (idUsuario) return gestor.recibir(idSala, idUsuario, conexion, datos.toString());
       });
     });
-    ws.on('close', () => {
+    // Cerrar con 1000 es salir a propósito (botón o salir de la página): libera el cupo ya.
+    // Cualquier otro cierre es una conexión perdida: la persona puede volver sin perder su lugar.
+    ws.on('close', (codigo) => {
       void entrada.then((idUsuario) => {
-        if (idUsuario) return gestor.desconectar(idSala, idUsuario, conexion);
+        if (!idUsuario) return;
+        const motivo = codigo === CIERRE.SALIDA ? 'salida' : 'perdida';
+        return gestor.desconectar(idSala, idUsuario, conexion, motivo);
       });
     });
     ws.on('error', (error) =>

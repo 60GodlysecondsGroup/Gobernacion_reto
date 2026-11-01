@@ -1,0 +1,14 @@
+# Redis local para las salas con varias instancias del backend (npm run redis:local).
+# Solo coordina estado temporal (presencias y eventos): no guarda datos, por eso sin persistencia.
+# La base de datos sigue siendo la PostgreSQL de siempre (.env o npm run db:local).
+services:
+  redis:
+    image: redis:7.4-alpine
+    command: ['redis-server', '--save', '', '--appendonly', 'no']
+    ports:
+      - '127.0.0.1:6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 2s
+      timeout: 2s
+      retries: 15
