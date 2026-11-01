@@ -17,6 +17,8 @@ export function geometriaEscenario(ancho: number, alto: number, pared = PARED) {
   const anchoVista = ancho * CELDA + 12;
   const altoVista = alto * CELDA + pared + 10;
   return {
+    /** Ancho entre alto del lienzo completo: el escenario se dimensiona sin deformarse. */
+    proporcion: anchoVista / altoVista,
     pared: { izquierda: (6 / anchoVista) * 100, alto: ((pared + 4) / altoVista) * 100 },
     suelo: {
       izquierda: (6 / anchoVista) * 100,

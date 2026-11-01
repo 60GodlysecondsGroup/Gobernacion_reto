@@ -5,6 +5,7 @@ export { CampoTexto } from './CampoTexto';
 export { ConfirmarAccion, Dialogo } from './Dialogo';
 export { CargandoLista, EstadoError, EstadoVacio } from './Estados';
 export { Insignia, type TonoInsignia } from './Insignia';
+export { Joystick, type PosicionJoystick } from './Joystick';
 export { ProveedorNotificaciones, useNotificar } from './Notificaciones';
 export { Tarjeta } from './Tarjeta';
 export { EnlaceVolver } from './EnlaceVolver';

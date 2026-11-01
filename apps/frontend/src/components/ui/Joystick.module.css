@@ -1,0 +1,80 @@
+/*
+ * Joystick virtual: base de cristal con guías de dirección y una palanca que sigue al dedo.
+ * `touch-action: none` es lo que evita que arrastrar sobre él desplace o amplíe la página.
+ */
+.base {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  /* Se hereda: quien lo usa lo ajusta en su contenedor o en su propia clase. */
+  width: var(--tamano-joystick, 8rem);
+  height: var(--tamano-joystick, 8rem);
+  border: 1px solid var(--cristal-borde);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgb(91 53 213 / 0.1) 0 34%, transparent 35%), var(--cristal-medio);
+  box-shadow: var(--cristal-brillo), var(--sombra-2);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: grab;
+  transition: box-shadow var(--transicion);
+}
+
+.base[data-activo] {
+  box-shadow:
+    var(--cristal-brillo),
+    var(--sombra-3),
+    0 0 0 4px rgb(91 53 213 / 0.16);
+  cursor: grabbing;
+}
+
+/* Cuatro marcas en los bordes que indican las direcciones. */
+.guias {
+  position: absolute;
+  inset: 9%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from -4deg,
+    var(--morado-300) 0 8deg,
+    transparent 8deg 90deg,
+    var(--morado-300) 90deg 98deg,
+    transparent 98deg 180deg,
+    var(--morado-300) 180deg 188deg,
+    transparent 188deg 270deg,
+    var(--morado-300) 270deg 278deg,
+    transparent 278deg
+  );
+  -webkit-mask: radial-gradient(circle, transparent 0 calc(100% - 7px), #000 calc(100% - 6px));
+  mask: radial-gradient(circle, transparent 0 calc(100% - 7px), #000 calc(100% - 6px));
+  opacity: 0.8;
+}
+
+.palanca {
+  --desplazamiento: 0px, 0px;
+  position: relative;
+  width: 44%;
+  height: 44%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--morado-400), var(--morado-600) 70%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.45),
+    0 6px 14px -4px rgb(51 25 138 / 0.55);
+  transform: translate(var(--desplazamiento));
+  /* Al soltar vuelve al centro con un resorte corto; mientras se arrastra sigue al dedo sin retraso. */
+  transition: transform 220ms var(--curva-resorte);
+  pointer-events: none;
+}
+
+.base[data-activo] .palanca {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .palanca {
+    transition: none;
+  }
+}
