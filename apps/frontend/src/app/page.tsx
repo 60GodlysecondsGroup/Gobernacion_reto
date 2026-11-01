@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Chigui } from '@/components/guia/Chigui';
 import { AtajosOrientacion } from '@/components/inicio/AtajosOrientacion';
 import { ComoFunciona } from '@/components/inicio/ComoFunciona';
-import { EdificioLlanero } from '@/components/inicio/EdificioLlanero';
+import { ValleComunidades } from '@/components/inicio/ValleComunidades';
 import { AccionesInicio } from '@/components/sesion/AccionesInicio';
 import { OBJETOS_SALA } from '@/config/salas-mundo';
 import estilos from './page.module.css';
@@ -45,7 +45,7 @@ export default function Inicio() {
 
         <div className={estilos.visual}>
           <div className={estilos.ilustracion}>
-            <EdificioLlanero />
+            <ValleComunidades />
           </div>
           <p className={`${estilos.chip} ${estilos.chipA}`} aria-hidden="true">
             <Users size={15} />4 comunidades separadas

@@ -151,8 +151,8 @@
 }
 
 .chipB {
+  top: 6%;
   right: -2%;
-  bottom: 30%;
   animation-delay: 650ms;
 }
 

@@ -255,7 +255,7 @@ apps/
       components/avatar/        Avatar (único componente, por capas), sus dibujos (capas.ts) y «Mi avatar»
       components/panel/         Panel administrativo: resumen, reportes, usuarios, salas y escenario, comunidades, reglas, registro
       components/guia/          Guía virtual «Cocuyo» (contenido en config/guia.ts)
-      components/inicio/        Edificio llanero (ilustración del inicio) y atajos de orientación
+      components/inicio/        Valle de las cuatro casas (ilustración del inicio, estaciones en config/comunidades.ts) y atajos de orientación
       components/…              Orientación, fuentes, comunidad, perfil, moderación y layout
       config/textos.ts          Aviso de límites (texto exacto de la sección 18.1)
       config/navegacion.ts      Menú principal (cada enlace declara el permiso que necesita)
