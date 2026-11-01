@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { SelectorAcceso } from '@/components/sesion/SelectorAcceso';
+import { Acceso } from '@/components/sesion/Acceso';
 
-export const metadata: Metadata = { title: 'Acceso' };
+export const metadata: Metadata = { title: 'Iniciar con mi Avatar' };
 
-export default function Acceso() {
+export default function PaginaAcceso() {
   return (
     <Suspense fallback={<p>Cargando…</p>}>
-      <SelectorAcceso />
+      <Acceso />
     </Suspense>
   );
 }

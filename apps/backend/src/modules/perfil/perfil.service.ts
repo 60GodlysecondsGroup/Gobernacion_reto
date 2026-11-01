@@ -6,32 +6,33 @@ import type { ServicioDlp } from '../dlp/dlp.service.js';
 import type { Sesion } from '../seguridad/sesion.service.js';
 import type { RepositorioPerfil } from './perfil.repository.js';
 
+/** Alias o nametag: nombre público y único. Lo comparten el perfil y el registro. */
+export const esquemaAlias = z
+  .string()
+  .trim()
+  .min(3, 'Usa al menos 3 caracteres.')
+  .max(30, 'Usa máximo 30 caracteres.')
+  .regex(
+    /^[\p{L}\p{N}_.-]+$/u,
+    'Usa solo letras, números, punto, guion o guion bajo, sin espacios.',
+  );
+
+/** Intereses generales (hobbies): opcionales, hasta 10. */
+export const esquemaIntereses = z
+  .array(z.string().trim().min(2, 'Cada interés debe tener al menos 2 caracteres.').max(30))
+  .max(10, 'Puedes tener hasta 10 intereses.')
+  .default([]);
+
 /**
  * Perfil protegido (F16): solo alias e intereses generales. El avatar se edita en «Mi avatar»
  * (módulo avatar). `.strict()` rechaza cualquier otro campo (edad, rango, contacto, avatar…).
  */
-const esquemaPerfil = z
-  .object({
-    alias: z
-      .string()
-      .trim()
-      .min(3, 'El alias debe tener al menos 3 caracteres.')
-      .max(30, 'El alias puede tener máximo 30 caracteres.')
-      .regex(
-        /^[\p{L}\p{N}_.-]+$/u,
-        'Usa solo letras, números, punto, guion o guion bajo, sin espacios.',
-      ),
-    intereses: z
-      .array(z.string().trim().min(2, 'Cada interés debe tener al menos 2 caracteres.').max(30))
-      .max(10, 'Puedes tener hasta 10 intereses.')
-      .default([]),
-  })
-  .strict();
+const esquemaPerfil = z.object({ alias: esquemaAlias, intereses: esquemaIntereses }).strict();
 
 const esquemaBusqueda = z.object({ buscar: z.string().trim().min(2).max(30) });
 
 /** Quita intereses repetidos sin distinguir mayúsculas, conservando el primero. */
-const sinRepetidos = (intereses: string[]) =>
+export const sinRepetidos = (intereses: string[]) =>
   intereses.filter(
     (interes, i) =>
       intereses.findIndex((otro) => otro.toLowerCase() === interes.toLowerCase()) === i,

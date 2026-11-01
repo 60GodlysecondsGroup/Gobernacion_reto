@@ -47,7 +47,7 @@ const ETAPAS: Etapa[] = [
       { icono: Layers, texto: 'Cuatro comunidades: 10–12, 13–15, 16–17 y 18–22 años' },
       { icono: EyeOff, texto: 'Tu edad exacta nunca se muestra' },
     ],
-    enlace: { texto: 'Entrar con un usuario de prueba', href: '/acceso' },
+    enlace: { texto: 'Iniciar con mi Avatar', href: '/acceso' },
     ilustracion: <IlustracionPisos />,
   },
   {

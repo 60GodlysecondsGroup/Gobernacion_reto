@@ -32,9 +32,6 @@ pool.on('error', (error) => {
 if (config.sesion.secretoGenerado) {
   logger.warn('Sin SESSION_SECRET: se usa uno temporal y las sesiones se pierden al reiniciar.');
 }
-if (config.accesoDemo) {
-  logger.info('Acceso de demostración habilitado (selector de usuarios sintéticos).');
-}
 
 const { app, salas, tiempoReal } = crearServidor({ db: pool, logger, config });
 

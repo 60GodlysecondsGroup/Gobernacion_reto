@@ -1,16 +1,19 @@
--- Datos sintéticos de demostración (Anexo B.7).
--- Ningún registro corresponde a personas, conversaciones ni instituciones reales.
--- Este archivo REINICIA los datos: vacía las tablas y vuelve a cargarlas.
--- Los catálogos del sistema (rangos, categorías DLP, necesidades) viven en las migraciones.
--- Las reglas DLP (reglas_dlp.json) y las fuentes institucionales (fuentes_institucionales.json)
--- se cargan después, desde sus archivos.
+-- Datos base de la plataforma (Anexo B.7): comunidades, categorías, catálogo de avatar, salas
+-- temáticas y la cuenta de administración. Ningún registro corresponde a personas reales.
+-- Este archivo REINICIA los datos: vacía las tablas (incluidas cuentas registradas y sesiones)
+-- y vuelve a cargarlas. Los catálogos del sistema (rangos, categorías DLP, necesidades) viven en
+-- las migraciones. Las reglas DLP (reglas_dlp.json) y las fuentes institucionales
+-- (fuentes_institucionales.json) se cargan después, desde sus archivos.
+--
+-- Las cuentas sintéticas de prueba (jóvenes, moderación, gestión) y su contenido están en
+-- usuarios_prueba.sql, que solo se carga en la base local (db:local, test:db).
 
 truncate
   app.registro_auditoria, app.bitacora_fuente, app.fuente_necesidad, app.fuente_institucional,
   app.evento_dlp, app.regla_dlp, app.reporte,
   app.posicion_avatar_sala, app.escenario_sala, app.participacion_sala, app.sala,
   app.respuesta, app.hilo, app.configuracion_avatar, app.elemento_avatar,
-  app.usuario, app.categoria, app.comunidad
+  app.sesion, app.credencial, app.usuario, app.categoria, app.comunidad
 restart identity;
 
 -- Comunidades: una por rango de edad, aisladas entre sí (sección 8).
@@ -28,17 +31,10 @@ insert into app.categoria (codigo, nombre, descripcion, orden) values
   ('cambios-nuevas-etapas', 'Cambios y nuevas etapas', 'Adaptarse a cambios de colegio, de ciudad o de etapa.', 4),
   ('orientacion', 'Orientación', 'Dudas sobre dónde encontrar información y canales de apoyo.', 5);
 
--- Usuarios sintéticos (B.7 + Fase 2): al menos uno por rango de edad y uno por rol.
--- Usuario_001 · LunaDemo · comunidad 13–15 es el usuario de B.7. El personal no tiene rango.
+-- Cuenta de administración de la plataforma. Nace SIN contraseña: nadie puede entrar con ella
+-- hasta que quien opera el servidor la define con `npm run admin:contrasena`.
 insert into app.usuario (codigo, alias, rol, rango_edad, intereses_generales) values
-  ('Usuario_001', 'LunaDemo', 'usuario', 'B', '{lectura, música}'),
-  ('Usuario_002', 'SolDemo', 'usuario', 'B', '{dibujo}'),
-  ('Usuario_003', 'RioDemo', 'usuario', 'A', '{juegos de mesa}'),
-  ('Usuario_004', 'NubeDemo', 'usuario', 'C', '{fotografía}'),
-  ('Usuario_005', 'MarDemo', 'usuario', 'D', '{deporte}'),
-  ('Moderador_001', 'ModeradorDemo', 'moderador', null, '{}'),
-  ('Admin_001', 'AdminDemo', 'admin_plataforma', null, '{}'),
-  ('Gestor_001', 'GestorDemo', 'gestor_fuentes', null, '{}');
+  ('Admin_001', 'AdminDemo', 'admin_plataforma', null, '{}');
 
 -- Catálogo de avatar (F36, RF21, RF27, RF28): cerrado, gratuito y sin opciones ligadas a la edad.
 -- Cada recurso es una clave de un dibujo original hecho por código en el frontend
@@ -68,7 +64,8 @@ from (values
   ('accesorio-audifonos', 'accesorio', 'Audífonos', 3)
 ) as catalogo (id, tipo, nombre, orden);
 
--- Una apariencia distinta para cada usuario sintético, combinando el catálogo.
+-- Una apariencia para cada cuenta, combinando el catálogo (usuarios_prueba.sql repite la fórmula
+-- para las cuentas de prueba, con la misma numeración).
 insert into app.configuracion_avatar (id_usuario, id_personaje, id_cabello, id_rasgos, id_prenda, id_accesorio)
 select id_usuario,
        (array['tono-arena', 'tono-miel', 'tono-canela', 'tono-cacao'])[1 + n % 4],
@@ -122,68 +119,5 @@ insert into app.escenario_sala (id_sala, ancho, alto, obstaculos, aparicion_x, a
 select s.id_sala, 12, 8, t.obstaculos::jsonb, 1, 6
 from salas s
 join temas t on t.nombre = s.nombre;
-
--- Hilos sintéticos (Fase 4): uno o dos por comunidad, para que cada inicio tenga contenido y
--- se pueda comprobar el aislamiento. Textos ficticios, sin datos personales.
-insert into app.hilo (id_usuario, id_comunidad, id_categoria, titulo, contenido, fecha_creacion)
-select u.id_usuario, c.id_comunidad, cat.id_categoria, h.titulo, h.contenido,
-       now() - h.antiguedad
-from (values
-  ('Usuario_002', 'vida-academica', '¿Cómo organizan su tiempo para estudiar?',
-   'Esta semana tengo varias tareas y me cuesta repartir el tiempo. ¿Qué les funciona a ustedes?',
-   interval '2 days'),
-  ('Usuario_001', 'cambios-nuevas-etapas', 'Me cuesta adaptarme a los cambios de este año',
-   'Cambiaron varios horarios y profesores, y todavía me siento un poco perdido. ¿A alguien más le pasó?',
-   interval '5 hours'),
-  ('Usuario_003', 'relaciones-convivencia', '¿Cómo hacer nuevos amigos en el descanso?',
-   'Llegué hace poco y en el descanso casi siempre estoy solo. ¿Qué podría intentar?',
-   interval '1 day'),
-  ('Usuario_004', 'bienestar-cotidiano', 'Ideas para empezar el día con calma',
-   '¿Qué hacen en la mañana para empezar con buena energía? Yo estoy probando salir a caminar un rato.',
-   interval '3 hours'),
-  ('Usuario_005', 'orientacion', '¿Dónde encuentro información sobre orientación vocacional?',
-   'Estoy pensando qué estudiar y quisiera saber qué opciones de orientación existen.',
-   interval '6 hours')
-) as h (codigo, categoria, titulo, contenido, antiguedad)
-join app.usuario u on u.codigo = h.codigo
-join app.comunidad c on c.rango_edad = u.rango_edad
-join app.categoria cat on cat.codigo = h.categoria;
-
-insert into app.respuesta (id_hilo, id_usuario, contenido, fecha_creacion)
-select hi.id_hilo, u.id_usuario, r.contenido, now() - r.antiguedad
-from (values
-  ('¿Cómo organizan su tiempo para estudiar?', 'Usuario_001',
-   'A mí me sirve hacer una lista corta cada mañana y empezar por lo más fácil.', interval '1 day')
-) as r (titulo, codigo, contenido, antiguedad)
-join app.hilo hi on hi.titulo = r.titulo
-join app.usuario u on u.codigo = r.codigo;
-
--- Respuesta sintética que el DLP no detecta (no contiene datos personales ni de contacto), pero
--- incumple las reglas de convivencia. Sirve para demostrar la segunda capa de protección: el
--- reporte de una persona y la revisión del moderador (sección 17.1, TRL-11).
-insert into app.respuesta (id_hilo, id_usuario, contenido, fecha_creacion)
-select hi.id_hilo, u.id_usuario,
-       'Tus preguntas siempre son aburridas, mejor no escribas más aquí.', now() - interval '2 hours'
-from app.hilo hi, app.usuario u
-where hi.titulo = 'Me cuesta adaptarme a los cambios de este año' and u.codigo = 'Usuario_002';
-
--- Reportes sintéticos pendientes (Fase 7), para que el panel de moderación tenga casos que revisar.
-insert into app.reporte
-  (id_usuario_reportante, id_comunidad, tipo_contenido, id_contenido, categoria, descripcion, fecha_reporte)
-select luna.id_usuario, c.id_comunidad, 'respuesta', r.id_respuesta, 'acoso', null,
-       now() - interval '90 minutes'
-from app.usuario luna
-join app.comunidad c on c.rango_edad = luna.rango_edad
-join app.respuesta r on r.contenido like 'Tus preguntas siempre son aburridas%'
-where luna.codigo = 'Usuario_001';
-
-insert into app.reporte
-  (id_usuario_reportante, id_comunidad, tipo_contenido, id_contenido, categoria, descripcion, fecha_reporte)
-select sol.id_usuario, c.id_comunidad, 'sala', s.id_sala, 'contenido_inapropiado',
-       'Hubo varios mensajes fuera del tema de la sala.', now() - interval '40 minutes'
-from app.usuario sol
-join app.comunidad c on c.rango_edad = sol.rango_edad
-join app.sala s on s.id_comunidad = c.id_comunidad and s.nombre = 'Vida académica'
-where sol.codigo = 'Usuario_002';
 
 -- Las fuentes institucionales de demostración se cargan después, desde fuentes_institucionales.json.

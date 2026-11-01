@@ -1,19 +1,16 @@
-import { Router, type CookieOptions, type RequestHandler } from 'express';
-import { z } from 'zod';
-import { errores } from '../../http/errores.js';
-import { validar } from '../../http/validacion.js';
-import { NOMBRE_COOKIE_SESION } from './sesion.middleware.js';
-import type { ServicioSesion } from './sesion.service.js';
+import { Router, type CookieOptions, type Request, type Response } from 'express';
+import { leerCookie, NOMBRE_COOKIE_SESION } from './sesion.middleware.js';
+import type { ServicioSesion, SesionAbierta } from './sesion.service.js';
 
 type Opciones = {
-  accesoDemo: boolean;
-  duracionMs: number;
   cookieSegura: boolean;
   cookieSameSite?: 'lax' | 'none' | 'strict';
 };
 
-const esquemaInicio = z.object({ codigo: z.string().regex(/^[A-Za-z]+_\d{3}$/) }).strict();
-
+/**
+ * «Iniciar con mi Avatar»: registro, inicio y cierre de sesión. El token viaja solo en la cookie
+ * HttpOnly (el JavaScript del navegador no puede leerlo) y nunca en el cuerpo de la respuesta.
+ */
 export function rutasSesion(servicio: ServicioSesion, opciones: Opciones): Router {
   const router = Router();
   const sameSite = opciones.cookieSameSite ?? 'lax';
@@ -23,9 +20,24 @@ export function rutasSesion(servicio: ServicioSesion, opciones: Opciones): Route
     secure: sameSite === 'none' ? true : opciones.cookieSegura,
     path: '/',
   };
-  // El acceso por selector de usuarios sintéticos solo existe en modo demo.
-  const soloDemo: RequestHandler = (_req, _res, next) =>
-    next(opciones.accesoDemo ? undefined : errores.noEncontrado());
+
+  /** Cierra la sesión que la solicitud traiga, para no dejarla abierta al entrar con otra. */
+  async function cerrarAnterior(req: Request) {
+    const anterior = leerCookie(req.headers.cookie, NOMBRE_COOKIE_SESION);
+    if (anterior) await servicio.cerrar(anterior);
+  }
+
+  async function responderConSesion(res: Response, abierta: SesionAbierta) {
+    // Sin «Recordarme» la cookie es de sesión del navegador; el servidor la vence igual a las 8 h.
+    res
+      .cookie(NOMBRE_COOKIE_SESION, abierta.token, {
+        ...cookie,
+        ...(abierta.persistente && { maxAge: abierta.duracionMs }),
+      })
+      .set('Cache-Control', 'no-store')
+      .status(201)
+      .json({ usuario: await servicio.describir(abierta.sesion) });
+  }
 
   router.get('/sesion', async (_req, res) => {
     const sesion = res.locals.sesion;
@@ -34,21 +46,30 @@ export function rutasSesion(servicio: ServicioSesion, opciones: Opciones): Route
     });
   });
 
-  router.post('/sesion', soloDemo, async (req, res) => {
-    const { codigo } = validar(esquemaInicio, req.body);
-    const { token, sesion } = await servicio.iniciarDemo(codigo);
+  router.post('/sesion', async (req, res) => {
+    const abierta = await servicio.iniciar(req.body, req.ip ?? 'desconocida');
+    await cerrarAnterior(req);
+    await responderConSesion(res, abierta);
+  });
+
+  // Rangos de edad y catálogo de avatar: públicos, los necesita el formulario antes de la cuenta.
+  router.get('/sesion/registro', async (_req, res) => {
+    res.json(await servicio.opcionesRegistro());
+  });
+
+  router.post('/sesion/registro', async (req, res) => {
+    const abierta = await servicio.registrar(req.body, req.ip ?? 'desconocida');
+    await cerrarAnterior(req);
+    await responderConSesion(res, abierta);
+  });
+
+  router.delete('/sesion', async (req, res) => {
+    await cerrarAnterior(req);
     res
-      .cookie(NOMBRE_COOKIE_SESION, token, { ...cookie, maxAge: opciones.duracionMs })
-      .status(201)
-      .json({ usuario: await servicio.describir(sesion) });
-  });
-
-  router.delete('/sesion', (_req, res) => {
-    res.clearCookie(NOMBRE_COOKIE_SESION, cookie).status(204).end();
-  });
-
-  router.get('/sesion/usuarios-demo', soloDemo, async (_req, res) => {
-    res.set('Cache-Control', 'no-store').json({ usuarios: await servicio.listarUsuariosDemo() });
+      .clearCookie(NOMBRE_COOKIE_SESION, cookie)
+      .set('Cache-Control', 'no-store')
+      .status(204)
+      .end();
   });
 
   return router;

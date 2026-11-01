@@ -1,6 +1,8 @@
 import type pg from 'pg';
 import type { Dependencias } from '../src/app.js';
 import type { Database } from '../src/db/database.js';
+import { NOMBRE_COOKIE_SESION } from '../src/modules/seguridad/sesion.middleware.js';
+import { abrirSesionInterna } from '../src/modules/seguridad/sesion.service.js';
 
 export const ORIGEN_FRONTEND = 'http://localhost:3000';
 
@@ -11,12 +13,32 @@ export const configPrueba: Dependencias['config'] = {
     secreto: 'secreto-solo-para-pruebas-automatizadas-0000',
     secretoGenerado: false,
     duracionMs: 60 * 60 * 1000,
+    duracionRecordadaMs: 24 * 60 * 60 * 1000,
     cookieSegura: false,
   },
-  accesoDemo: true,
   salas: { cierreSegundos: 180 },
   openai: { model: 'gpt-5.4-mini' },
 };
+
+/**
+ * Cookie de sesión de una cuenta sintética de prueba (Usuario_001, Moderador_001…). Esas cuentas
+ * no tienen contraseña: la sesión se abre directamente en la base, igual que la abriría un inicio
+ * de sesión correcto. La API no ofrece ningún acceso sin contraseña.
+ */
+export async function cookieDe(db: Database, codigo: string): Promise<string> {
+  const { rows } = await db.query<{ id: string }>(
+    'select id_usuario as id from app.usuario where codigo = $1',
+    [codigo],
+  );
+  if (!rows[0]) throw new Error(`No existe la cuenta de prueba ${codigo}`);
+  const token = await abrirSesionInterna(
+    db,
+    configPrueba.sesion.secreto,
+    rows[0].id,
+    configPrueba.sesion.duracionMs,
+  );
+  return `${NOMBRE_COOKIE_SESION}=${token}`;
+}
 
 /**
  * Database sobre un único cliente (una transacción de prueba) que encola las consultas en orden.

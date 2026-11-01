@@ -1,3 +1,4 @@
+import type { ConfiguracionAvatar, ElementoAvatar } from './avatar';
 import { api } from './cliente';
 
 export type Rol = 'usuario' | 'moderador' | 'admin_plataforma' | 'gestor_fuentes';
@@ -32,12 +33,17 @@ export type SesionPublica = {
   permisos: Permiso[];
 };
 
-export type UsuarioDemo = {
-  codigo: string;
-  alias: string;
-  rol: Rol;
-  comunidad: string | null;
-  rango: string | null;
+export type CodigoRango = 'A' | 'B' | 'C' | 'D';
+export type RangoEdad = { codigo: CodigoRango; etiqueta: string };
+
+/** «Iniciar con mi Avatar» — cuenta existente: nametag (alias) y contraseña. */
+export type DatosInicio = { alias: string; contrasena: string; recordar: boolean };
+
+/** «Iniciar con mi Avatar» — cuenta nueva. La cuenta siempre nace como joven (rol `usuario`). */
+export type DatosRegistro = DatosInicio & {
+  rango: CodigoRango;
+  intereses: string[];
+  avatar: ConfiguracionAvatar;
 };
 
 export const NOMBRES_ROL: Record<Rol, string> = {
@@ -49,10 +55,16 @@ export const NOMBRES_ROL: Record<Rol, string> = {
 
 export const obtenerSesion = () => api.get<{ usuario: SesionPublica | null }>('/api/sesion');
 
-export const iniciarSesionDemo = (codigo: string) =>
-  api.post<{ usuario: SesionPublica }>('/api/sesion', { codigo });
+/** El token de sesión llega solo en una cookie HttpOnly: el JavaScript nunca lo ve. */
+export const iniciarSesion = (datos: DatosInicio) =>
+  api.post<{ usuario: SesionPublica }>('/api/sesion', datos);
 
+export const registrarse = (datos: DatosRegistro) =>
+  api.post<{ usuario: SesionPublica }>('/api/sesion/registro', datos);
+
+/** Rangos de edad y catálogo de avatar: públicos, para el formulario de registro. */
+export const obtenerOpcionesRegistro = () =>
+  api.get<{ rangos: RangoEdad[]; catalogo: ElementoAvatar[] }>('/api/sesion/registro');
+
+/** Cierra la sesión en el servidor (la revoca) y borra la cookie. */
 export const cerrarSesion = () => api.delete<null>('/api/sesion');
-
-export const listarUsuariosDemo = () =>
-  api.get<{ usuarios: UsuarioDemo[] }>('/api/sesion/usuarios-demo');

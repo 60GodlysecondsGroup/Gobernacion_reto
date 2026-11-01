@@ -1,0 +1,401 @@
+/* «Iniciar con mi Avatar» (/acceso): entrar con una cuenta existente o crear una nueva. */
+
+.pagina {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-5);
+  max-width: 64rem;
+}
+
+.tarjeta {
+  display: grid;
+  gap: var(--espacio-4);
+  max-width: 34rem;
+  padding: var(--espacio-5);
+  border: 1px solid var(--cristal-borde);
+  border-radius: var(--radio-lg);
+  background: var(--cristal-lectura);
+  box-shadow: var(--cristal-brillo), var(--sombra-2);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-3);
+}
+
+/* ─── Pestañas «Soy nuevo» / «Ya tengo cuenta» ───────────────────────────── */
+
+.pestanas {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  justify-self: start;
+  gap: var(--espacio-1);
+  width: min(100%, 26rem);
+  padding: var(--espacio-1);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-total);
+  background: var(--color-superficie-suave);
+}
+
+.pestana {
+  min-height: 2.75rem;
+  padding: var(--espacio-2) var(--espacio-4);
+  border: 0;
+  border-radius: var(--radio-total);
+  background: transparent;
+  color: var(--color-texto-suave);
+  font: inherit;
+  font-weight: var(--peso-fuerte);
+  cursor: pointer;
+  transition:
+    background var(--transicion),
+    color var(--transicion),
+    box-shadow var(--transicion);
+}
+
+.pestana:hover {
+  color: var(--color-texto);
+}
+
+.pestana[aria-selected='true'] {
+  background: var(--color-superficie-solida);
+  color: var(--color-primario);
+  box-shadow: var(--sombra-1);
+}
+
+.pestana:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+/* ─── Formularios ─────────────────────────────────────────────────────────── */
+
+.formularioCorto {
+  display: grid;
+  gap: var(--espacio-4);
+  max-width: 28rem;
+  padding: var(--espacio-5);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-1);
+}
+
+.registro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-5);
+  align-items: start;
+}
+
+@media (min-width: 52rem) {
+  .registro {
+    grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr);
+  }
+
+  /* El avatar queda a la vista mientras se completa el formulario. */
+  .vistaPrevia {
+    position: sticky;
+    top: calc(var(--alto-encabezado) + var(--espacio-4));
+  }
+}
+
+.vistaPrevia {
+  display: grid;
+  justify-items: center;
+  gap: var(--espacio-3);
+  padding: var(--espacio-5);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-1);
+  text-align: center;
+}
+
+.tituloPaso {
+  font-family: var(--fuente-titulos);
+  font-size: var(--texto-md);
+  font-weight: var(--peso-fuerte);
+}
+
+.lienzo {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  padding: var(--espacio-4);
+  border-radius: var(--radio-md);
+  background:
+    linear-gradient(#c9bfa6, #c9bfa6) bottom / 100% 22% no-repeat,
+    linear-gradient(180deg, #e7eeff, #d3defd);
+  box-shadow: inset 0 0 0 1px rgb(38 20 99 / 0.06);
+}
+
+.nombre {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.pasos {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.capas {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.masDetalles {
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+}
+
+.masDetalles > summary {
+  padding: var(--espacio-4) var(--espacio-5);
+  font-weight: var(--peso-fuerte);
+  cursor: pointer;
+}
+
+.masDetalles > summary:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+  border-radius: var(--radio-lg);
+}
+
+.masDetalles[open] > .capas {
+  padding: 0 var(--espacio-4) var(--espacio-4);
+}
+
+.grupo {
+  display: grid;
+  gap: var(--espacio-3);
+  margin: 0;
+  padding: var(--espacio-5);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-1);
+}
+
+.leyenda {
+  /* La leyenda queda dentro de la tarjeta (no sobre el borde, como la dibuja el navegador). */
+  float: left;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espacio-2);
+  width: 100%;
+  padding: 0;
+  font-weight: var(--peso-fuerte);
+  font-size: var(--texto-sm);
+}
+
+.leyenda + * {
+  clear: both;
+}
+
+.marca {
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-normal);
+}
+
+.ayuda {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.errorGrupo {
+  color: var(--color-peligro);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+}
+
+/* Rango de edad: cuatro opciones grandes, fáciles de tocar. */
+.rangos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: var(--espacio-2);
+}
+
+.rango {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: 3rem;
+  padding: var(--espacio-2) var(--espacio-3);
+  border: 1px solid var(--color-borde-fuerte);
+  border-radius: var(--radio-md);
+  font-weight: var(--peso-medio);
+  cursor: pointer;
+  transition:
+    border-color var(--transicion),
+    background var(--transicion);
+}
+
+.rango:hover {
+  border-color: var(--color-primario);
+}
+
+.rango:has(input:checked) {
+  border-color: var(--color-primario);
+  background: var(--color-primario-suave);
+  box-shadow: 0 0 0 1px var(--color-primario);
+}
+
+.rango:has(input:focus-visible) {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.rango input {
+  accent-color: var(--color-primario);
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+/* Hobbies: botones que se activan y desactivan. */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-1);
+  min-height: 2.5rem;
+  padding: var(--espacio-1) var(--espacio-3);
+  border: 1px solid var(--color-borde-fuerte);
+  border-radius: var(--radio-total);
+  background: var(--color-superficie-solida);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: var(--texto-sm);
+  cursor: pointer;
+  transition:
+    border-color var(--transicion),
+    background var(--transicion),
+    color var(--transicion);
+}
+
+.chip:hover:not(:disabled) {
+  border-color: var(--color-primario);
+}
+
+.chip[aria-pressed='true'] {
+  border-color: var(--color-primario);
+  background: var(--color-primario);
+  color: var(--color-sobre-primario);
+  font-weight: var(--peso-fuerte);
+}
+
+.chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.chip:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.otro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--espacio-2);
+}
+
+/* Contraseña: «Mostrar» a la altura de la etiqueta, a la derecha. */
+.contrasena {
+  position: relative;
+}
+
+.mostrar {
+  position: absolute;
+  top: -0.25rem;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-1);
+  min-height: 2rem;
+  padding: var(--espacio-1) var(--espacio-2);
+  border: 0;
+  border-radius: var(--radio-sm);
+  background: transparent;
+  color: var(--color-primario);
+  font: inherit;
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  cursor: pointer;
+}
+
+.mostrar:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.casilla {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-3);
+  font-weight: var(--peso-medio);
+  cursor: pointer;
+}
+
+.casilla input {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.15rem;
+  accent-color: var(--color-primario);
+}
+
+.casilla small {
+  display: block;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-normal);
+}
+
+.enviar {
+  justify-self: start;
+}
+
+@media (max-width: 30rem) {
+  .enviar {
+    justify-self: stretch;
+  }
+}
+
+.alterno {
+  font-size: var(--texto-sm);
+}
+
+.enlaceTexto {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-primario);
+  font: inherit;
+  font-weight: var(--peso-fuerte);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.enlaceTexto:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+  border-radius: var(--radio-sm);
+}
+
+.nota {
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+}

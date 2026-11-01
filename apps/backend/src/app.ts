@@ -50,7 +50,8 @@ import {
 } from './modules/seguridad/rango-edad.js';
 import { cargarSesion } from './modules/seguridad/sesion.middleware.js';
 import { rutasSesion } from './modules/seguridad/sesion.routes.js';
-import { crearServicioSesion } from './modules/seguridad/sesion.service.js';
+import { crearServicioSesion, type LimitesAcceso } from './modules/seguridad/sesion.service.js';
+import { crearRepositorioSesiones } from './modules/seguridad/sesiones.repository.js';
 import { crearRepositorioUsuarios } from './modules/seguridad/usuarios.repository.js';
 import { crearRepositorioSistema } from './modules/sistema/sistema.repository.js';
 import { rutasSistema } from './modules/sistema/sistema.routes.js';
@@ -59,9 +60,11 @@ import { crearServicioSistema } from './modules/sistema/sistema.service.js';
 export type Dependencias = {
   db: Database;
   logger: Logger;
-  config: Pick<Config, 'origenesPermitidos' | 'sesion' | 'accesoDemo' | 'salas' | 'openai'>;
+  config: Pick<Config, 'origenesPermitidos' | 'sesion' | 'salas' | 'openai'>;
   /** Reemplazable cuando exista la verificación de edad definitiva. */
   proveedorRango?: ProveedorRangoEdad;
+  /** Límites de intentos de inicio de sesión y registro (las pruebas los ajustan). */
+  limitesAcceso?: LimitesAcceso;
   ttlReglasDlpMs?: number;
   /** Ajustes de tiempo de las salas (las pruebas los acortan). */
   intervalosSalas?: {
@@ -93,6 +96,7 @@ export function crearServidor({
   logger,
   config,
   proveedorRango = proveedorRangoSintetico,
+  limitesAcceso,
   ttlReglasDlpMs,
   intervalosSalas = {},
 }: Dependencias): Servidor {
@@ -105,17 +109,23 @@ export function crearServidor({
   app.use(express.json({ limit: '50kb' }));
 
   const comunidades = crearRepositorioComunidades(db);
-  const sesiones = crearServicioSesion({
-    usuarios: crearRepositorioUsuarios(db),
-    comunidades,
-    proveedorRango,
-    secreto: config.sesion.secreto,
-    duracionMs: config.sesion.duracionMs,
-  });
   const dlp = crearServicioDlp({
     repositorio: crearRepositorioDlp(db, logger),
     logger,
     ttlReglasMs: ttlReglasDlpMs,
+  });
+  const avatar = crearServicioAvatar(crearRepositorioAvatar(db));
+  const sesiones = crearServicioSesion({
+    usuarios: crearRepositorioUsuarios(db),
+    sesiones: crearRepositorioSesiones(db),
+    comunidades,
+    avatar,
+    dlp,
+    proveedorRango,
+    secreto: config.sesion.secreto,
+    duracionMs: config.sesion.duracionMs,
+    duracionRecordadaMs: config.sesion.duracionRecordadaMs,
+    limites: limitesAcceso,
   });
 
   app.use(cargarSesion(sesiones));
@@ -125,8 +135,6 @@ export function crearServidor({
   app.use(
     '/api',
     rutasSesion(sesiones, {
-      accesoDemo: config.accesoDemo,
-      duracionMs: config.sesion.duracionMs,
       cookieSegura: config.sesion.cookieSegura,
       cookieSameSite: config.sesion.sameSite,
     }),
@@ -157,7 +165,7 @@ export function crearServidor({
     '/api',
     rutasPerfil(crearServicioPerfil({ repositorio: crearRepositorioPerfil(db), dlp })),
   );
-  app.use('/api', rutasAvatar(crearServicioAvatar(crearRepositorioAvatar(db))));
+  app.use('/api', rutasAvatar(avatar));
   const fuentes = crearRepositorioFuentes(db);
   const orientacion = crearServicioOrientacion(fuentes);
   app.use('/api', rutasOrientacion(orientacion));

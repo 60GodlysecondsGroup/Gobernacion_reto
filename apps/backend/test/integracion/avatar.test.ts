@@ -1,5 +1,5 @@
 /**
- * Fase 6 · Avatar, contra la base real del .env (npm run test:db).
+ * Fase 6 · Avatar, contra la base local de pruebas (npm run test:db).
  * Cada prueba usa una app cuyas consultas van a una transacción que se revierte: la base queda igual.
  */
 import type pg from 'pg';
@@ -10,7 +10,7 @@ import { cargarConfig } from '../../src/config/env.js';
 import { crearPool, type PoolDeDatos } from '../../src/db/database.js';
 import { crearLogger } from '../../src/lib/logger.js';
 import { crearRepositorioSalas } from '../../src/modules/salas/salas.repository.js';
-import { configPrueba, enCola } from '../apoyo.js';
+import { cookieDe, configPrueba, enCola } from '../apoyo.js';
 
 const logger = crearLogger('silencioso');
 
@@ -50,11 +50,7 @@ afterEach(async () => {
 });
 
 async function entrar(codigo: string) {
-  const res = await request(app).post('/api/sesion').send({ codigo });
-  expect(res.status).toBe(201);
-  const cookie = (res.headers['set-cookie'] as unknown as string[])
-    .map((c) => c.split(';')[0])
-    .join('; ');
+  const cookie = await cookieDe(pool, codigo);
   return {
     get: (ruta: string) => request(app).get(ruta).set('Cookie', cookie),
     put: (ruta: string, cuerpo: unknown) =>

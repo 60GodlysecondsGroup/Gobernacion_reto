@@ -15,7 +15,7 @@ import { cargarConfig } from '../src/config/env.js';
 import { crearPool } from '../src/db/database.js';
 import { crearLogger } from '../src/lib/logger.js';
 import { NOMBRE_COOKIE_SESION } from '../src/modules/seguridad/sesion.middleware.js';
-import { crearToken } from '../src/modules/seguridad/sesion.token.js';
+import { abrirSesionInterna } from '../src/modules/seguridad/sesion.service.js';
 
 const { values } = parseArgs({
   options: {
@@ -53,7 +53,8 @@ if (!sala) {
   process.exit(1);
 }
 
-// Usuarios sintéticos del mismo rango que la sala (no aparecen en el selector de acceso).
+// Usuarios sintéticos del mismo rango que la sala. No tienen contraseña: nadie puede iniciar
+// sesión con ellos; el simulador les abre la sesión directamente.
 const usuarios: { id: string; alias: string }[] = [];
 for (let i = desde; i < desde + cantidad; i++) {
   const numero = String(i).padStart(3, '0');
@@ -84,7 +85,12 @@ for (let i = desde; i < desde + cantidad; i++) {
 logger.info(`Conectando ${cantidad} personas simuladas a «${sala.nombre}» (comunidad ${rango})…`);
 const conexiones: WebSocket[] = [];
 for (const usuario of usuarios) {
-  const token = crearToken(usuario.id, config.sesion.secreto, 2 * 60 * 60 * 1000);
+  const token = await abrirSesionInterna(
+    pool,
+    config.sesion.secreto,
+    usuario.id,
+    2 * 60 * 60 * 1000,
+  );
   const ws = new WebSocket(`ws://localhost:${config.puerto}/ws/salas/${sala.id}`, {
     headers: { Cookie: `${NOMBRE_COOKIE_SESION}=${token}` },
   });
