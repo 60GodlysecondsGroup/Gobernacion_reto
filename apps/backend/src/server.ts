@@ -48,7 +48,8 @@ try {
     variablesObligatorias: presenciaVariablesObligatorias(),
     ...datosError(error, true),
   });
-  process.exit(1);
+
+  throw error;
 }
 
 const logger = crearLogger(config.nivelLog);

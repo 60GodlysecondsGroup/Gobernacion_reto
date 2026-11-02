@@ -1,6 +1,21 @@
-// Entrada del servicio «backend» en Vercel (vercel.json). `vercel dev` no lee `entrypoint`:
-// toma el primer app|index|server de la raíz o de src/ que importe 'express', y src/app.ts no
-// arranca nada. Este archivo va antes en esa búsqueda y solo expone el servidor real.
+
 import type {} from 'express';
 
-export { default } from './src/server.js';
+// Este mensaje debe aparecer antes de intentar importar server.ts.
+console.error('[ENTRYPOINT] index.ts iniciado', {
+  node: process.version,
+  vercel: process.env.VERCEL,
+  entorno: process.env.NODE_ENV,
+});
+
+// Importación dinámica para capturar errores durante la carga
+// de server.ts y de todos sus módulos dependientes.
+const modulo = await import('./src/server.js').catch((error: unknown) => {
+  console.error('[ENTRYPOINT] ERROR cargando server.ts', error);
+  throw error;
+});
+
+console.error('[ENTRYPOINT] server.ts importado correctamente');
+
+// Conservamos el servidor HTTP original de la aplicación.
+export default modulo.default;
