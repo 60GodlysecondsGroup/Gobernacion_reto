@@ -23,6 +23,7 @@
     "dev:esperando-db": "tsx scripts/esperar-db-local.ts",
     "db:reset:local": "tsx scripts/con-db-local.ts reiniciar",
     "admin:contrasena": "tsx scripts/contrasena-admin.ts",
+    "superadmin:inicializar": "tsx scripts/superadmin-inicializar.ts",
     "usuarios:limpiar-prueba": "tsx scripts/limpiar-usuarios-prueba.ts"
   },
   "dependencies": {

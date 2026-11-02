@@ -24,6 +24,8 @@
     "db:reset:local": "npm run db:reset:local -w apps/backend",
     "fuentes:cargar": "npm run fuentes:cargar -w apps/backend --",
     "salas:simular": "npm run salas:simular -w apps/backend --",
+    "admin:contrasena": "npm run admin:contrasena -w apps/backend --",
+    "superadmin:inicializar": "npm run superadmin:inicializar -w apps/backend --",
     "lint": "npm run lint --workspaces",
     "typecheck": "npm run typecheck --workspaces",
     "format": "prettier --write .",
