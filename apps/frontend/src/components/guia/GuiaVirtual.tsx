@@ -17,7 +17,7 @@ import {
 } from './MensajeContextual';
 
 /** Rutas donde la guía flotante estorbaría (el escenario de las salas y el panel de trabajo). */
-const OCULTA_EN = [/^\/salas\/[^/]+/, /^\/panel/, /^\/gestion/, /^\/guia$/];
+const OCULTA_EN = [/^\/salas\/[^/]+/, /^\/panel/, /^\/gestion/];
 /**
  * En móvil y tableta, además, la burbuja no va en la entrada y el registro: son formularios con
  * el teclado abierto y la barra inferior ya ofrece «Guía» a quien no ha iniciado sesión.

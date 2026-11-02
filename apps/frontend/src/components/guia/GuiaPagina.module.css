@@ -67,9 +67,3 @@
     padding-top: var(--espacio-5);
   }
 }
-
-/* Chat de Cocuyo en la página (en móvil y tableta es la forma de conversar con la guía). */
-.chat {
-  display: grid;
-  gap: var(--espacio-4);
-}
