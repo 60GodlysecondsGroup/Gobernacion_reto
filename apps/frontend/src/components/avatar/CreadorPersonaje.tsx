@@ -15,14 +15,14 @@ import {
 import { useId, useRef, type KeyboardEvent } from 'react';
 import type { Capa, ConfiguracionAvatar, ElementoAvatar } from '@/lib/api/avatar';
 import { Avatar } from './Avatar';
-import { aparienciaDe, CATEGORIAS } from './EditorAvatar';
-import { indiceDeValor, valorAdyacente, valoresDeCapa } from './opciones';
+import { aparienciaDe, CATEGORIAS, indiceDeValor, valorAdyacente, valoresDeCapa } from './opciones';
 import estilos from './CreadorPersonaje.module.css';
 
 /*
  * Creador de personaje al estilo de un videojuego: el personaje en un escenario y, debajo, una
- * característica a la vez con flechas para recorrer sus opciones. Usa el mismo catálogo, los
- * mismos dibujos (Avatar) y las mismas cinco capas (CATEGORIAS) que «Mi avatar».
+ * característica a la vez con flechas para recorrer sus opciones. Es el único creador: lo usan
+ * el registro (personaje nuevo) y «Mi avatar» (personaje guardado). Ambos le pasan la
+ * configuración y reciben cada cambio; el creador no guarda ni inventa valores por su cuenta.
  */
 
 /** Nombre corto e ícono de cada característica, para las pestañas. */

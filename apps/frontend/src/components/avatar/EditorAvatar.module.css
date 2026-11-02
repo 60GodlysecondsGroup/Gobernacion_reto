@@ -1,3 +1,8 @@
+/*
+ * «Mi avatar» con el creador del registro. Móvil: el personaje arriba y sus controles debajo.
+ * Escritorio: el personaje en la columna izquierda, a la vista mientras se personaliza.
+ */
+
 .pagina {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -5,153 +10,120 @@
   max-width: 68rem;
 }
 
-.distribucion {
+.creador {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--espacio-5);
-  align-items: start;
-}
-
-@media (min-width: 52rem) {
-  .distribucion {
-    grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
-  }
-
-  /* La vista previa queda a la vista mientras se recorren las categorías. */
-  .vistaPrevia {
-    position: sticky;
-    top: calc(var(--alto-encabezado) + var(--espacio-4));
-  }
-}
-
-.vistaPrevia {
-  display: grid;
-  justify-items: center;
-  gap: var(--espacio-3);
+  grid-template-areas:
+    'escenario'
+    'panel';
+  gap: var(--espacio-4);
+  width: 100%;
   padding: var(--padding-caja);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-lg);
   background: var(--color-superficie);
   box-shadow: var(--sombra-1);
+}
+
+.escenario {
+  grid-area: escenario;
+  display: grid;
+  gap: var(--espacio-2);
+  align-content: start;
+}
+
+.panel {
+  grid-area: panel;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-4);
+  align-content: start;
+  min-width: 0;
+}
+
+.estado {
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-sm);
   text-align: center;
 }
 
-.vistaPrevia > [role='status'],
-.vistaPrevia > [role='alert'] {
-  justify-self: stretch;
-  text-align: left;
-}
-
-.tituloSeccion {
-  /* La leyenda flota dentro de la tarjeta (no sobre el borde, como hace el navegador). */
-  float: left;
-  width: 100%;
-  margin-bottom: var(--espacio-3);
-  padding: 0;
-  font-family: var(--fuente-titulos);
-  font-size: var(--texto-md);
-  font-weight: var(--peso-fuerte);
-}
-
-.lienzo {
+.encabezado {
   display: grid;
-  place-items: center;
-  width: 100%;
-  padding: var(--espacio-4);
-  border-radius: var(--radio-md);
-  background:
-    linear-gradient(#c9bfa6, #c9bfa6) bottom / 100% 22% no-repeat,
-    linear-gradient(180deg, #e7eeff, #d3defd);
-  box-shadow: inset 0 0 0 1px rgb(38 20 99 / 0.06);
+  gap: 0.2rem;
 }
 
-.alias {
-  overflow-wrap: anywhere;
+.encabezado h2 {
+  font-family: var(--fuente-titulos);
+  font-size: var(--texto-xl);
+  letter-spacing: -0.02em;
+  line-height: var(--interlineado-titulo);
 }
+
+.encabezado p {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+/* ─── Guardar / deshacer ──────────────────────────────────────────────────── */
 
 .acciones {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--espacio-2);
+  gap: var(--espacio-3);
 }
 
-.categorias {
-  display: grid;
-  gap: var(--espacio-4);
+.acciones > button {
+  white-space: nowrap;
 }
 
-.capa {
-  margin: 0;
-  padding: var(--padding-caja);
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-lg);
-  background: var(--color-superficie);
-  box-shadow: var(--sombra-1);
+/* «Deshacer» ocupa lo justo: el ancho sobrante es para guardar. */
+.acciones > .deshacer {
+  flex: 0 0 auto;
+  padding-inline: var(--espacio-4);
 }
 
-.opciones {
-  clear: both;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(5.25rem, 1fr));
-  gap: var(--espacio-2);
+.guardar {
+  flex: 1 1 auto;
 }
 
-.opcion {
-  position: relative;
-  display: grid;
-  justify-items: center;
-  gap: var(--espacio-1);
-  padding: var(--espacio-2) var(--espacio-2) var(--espacio-3);
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-md);
-  font-size: var(--texto-sm);
-  text-align: center;
-  cursor: pointer;
-  transition:
-    border-color var(--transicion),
-    background var(--transicion),
-    transform var(--transicion);
+@media (min-width: 40rem) {
+  .guardar {
+    flex: 0 0 auto;
+    min-width: 12rem;
+    margin-left: auto;
+  }
 }
 
-.opcion:hover {
-  border-color: var(--color-borde-fuerte);
+/* En móvil el título de la página ya dice qué se hace aquí: el del panel queda para lectores. */
+@media (max-width: 51.99rem) {
+  .encabezado {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 
-.opcion:has(input:checked) {
-  border-color: var(--color-primario);
-  background: var(--color-primario-suave);
-  font-weight: var(--peso-fuerte);
-  box-shadow: 0 0 0 1px var(--color-primario);
+@media (max-width: 51.99rem) and (max-height: 43.75rem) {
+  .pagina,
+  .creador,
+  .panel {
+    gap: var(--espacio-3);
+  }
 }
 
-/* Marca de selección en la esquina (además del borde y el texto en negrita). */
-.opcion:has(input:checked)::after {
-  content: '';
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 8.2 7 10.6l4.5-5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
-      center / 100% no-repeat,
-    var(--color-primario);
-}
+@media (min-width: 52rem) {
+  .creador {
+    grid-template-columns: minmax(16rem, 21rem) minmax(0, 1fr);
+    grid-template-areas: 'escenario panel';
+    gap: var(--espacio-5) var(--espacio-7);
+    align-items: start;
+  }
 
-.opcion:has(input:focus-visible) {
-  outline: 3px solid var(--color-foco);
-  outline-offset: 2px;
-}
-
-.opcion input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.capa:disabled .opcion {
-  cursor: not-allowed;
-  opacity: 0.6;
+  /* El personaje queda a la vista mientras se recorren las características. */
+  .escenario {
+    position: sticky;
+    top: calc(var(--alto-encabezado) + var(--espacio-4));
+  }
 }

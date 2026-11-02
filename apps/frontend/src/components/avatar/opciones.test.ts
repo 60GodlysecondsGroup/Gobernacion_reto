@@ -4,8 +4,16 @@
  */
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import type { ElementoAvatar } from '@/lib/api/avatar';
-import { avatarAlAzar, indiceDeValor, valorAdyacente, valoresDeCapa } from './opciones.ts';
+import type { ConfiguracionAvatar, ElementoAvatar } from '@/lib/api/avatar';
+import {
+  aparienciaDe,
+  avatarAlAzar,
+  configuracionAEditar,
+  indiceDeValor,
+  mismaConfiguracion,
+  valorAdyacente,
+  valoresDeCapa,
+} from './opciones.ts';
 
 const catalogo: ElementoAvatar[] = [
   { id: 'tono-arena', tipo: 'personaje', nombre: 'Tono arena', recurso: 'tono-arena' },
@@ -65,5 +73,47 @@ describe('creador de personaje: combinación al azar', () => {
     const avatar = avatarAlAzar(catalogo, () => 0.999);
     assert.equal(avatar.cabello, null);
     assert.equal(avatar.accesorio, null);
+  });
+});
+
+describe('creador de personaje: editar el avatar guardado', () => {
+  const guardada: ConfiguracionAvatar = {
+    personaje: 'tono-miel',
+    cabello: null,
+    rasgos: 'rasgos-sonrisa',
+    prenda: 'prenda-buzo',
+    accesorio: 'accesorio-gorra',
+  };
+
+  it('abre con el personaje guardado, sin reemplazar ninguna capa', () => {
+    assert.deepEqual(configuracionAEditar(guardada, catalogo), guardada);
+  });
+
+  it('sin avatar guardado parte del primer elemento de cada capa obligatoria', () => {
+    assert.deepEqual(configuracionAEditar(null, catalogo), {
+      personaje: 'tono-arena',
+      cabello: 'cabello-corto',
+      rasgos: 'rasgos-sonrisa',
+      prenda: 'prenda-buzo',
+      accesorio: null,
+    });
+  });
+
+  it('detecta cambios en cualquier capa, también al quitar el cabello o el accesorio', () => {
+    assert.ok(mismaConfiguracion(guardada, { ...guardada }));
+    assert.ok(!mismaConfiguracion(guardada, { ...guardada, personaje: 'tono-arena' }));
+    assert.ok(!mismaConfiguracion(guardada, { ...guardada, accesorio: null }));
+    assert.ok(!mismaConfiguracion(guardada, { ...guardada, cabello: 'cabello-largo' }));
+  });
+
+  it('traduce la configuración a los recursos que se dibujan', () => {
+    assert.deepEqual(aparienciaDe(guardada, catalogo), {
+      personaje: 'tono-miel',
+      cabello: null,
+      rasgos: 'rasgos-sonrisa',
+      prenda: 'prenda-buzo',
+      accesorio: 'accesorio-gorra',
+    });
+    assert.equal(aparienciaDe({ ...guardada, prenda: 'retirada' }, catalogo).prenda, null);
   });
 });
