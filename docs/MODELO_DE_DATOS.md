@@ -5,6 +5,8 @@ Este es el modelo definitivo del prototipo. Convierte el modelo conceptual B.4 d
 - Fuente: las migraciones de [`db/migraciones/`](../apps/backend/db/migraciones/), de `0001_esquema_inicial.sql` a `0005_moderacion_administracion.sql`.
 - Datos de demostración: [`datos_demo.sql`](../apps/backend/db/seed/datos_demo.sql), [`reglas_dlp.json`](../apps/backend/db/seed/reglas_dlp.json) y [`fuentes_institucionales.json`](../apps/backend/db/seed/fuentes_institucionales.json).
 
+**Cambios de la migración 0008 (DLP de convivencia):** no borra ni reescribe datos; agrega a `categoria_dlp` las categorías `lenguaje_ofensivo` y `contenido_sexual` y sus 11 reglas en `regla_dlp` (las mismas de `reglas_dlp.json`). Ver [`moderacion-dlp-informe.md`](moderacion-dlp-informe.md).
+
 **Cambios de la migración 0005 (Fase 7):** no borra ni reescribe datos; solo agrega columnas con valor por defecto, índices y restricciones.
 
 - `sala.habilitada` (boolean, por defecto `true`): la administración puede deshabilitar una sala sin borrarla (F29). Una sala deshabilitada no se lista para jóvenes y su `UPDATE` de ocupación exige `habilitada`. Al cerrarse por inactividad, la instancia nueva hereda el valor.
@@ -54,7 +56,7 @@ No existen campos de salud, diagnóstico, evaluación psicológica ni edad exact
 | Tabla                   | Para qué                                                                                                                                             |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `rango_edad`            | Catálogo fijo A (10–12), B (13–15), C (16–17) y D (18–22). Se crea en la migración, no en el seed.                                                   |
-| `categoria_dlp`         | Las seis categorías de protección de 16.1 y B.5.                                                                                                     |
+| `categoria_dlp`         | Las seis categorías de protección de 16.1 y B.5, más lenguaje ofensivo y contenido sexual (0008).                                                    |
 | `necesidad_orientacion` | Las seis necesidades del navegador de orientación (F04). Son categorías de búsqueda, no de evaluación.                                               |
 | `fuente_necesidad`      | Relaciona cada fuente con las necesidades en las que aparece.                                                                                        |
 | `registro_auditoria`    | Acciones administrativas: quién, qué y cuándo (Fase 7). Solo inserción. Cada acción se escribe en la misma sentencia SQL que el cambio que registra. |
