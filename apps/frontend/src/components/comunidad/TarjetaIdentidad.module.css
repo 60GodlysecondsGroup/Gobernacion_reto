@@ -190,33 +190,11 @@
   }
 }
 
-@media (max-width: 29.99rem) {
-  .tarjeta {
-    grid-template-columns: minmax(0, 1fr);
-    justify-items: center;
-    text-align: center;
-  }
-
-  .datos {
-    justify-items: center;
-  }
-
-  .nametag {
-    justify-self: center;
-  }
-
-  .atributo {
-    grid-template-columns: minmax(0, 1fr);
-    justify-items: center;
-    gap: var(--espacio-1);
-  }
-
-  .atributo dd {
-    justify-content: center;
-  }
-
-  .acciones {
-    justify-content: center;
+/* En el celular la tarjeta satura la pantalla: no se muestra (avatar y perfil siguen en «Perfil»). */
+@media (max-width: 47.99rem) {
+  .tarjeta,
+  .esqueleto {
+    display: none;
   }
 }
 

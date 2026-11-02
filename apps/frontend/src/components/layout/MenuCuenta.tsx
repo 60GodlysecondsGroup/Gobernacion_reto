@@ -9,6 +9,9 @@ import { useSesion } from '@/components/sesion/ProveedorSesion';
 import { NOMBRES_ROL } from '@/lib/api/sesion';
 import estilos from './Encabezado.module.css';
 
+/** Mismo punto de quiebre que la barra inferior (`Encabezado.module.css`). */
+const CONSULTA_BARRA_INFERIOR = '(max-width: 63.99rem)';
+
 /**
  * Menú de la cuenta (patrón «Dropdown Menu» de shadcn/ui, accesible y sin dependencias):
  * flechas para moverse, Escape para cerrar y el foco vuelve al botón.
@@ -66,6 +69,9 @@ export function MenuCuenta() {
   };
 
   const contexto = usuario.comunidad ? usuario.comunidad.nombre : NOMBRES_ROL[usuario.rol];
+  // Con la barra inferior visible (móvil y tableta), «Mi perfil» ya está ahí: no se repite aquí.
+  // El menú solo se pinta abierto, en el cliente, así que `window` está disponible.
+  const conBarraInferior = abierto && window.matchMedia(CONSULTA_BARRA_INFERIOR).matches;
 
   return (
     <div className={estilos.cuenta}>
@@ -113,15 +119,17 @@ export function MenuCuenta() {
               <strong>{usuario.alias}</strong>
               <span>{contexto}</span>
             </div>
-            <Link
-              href="/perfil"
-              role="menuitem"
-              className={estilos.itemMenu}
-              onClick={() => cerrar()}
-            >
-              <UserRound aria-hidden="true" size={18} />
-              Mi perfil
-            </Link>
+            {!conBarraInferior && (
+              <Link
+                href="/perfil"
+                role="menuitem"
+                className={estilos.itemMenu}
+                onClick={() => cerrar()}
+              >
+                <UserRound aria-hidden="true" size={18} />
+                Mi perfil
+              </Link>
+            )}
             {puede('personalizar_avatar_propio') && (
               <Link
                 href="/perfil/avatar"
