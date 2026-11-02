@@ -482,7 +482,7 @@ describe('Administración y cuentas de prueba', () => {
         CODIGOS_USUARIOS_PRUEBA.filter((codigo) => codigo !== 'Usuario_005').sort(),
       );
       expect(antes.candidatas.every((c) => c.bloqueo === null)).toBe(true);
-      expect(antes.administracion.map((c) => c.codigo)).toEqual(['Admin_001']);
+      expect(antes.administracion.map((c) => c.codigo)).toEqual(['Admin_001', 'Superadmin_001']);
       const otras = antes.otrasCuentas;
 
       const resultado = await eliminarUsuariosPrueba(cliente);
@@ -492,6 +492,7 @@ describe('Administración y cuentas de prueba', () => {
       expect(despues.candidatas).toEqual([]);
       expect(despues.administracion).toEqual([
         expect.objectContaining({ codigo: 'Admin_001', alias: 'AdminDemo', tieneAvatar: true }),
+        expect.objectContaining({ codigo: 'Superadmin_001', rol: 'superadmin' }),
       ]);
       expect(despues.otrasCuentas).toBe(otras);
       const { rows } = await cliente.query(

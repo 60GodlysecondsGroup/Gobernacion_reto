@@ -19,12 +19,6 @@ insert into app.usuario (codigo, alias, rol, rango_edad, intereses_generales) va
   ('Moderador_001', 'ModeradorDemo', 'moderador', null, '{}'),
   ('Gestor_001', 'GestorDemo', 'gestor_fuentes', null, '{}');
 
--- Superadministración de prueba (sin contraseña, como las demás): las pruebas la necesitan para
--- que siempre quede un superadmin activo (disparador de 0009). Se conserva como la administración:
--- no está en CODIGOS_USUARIOS_PRUEBA y la limpieza nunca la borra.
-insert into app.usuario (codigo, alias, rol, rango_edad, intereses_generales, correo) values
-  ('Superadmin_001', 'SuperadminDemo', 'superadmin', null, '{}', 'superadmin.demo@prueba.test');
-
 -- La misma fórmula de datos_base.sql, numerando todas las cuentas por código: cada una conserva
 -- su apariencia de siempre. Solo para las que aún no tienen avatar.
 insert into app.configuracion_avatar (id_usuario, id_personaje, id_cabello, id_rasgos, id_prenda, id_accesorio)
@@ -36,6 +30,19 @@ select id_usuario,
        (array['accesorio-audifonos', null, 'accesorio-gafas', null, 'accesorio-gorra'])[1 + n % 5]
 from (select id_usuario, (row_number() over (order by codigo))::int as n from app.usuario) as u
 where not exists (select 1 from app.configuracion_avatar ca where ca.id_usuario = u.id_usuario);
+
+-- Superadministración de prueba (sin contraseña, como las demás): las pruebas la necesitan para
+-- que siempre quede un superadmin activo (disparador de 0009). Se conserva como la administración:
+-- no está en CODIGOS_USUARIOS_PRUEBA y la limpieza nunca la borra. Va después de la fórmula de
+-- avatares para no cambiar la apariencia de las demás cuentas.
+with nueva as (
+  insert into app.usuario (codigo, alias, rol, rango_edad, intereses_generales, correo) values
+    ('Superadmin_001', 'SuperadminDemo', 'superadmin', null, '{}', 'superadmin.demo@prueba.test')
+  returning id_usuario
+)
+insert into app.configuracion_avatar (id_usuario, id_personaje, id_cabello, id_rasgos, id_prenda, id_accesorio)
+select id_usuario, 'tono-canela', 'cabello-recogido', 'rasgos-tranquilo', 'prenda-chaqueta', 'accesorio-gafas'
+from nueva;
 
 -- Hilos sintéticos (Fase 4): uno o dos por comunidad, para que cada inicio tenga contenido y
 -- se pueda comprobar el aislamiento. Textos ficticios, sin datos personales.
