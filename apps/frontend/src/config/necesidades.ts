@@ -25,3 +25,34 @@ export const TONOS_NECESIDAD: Record<string, TonoVentana> = {
 };
 
 export const tonoNecesidad = (codigo: string): TonoVentana => TONOS_NECESIDAD[codigo] ?? 'lila';
+
+/** Nombre corto de cada necesidad para los sectores de la ruleta; el nombre completo va al centro. */
+export const NOMBRES_CORTOS_NECESIDAD: Record<string, string> = {
+  bienestar: 'Bienestar',
+  hablar_con_alguien: 'Hablar',
+  situacion_preocupa: 'Una situación',
+  amigo_preocupa: 'Un amigo',
+  lineas_ayuda: 'Líneas',
+  informacion_institucional: 'Institucional',
+};
+
+/** Sin nombre corto registrado (un tema nuevo), se usan sus dos primeras palabras. */
+export const nombreCortoNecesidad = (codigo: string, nombre: string): string =>
+  NOMBRES_CORTOS_NECESIDAD[codigo] ?? nombre.split(/\s+/).slice(0, 2).join(' ');
+
+/**
+ * Edificio del pueblo de Orientación que representa cada necesidad (pixel art propio, RF28).
+ * Un tema nuevo sin edificio propio se muestra como una casa, con su icono y su color.
+ */
+export type FormaEdificio = 'casa' | 'cafe' | 'refugio' | 'casasUnidas' | 'torre' | 'institucion';
+export const EDIFICIOS_NECESIDAD: Record<string, FormaEdificio> = {
+  bienestar: 'casa',
+  hablar_con_alguien: 'cafe',
+  situacion_preocupa: 'refugio',
+  amigo_preocupa: 'casasUnidas',
+  lineas_ayuda: 'torre',
+  informacion_institucional: 'institucion',
+};
+
+export const edificioNecesidad = (codigo: string): FormaEdificio =>
+  EDIFICIOS_NECESIDAD[codigo] ?? 'casa';

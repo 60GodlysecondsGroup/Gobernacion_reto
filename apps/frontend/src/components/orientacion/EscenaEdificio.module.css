@@ -1,0 +1,357 @@
+/*
+ * Escena del edificio de cada tema. Reutiliza el lenguaje del valle de la portada
+ * (ValleComunidades.module.css): pixel art, luz que se funde al cambiar y las mismas curvas.
+ */
+.escena {
+  --duracion-luz: 1100ms;
+  --curva-luz: cubic-bezier(0.45, 0, 0.25, 1);
+
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 160 / 110;
+  border-radius: var(--radio-lg);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
+}
+
+/* El dibujo conserva siempre su proporción; en pantallas estrechas la escena recorta un poco de
+   pradera por abajo para que el edificio y la ruleta quepan juntos en la pantalla. */
+.marco {
+  position: absolute;
+  inset: 0 0 auto;
+  aspect-ratio: 160 / 110;
+}
+
+@media (max-width: 47.99rem) {
+  .escena {
+    aspect-ratio: 160 / 96;
+  }
+}
+
+/* Luz de cada tono: mañana de primavera (menta), día claro (cielo), tarde dorada (ámbar) y
+   atardecer lila (lila). Los mismos colores que las estaciones del valle. */
+.escena[data-tono='menta'] {
+  --cielo-alto: #79c3ee;
+  --cielo-bajo: #e3f5fc;
+  --colina: #9fd884;
+  --cesped: #93d672;
+  --cesped-sombra: #77bf5a;
+  --camino: #ddbb8c;
+  --sol: #fff4c0;
+}
+
+.escena[data-tono='cielo'] {
+  --cielo-alto: #2f9be3;
+  --cielo-bajo: #a9e3ff;
+  --colina: #52b057;
+  --cesped: #5dbd4e;
+  --cesped-sombra: #46a33c;
+  --camino: #e2b571;
+  --sol: #ffe04d;
+}
+
+.escena[data-tono='ambar'] {
+  --cielo-alto: #e39b62;
+  --cielo-bajo: #fbe2b8;
+  --colina: #c98540;
+  --cesped: #c7a24e;
+  --cesped-sombra: #a8873c;
+  --camino: #cf9a5e;
+  --sol: #ffb54d;
+}
+
+.escena[data-tono='lila'] {
+  --cielo-alto: #8d7fd8;
+  --cielo-bajo: #f3dcef;
+  --colina: #7fb08a;
+  --cesped: #86c46a;
+  --cesped-sombra: #6aa956;
+  --camino: #d8b48a;
+  --sol: #ffd9e8;
+}
+
+.lienzo {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cieloAlto {
+  fill: var(--cielo-alto);
+}
+
+.cieloMedio {
+  fill: color-mix(in srgb, var(--cielo-alto) 50%, var(--cielo-bajo));
+}
+
+.cieloBajo {
+  fill: var(--cielo-bajo);
+}
+
+.colina {
+  fill: var(--colina);
+}
+
+.cesped {
+  fill: var(--cesped);
+}
+
+.mata {
+  fill: var(--cesped-sombra);
+}
+
+.camino {
+  fill: var(--camino);
+}
+
+.astro {
+  fill: var(--sol);
+}
+
+.halo {
+  fill: var(--sol);
+  opacity: 0.35;
+}
+
+.nube {
+  fill: #ffffff;
+  opacity: 0.92;
+  animation: deriva 80s linear infinite;
+}
+
+/* Cambio de luz: colores que se funden despacio, como el cambio de estación del valle. */
+:is(.cieloAlto, .cieloMedio, .cieloBajo, .colina, .cesped, .mata, .camino, .astro, .halo) {
+  transition: fill var(--duracion-luz) var(--curva-luz);
+}
+
+/* ── Edificio ─────────────────────────────────────────── */
+.capaEdificio {
+  position: absolute;
+  inset: 0;
+}
+
+.cuerpo {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: asentarse 620ms var(--curva-resorte) 120ms backwards;
+}
+
+/* Las ventanas se encienden y la puerta se entreabre justo después de que el edificio llega. */
+.vidrio {
+  fill: #ffd98a;
+  animation: encender 700ms ease-out 380ms backwards;
+}
+
+.puerta {
+  transform-box: fill-box;
+  transform-origin: left center;
+  transform: scaleX(0.25);
+  animation: abrir 520ms var(--curva-salida) 520ms backwards;
+}
+
+.placa {
+  fill: #fff7e6;
+}
+
+.humo circle {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: humo 3.3s ease-out infinite;
+}
+
+.copa {
+  transform-box: view-box;
+  animation: viento 5.5s steps(5) infinite alternate;
+}
+
+.bocadillo {
+  animation: flotar 2.4s steps(4) infinite alternate;
+}
+
+.resplandor {
+  fill: #ffe7a3;
+  opacity: 0.45;
+  animation: latir 2.6s ease-in-out infinite alternate;
+}
+
+.baliza {
+  animation: parpadear 1.6s steps(2) infinite;
+}
+
+.ondas > g {
+  opacity: 0;
+  animation: emitir 1.8s ease-out infinite;
+}
+
+.bandera {
+  transform-box: view-box;
+  animation: ondear 1.8s steps(3) infinite alternate;
+}
+
+/* Icono del tema sobre el letrero (es HTML para usar los mismos iconos de toda la interfaz). */
+.icono {
+  position: absolute;
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  color: var(--tinta);
+  transform: translate(-50%, -50%);
+}
+
+.icono svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Cocuyo vuela hasta el letrero; mismo vuelo que en el valle. */
+.cocuyo {
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition:
+    left 900ms var(--curva-salida),
+    top 900ms var(--curva-salida);
+}
+
+.cocuyoVuelo {
+  display: block;
+  filter: drop-shadow(0 0 6px rgb(242 169 59 / 0.7));
+  animation:
+    llegar 700ms var(--curva-salida),
+    aletear 1.6s ease-in-out 700ms infinite alternate;
+}
+
+/* ── Animaciones ─────────────────────────────────────── */
+@keyframes asentarse {
+  0% {
+    transform: translateY(-4px);
+  }
+  55% {
+    transform: translateY(0.6px);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes encender {
+  from {
+    fill: #6b6a86;
+  }
+}
+
+@keyframes abrir {
+  from {
+    transform: none;
+  }
+}
+
+@keyframes humo {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.6);
+  }
+  20% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(4px, -12px) scale(1.5);
+  }
+}
+
+@keyframes viento {
+  from {
+    transform: rotate(-1.2deg);
+  }
+  to {
+    transform: rotate(1.4deg);
+  }
+}
+
+@keyframes flotar {
+  to {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes latir {
+  to {
+    opacity: 0.2;
+  }
+}
+
+@keyframes parpadear {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes emitir {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes ondear {
+  to {
+    transform: skewY(-6deg);
+  }
+}
+
+@keyframes deriva {
+  from {
+    transform: translateX(-30px);
+  }
+  to {
+    transform: translateX(190px);
+  }
+}
+
+@keyframes aletear {
+  to {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes llegar {
+  40% {
+    transform: translateY(-6px) rotate(-8deg);
+  }
+}
+
+/* Con movimiento reducido la luz cambia con un fundido breve y nada se desplaza ni parpadea. */
+@media (prefers-reduced-motion: reduce) {
+  .escena {
+    --duracion-luz: 300ms;
+  }
+
+  .cuerpo,
+  .vidrio,
+  .puerta,
+  .copa,
+  .bocadillo,
+  .resplandor,
+  .baliza,
+  .bandera,
+  .nube,
+  .cocuyoVuelo {
+    animation: none;
+  }
+
+  .cocuyo {
+    transition: none;
+  }
+
+  .humo,
+  .ondas {
+    display: none;
+  }
+}
