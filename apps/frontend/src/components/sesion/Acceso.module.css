@@ -3,14 +3,58 @@
 .pagina {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  align-content: center;
   gap: var(--espacio-5);
+  width: 100%;
   max-width: 64rem;
+  margin-inline: auto;
+  /* Centrado en el alto que queda entre el encabezado y la barra inferior del móvil. */
+  min-height: calc(
+    100dvh - var(--alto-encabezado) - var(--alto-barra-inferior) - var(--espacio-6) -
+      var(--espacio-8)
+  );
+}
+
+/* Todo en una columna centrada del ancho del formulario de entrada. */
+.pagina > * {
+  width: min(100%, 28rem);
+}
+
+.pagina > header {
+  justify-content: center;
+  padding-bottom: 0;
+  text-align: center;
+}
+
+/* El registro es más ancho (personaje y formulario lado a lado) y arranca arriba: sus etapas
+   cambian de alto y, centradas, harían saltar la página. */
+.pagina[data-modo='registro'] {
+  align-content: start;
+}
+
+.pagina[data-modo='registro'] > header {
+  width: min(100%, 40rem);
+}
+
+.pagina > .panelRegistro {
+  width: min(100%, 60rem);
+}
+
+.panelEntrar[hidden],
+.panelRegistro[hidden] {
+  display: none;
+}
+
+@media (max-width: 39.99rem) {
+  .pagina {
+    gap: var(--espacio-4);
+  }
 }
 
 .tarjeta {
   display: grid;
   gap: var(--espacio-4);
-  max-width: 34rem;
   padding: var(--padding-caja);
   border: 1px solid var(--cristal-borde);
   border-radius: var(--radio-lg);
@@ -24,15 +68,13 @@
   gap: var(--espacio-3);
 }
 
-/* ─── Pestañas «Soy nuevo» / «Ya tengo cuenta» ───────────────────────────── */
+/* ─── Pestañas «Iniciar sesión» / «Crear cuenta» ──────────────────────────── */
 
 .pestanas {
   display: inline-grid;
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
-  justify-self: start;
   gap: var(--espacio-1);
-  width: min(100%, 26rem);
   padding: var(--espacio-1);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-total);
@@ -75,240 +117,12 @@
 .formularioCorto {
   display: grid;
   gap: var(--espacio-4);
-  max-width: 28rem;
-  padding: var(--padding-caja);
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-lg);
-  background: var(--color-superficie);
-  box-shadow: var(--sombra-1);
-}
-
-.registro {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--espacio-5);
-  align-items: start;
-}
-
-@media (min-width: 52rem) {
-  .registro {
-    grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr);
-  }
-
-  /* El avatar queda a la vista mientras se completa el formulario. */
-  .vistaPrevia {
-    position: sticky;
-    top: calc(var(--alto-encabezado) + var(--espacio-4));
-  }
-}
-
-.vistaPrevia {
-  display: grid;
-  justify-items: center;
-  gap: var(--espacio-3);
-  padding: var(--padding-caja);
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-lg);
-  background: var(--color-superficie);
-  box-shadow: var(--sombra-1);
-  text-align: center;
-}
-
-.tituloPaso {
-  font-family: var(--fuente-titulos);
-  font-size: var(--texto-md);
-  font-weight: var(--peso-fuerte);
-}
-
-.lienzo {
-  display: grid;
-  place-items: center;
   width: 100%;
-  padding: var(--espacio-4);
-  border-radius: var(--radio-md);
-  background:
-    linear-gradient(#c9bfa6, #c9bfa6) bottom / 100% 22% no-repeat,
-    linear-gradient(180deg, #e7eeff, #d3defd);
-  box-shadow: inset 0 0 0 1px rgb(38 20 99 / 0.06);
-}
-
-.nombre {
-  max-width: 100%;
-  overflow-wrap: anywhere;
-}
-
-.pasos {
-  display: grid;
-  gap: var(--espacio-4);
-}
-
-.capas {
-  display: grid;
-  gap: var(--espacio-4);
-}
-
-.masDetalles {
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-lg);
-  background: var(--color-superficie);
-}
-
-.masDetalles > summary {
-  padding: var(--espacio-4) var(--padding-caja);
-  font-weight: var(--peso-fuerte);
-  cursor: pointer;
-}
-
-.masDetalles > summary:focus-visible {
-  outline: 3px solid var(--color-foco);
-  outline-offset: 2px;
-  border-radius: var(--radio-lg);
-}
-
-.masDetalles[open] > .capas {
-  padding: 0 var(--espacio-4) var(--espacio-4);
-}
-
-.grupo {
-  display: grid;
-  gap: var(--espacio-3);
-  margin: 0;
   padding: var(--padding-caja);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-lg);
   background: var(--color-superficie);
   box-shadow: var(--sombra-1);
-}
-
-.leyenda {
-  /* La leyenda queda dentro de la tarjeta (no sobre el borde, como la dibuja el navegador). */
-  float: left;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--espacio-2);
-  width: 100%;
-  padding: 0;
-  font-weight: var(--peso-fuerte);
-  font-size: var(--texto-sm);
-}
-
-.leyenda + * {
-  clear: both;
-}
-
-.marca {
-  color: var(--color-texto-tenue);
-  font-size: var(--texto-xs);
-  font-weight: var(--peso-normal);
-}
-
-.ayuda {
-  color: var(--color-texto-suave);
-  font-size: var(--texto-sm);
-}
-
-.errorGrupo {
-  color: var(--color-peligro);
-  font-size: var(--texto-sm);
-  font-weight: var(--peso-fuerte);
-}
-
-/* Rango de edad: cuatro opciones grandes, fáciles de tocar. */
-.rangos {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
-  gap: var(--espacio-2);
-}
-
-.rango {
-  display: flex;
-  align-items: center;
-  gap: var(--espacio-2);
-  min-height: 3rem;
-  padding: var(--espacio-2) var(--espacio-3);
-  border: 1px solid var(--color-borde-fuerte);
-  border-radius: var(--radio-md);
-  font-weight: var(--peso-medio);
-  cursor: pointer;
-  transition:
-    border-color var(--transicion),
-    background var(--transicion);
-}
-
-.rango:hover {
-  border-color: var(--color-primario);
-}
-
-.rango:has(input:checked) {
-  border-color: var(--color-primario);
-  background: var(--color-primario-suave);
-  box-shadow: 0 0 0 1px var(--color-primario);
-}
-
-.rango:has(input:focus-visible) {
-  outline: 3px solid var(--color-foco);
-  outline-offset: 2px;
-}
-
-.rango input {
-  accent-color: var(--color-primario);
-  width: 1.1rem;
-  height: 1.1rem;
-}
-
-/* Hobbies: botones que se activan y desactivan. */
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--espacio-2);
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--espacio-1);
-  min-height: 2.5rem;
-  padding: var(--espacio-1) var(--espacio-3);
-  border: 1px solid var(--color-borde-fuerte);
-  border-radius: var(--radio-total);
-  background: var(--color-superficie-solida);
-  color: var(--color-texto);
-  font: inherit;
-  font-size: var(--texto-sm);
-  cursor: pointer;
-  transition:
-    border-color var(--transicion),
-    background var(--transicion),
-    color var(--transicion);
-}
-
-.chip:hover:not(:disabled) {
-  border-color: var(--color-primario);
-}
-
-.chip[aria-pressed='true'] {
-  border-color: var(--color-primario);
-  background: var(--color-primario);
-  color: var(--color-sobre-primario);
-  font-weight: var(--peso-fuerte);
-}
-
-.chip:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.chip:focus-visible {
-  outline: 3px solid var(--color-foco);
-  outline-offset: 2px;
-}
-
-.otro {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: var(--espacio-2);
 }
 
 /* Contraseña: «Mostrar» a la altura de la etiqueta, a la derecha. */
@@ -363,18 +177,14 @@
   font-weight: var(--peso-normal);
 }
 
+/* El botón de entrar ocupa el ancho de la tarjeta: fácil de alcanzar con el pulgar. */
 .enviar {
-  justify-self: start;
-}
-
-@media (max-width: 30rem) {
-  .enviar {
-    justify-self: stretch;
-  }
+  justify-self: stretch;
 }
 
 .alterno {
   font-size: var(--texto-sm);
+  text-align: center;
 }
 
 .enlaceTexto {
@@ -398,4 +208,5 @@
 .nota {
   color: var(--color-texto-tenue);
   font-size: var(--texto-xs);
+  text-align: center;
 }
