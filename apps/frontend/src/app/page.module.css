@@ -195,7 +195,7 @@
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: var(--espacio-3) var(--espacio-4);
-  padding: var(--espacio-4) var(--espacio-5);
+  padding: var(--espacio-4) var(--padding-caja);
   border: 1px solid rgb(201 58 47 / 0.22);
   border-radius: var(--radio-lg);
   background: rgb(253 236 234 / 0.85);

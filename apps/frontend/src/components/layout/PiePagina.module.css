@@ -23,7 +23,7 @@
 .limites {
   display: grid;
   gap: var(--espacio-2);
-  padding: var(--espacio-4) var(--espacio-5);
+  padding: var(--espacio-4) var(--padding-caja);
   border: 1px solid var(--cristal-borde-oscuro);
   border-radius: var(--radio-lg);
   background: rgb(255 255 255 / 0.06);

@@ -1,7 +1,7 @@
 .region {
   position: fixed;
   top: calc(var(--alto-encabezado) + var(--espacio-3));
-  right: var(--espacio-4);
+  right: max(var(--espacio-4), env(safe-area-inset-right, 0px));
   z-index: 70;
   display: grid;
   gap: var(--espacio-2);

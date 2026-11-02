@@ -216,7 +216,7 @@
 .tarjeta {
   display: grid;
   gap: var(--espacio-3);
-  padding: var(--espacio-5);
+  padding: var(--padding-caja);
   border: 1px solid var(--cristal-borde);
   border-radius: var(--radio-lg);
   background: var(--cristal-lectura);

@@ -188,7 +188,7 @@
   align-content: start;
   gap: var(--espacio-1);
   overflow: hidden;
-  padding: var(--espacio-5);
+  padding: var(--padding-caja);
   border: 1px solid var(--cristal-borde);
   border-radius: var(--radio-lg);
   background: var(--cristal-lectura);
@@ -412,7 +412,7 @@ a.indicadorDestacado:hover {
   display: grid;
   justify-items: start;
   gap: var(--espacio-2);
-  padding: var(--espacio-6);
+  padding: var(--padding-caja-amplia);
   border: 1.5px dashed var(--color-borde-fuerte);
   border-radius: var(--radio-md);
   color: var(--color-texto-suave);

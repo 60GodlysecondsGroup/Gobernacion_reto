@@ -64,7 +64,7 @@
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--espacio-4);
-  padding: var(--espacio-5) var(--espacio-5) var(--espacio-4);
+  padding: var(--espacio-5) var(--padding-caja) var(--espacio-4);
   background:
     radial-gradient(22rem 10rem at 0% 0%, rgb(115 80 234 / 0.16), transparent 70%),
     radial-gradient(22rem 10rem at 100% 0%, rgb(139 124 246 / 0.18), transparent 70%),
@@ -144,7 +144,7 @@
   display: grid;
   align-content: start;
   gap: var(--espacio-4);
-  padding: var(--espacio-5);
+  padding: var(--espacio-5) var(--padding-caja);
   overflow-y: auto;
   overscroll-behavior: contain;
   line-height: var(--interlineado);
@@ -168,7 +168,7 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: var(--espacio-3);
-  padding: var(--espacio-4) var(--espacio-5);
+  padding: var(--espacio-4) var(--padding-caja);
   border-top: 1px solid var(--color-borde);
   background: var(--morado-50);
 }

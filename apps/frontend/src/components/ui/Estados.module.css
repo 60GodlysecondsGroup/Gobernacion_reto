@@ -2,7 +2,7 @@
   display: grid;
   justify-items: center;
   gap: var(--espacio-2);
-  padding: var(--espacio-6) var(--espacio-5);
+  padding: var(--padding-caja-amplia) var(--padding-caja);
   border: 1px solid var(--cristal-borde);
   border-radius: var(--radio-lg);
   background: var(--cristal-lectura);

@@ -12,7 +12,7 @@
   display: flex;
   align-items: center;
   gap: var(--espacio-3);
-  padding: var(--espacio-4) var(--espacio-5);
+  padding: var(--espacio-4) var(--padding-caja);
   border-bottom: 1px solid var(--color-borde);
 }
 .iconoAsistente,
@@ -60,7 +60,7 @@
   flex-direction: column;
   gap: var(--espacio-5);
   overflow: auto;
-  padding: var(--espacio-5);
+  padding: var(--padding-caja);
 }
 .bienvenida {
   width: min(100%, 42rem);
@@ -220,7 +220,7 @@
   }
 }
 .error {
-  padding: 0 var(--espacio-5);
+  padding: 0 var(--padding-caja);
 }
 .compositor {
   display: flex;

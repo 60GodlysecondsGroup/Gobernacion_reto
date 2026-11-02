@@ -202,11 +202,23 @@
   --separacion-seccion: clamp(3.5rem, 2rem + 5vw, 7rem);
   --padding-tarjeta: clamp(1.125rem, 0.9rem + 1vw, 1.75rem);
   --separacion-elementos: clamp(0.75rem, 0.6rem + 0.6vw, 1.25rem);
+  /*
+   * Relleno interior de las cajas de contenido (tarjetas, avisos, diálogos, hojas, formularios).
+   * «Amplia» es para las cajas que abren una vista (resumen de ficha, diálogos, estados vacíos).
+   * En móvil se reducen (ver abajo) para no restarle ancho útil al texto.
+   */
+  --padding-caja: var(--espacio-5);
+  --padding-caja-amplia: var(--espacio-6);
 
   /* ── Estructura ─────────────────────────────────────── */
   --ancho-contenido: 84rem;
   --ancho-lectura: 46rem;
-  --margen-lateral: var(--padding-pagina);
+  /* Nunca menor que el área segura (muesca o esquinas redondeadas en horizontal). */
+  --margen-lateral: max(
+    var(--padding-pagina),
+    env(safe-area-inset-left, 0px),
+    env(safe-area-inset-right, 0px)
+  );
   --alto-encabezado: 4.75rem;
   /* Barra inferior flotante del móvil (0 en escritorio), incluido su margen. */
   --alto-barra-inferior: 5.5rem;
@@ -217,6 +229,9 @@
 @media (max-width: 47.99rem) {
   :root {
     --cristal-desenfoque: blur(16px) saturate(170%);
+    /* ≈ el margen de la página: el texto de una caja queda alineado con el de fuera. */
+    --padding-caja: var(--padding-tarjeta);
+    --padding-caja-amplia: var(--espacio-5);
   }
 }
 

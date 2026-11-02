@@ -51,6 +51,9 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: '#f3f1fb',
+  // Ocupa toda la pantalla y activa `env(safe-area-inset-*)`: los márgenes, la barra inferior,
+  // las hojas y la sala inmersiva ya los respetan (sin esto valen 0).
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

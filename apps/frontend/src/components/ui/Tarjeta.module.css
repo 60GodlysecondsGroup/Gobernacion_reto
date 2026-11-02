@@ -12,7 +12,7 @@
 .cabecera {
   display: grid;
   gap: var(--espacio-1);
-  padding: var(--espacio-5) var(--espacio-5) 0;
+  padding: var(--padding-caja) var(--padding-caja) 0;
 }
 
 .titulo {
@@ -25,7 +25,7 @@
 }
 
 .cuerpo {
-  padding: var(--espacio-5);
+  padding: var(--padding-caja);
 }
 
 .pie {
@@ -34,7 +34,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--espacio-3);
-  padding: var(--espacio-3) var(--espacio-5);
+  padding: var(--espacio-3) var(--padding-caja);
   border-top: 1px solid var(--color-borde);
   border-radius: 0 0 var(--radio-lg) var(--radio-lg);
   background: rgb(241 245 255 / 0.6);
