@@ -11,6 +11,9 @@ import { rutasAsistente } from './modules/asistente/asistente.routes.js';
 import { crearServicioAsistente } from './modules/asistente/asistente.service.js';
 import { rutasAsistenteUsuario } from './modules/asistente-usuario/asistente-usuario.routes.js';
 import { crearServicioAsistenteUsuario } from './modules/asistente-usuario/asistente-usuario.service.js';
+import { crearRevisorPrivacidad } from './modules/cocuyo/cocuyo.privacidad.js';
+import { rutasCocuyo } from './modules/cocuyo/cocuyo.routes.js';
+import { crearServicioCocuyo } from './modules/cocuyo/cocuyo.service.js';
 import { crearRepositorioComunidades } from './modules/comunidad/comunidad.repository.js';
 import { rutasComunidad } from './modules/comunidad/comunidad.routes.js';
 import { crearServicioComunidad } from './modules/comunidad/comunidad.service.js';
@@ -201,6 +204,22 @@ export function crearServidor({
         orientacion,
         apiKey: config.openai.apiKey,
         modelo: config.openai.model,
+      }),
+    ),
+  );
+  // Cocuyo, la guía de inicio: chat acotado al catálogo de la guía (docs/cocuyo-asistente-ia.md).
+  const reglasDlpCocuyo = crearRepositorioDlp(db, logger);
+  app.use(
+    '/api',
+    rutasCocuyo(
+      crearServicioCocuyo({
+        apiKey: config.openai.apiKey,
+        modelo: config.openai.model,
+        logger,
+        revisarPrivacidad: crearRevisorPrivacidad({
+          reglas: () => reglasDlpCocuyo.reglasActivas(),
+          logger,
+        }),
       }),
     ),
   );
