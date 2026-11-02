@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSesion } from '@/components/sesion/ProveedorSesion';
 import { enlacesNavegacion, type EnlaceNavegacion } from '@/config/navegacion';
+import { useBarrasAlDesplazar } from '@/lib/hooks/useBarrasAlDesplazar';
 import estilos from './Encabezado.module.css';
 import { MenuCuenta } from './MenuCuenta';
 
@@ -106,9 +107,11 @@ export function Navegacion() {
 /**
  * Barra inferior flotante de cristal (móvil y tableta), al alcance del pulgar. Va fuera del
  * encabezado: el desenfoque de la barra superior convertiría `position: fixed` en relativo a ella.
+ * Se monta una sola vez, así que también turna las dos barras al desplazarse (solo en móvil).
  */
 export function BarraInferior() {
   const { activo, inferiores } = useSecciones();
+  useBarrasAlDesplazar();
 
   return (
     <nav aria-label="Secciones" className={estilos.barraInferior}>

@@ -426,6 +426,42 @@
   }
 }
 
+/*
+ * Barras que se turnan al desplazarse (móvil y tableta, ver `useBarrasAlDesplazar`): hacia abajo
+ * se va el encabezado y queda la barra inferior; hacia arriba, al revés. Solo `transform` y
+ * `opacity`: el encabezado sigue ocupando su sitio y el contenido no salta. En escritorio no
+ * cambia nada.
+ */
+@media (max-width: 63.99rem) {
+  .encabezado {
+    padding-top: max(var(--espacio-3), env(safe-area-inset-top, 0px));
+  }
+
+  .encabezado,
+  .barraInferior {
+    transition:
+      transform var(--transicion-lenta),
+      opacity var(--transicion-lenta);
+  }
+
+  :global(html[data-desplazamiento='abajo']) .encabezado {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+
+  :global(html[data-desplazamiento='arriba']) .barraInferior {
+    opacity: 0;
+    transform: translateY(calc(100% + var(--espacio-3) + env(safe-area-inset-bottom, 0px)));
+  }
+
+  /* Con el foco del teclado dentro, o el menú de la cuenta abierto, la barra no se esconde. */
+  :global(html) .encabezado:has(:focus-visible, [aria-expanded='true']),
+  :global(html) .barraInferior:has(:focus-visible) {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (min-width: 64rem) {
   .datosCuenta {
     display: grid;
