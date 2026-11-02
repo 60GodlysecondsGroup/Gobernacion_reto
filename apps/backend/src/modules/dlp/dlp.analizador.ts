@@ -1,7 +1,8 @@
 /**
  * Analizador DLP: funciones puras, sin base de datos ni red.
  * Combina reglas (expresiones regulares guardadas en app.regla_dlp) sobre el texto normalizado.
- * No detecta todas las formas posibles de compartir información (sección 16.2).
+ * No detecta todas las formas posibles de compartir información ni de escribir groserías
+ * (sección 16.2): lo que se escape llega a moderación por los reportes (segunda capa).
  */
 
 export const CATEGORIAS_DLP = [
@@ -11,14 +12,39 @@ export const CATEGORIAS_DLP = [
   'identidad',
   'edad',
   'publicidad_comercio',
+  'lenguaje_ofensivo',
+  'contenido_sexual',
 ] as const;
 export type CategoriaDlp = (typeof CATEGORIAS_DLP)[number];
 export type AccionDlp = 'bloquear' | 'advertir' | 'registrar';
 export type TipoContenido = 'perfil' | 'hilo' | 'respuesta' | 'sala' | 'reporte';
 
+/**
+ * Categorías de convivencia (groserías, insultos, lenguaje sexual y doble sentido). Sus reglas se
+ * comparan además con variantes más agresivas del texto (`variantesLenguaje`) y su bloqueo usa
+ * `MENSAJE_BLOQUEO_LENGUAJE`.
+ */
+export const CATEGORIAS_LENGUAJE: readonly CategoriaDlp[] = [
+  'lenguaje_ofensivo',
+  'contenido_sexual',
+];
+
+export const esCategoriaLenguaje = (categoria: CategoriaDlp) =>
+  CATEGORIAS_LENGUAJE.includes(categoria);
+
 /** Mensaje de bloqueo exacto (F22). Nunca repite el dato detectado. */
 export const MENSAJE_BLOQUEO =
   'Este mensaje contiene información que no puede compartirse en la plataforma para proteger tu privacidad y la de otros usuarios.';
+
+/**
+ * Mensaje de bloqueo por lenguaje ofensivo o sexual. Tampoco repite la palabra detectada; el de
+ * privacidad confundiría a quien escribió una grosería, que no compartió ningún dato.
+ */
+export const MENSAJE_BLOQUEO_LENGUAJE =
+  'Este mensaje contiene lenguaje ofensivo, vulgar o sexual que no está permitido en la comunidad. Revisa las reglas de convivencia y escríbelo de otra forma.';
+
+export const mensajeBloqueo = (categoria: CategoriaDlp) =>
+  esCategoriaLenguaje(categoria) ? MENSAJE_BLOQUEO_LENGUAJE : MENSAJE_BLOQUEO;
 
 export type ReglaCompilada = {
   id: string | null;
@@ -40,12 +66,110 @@ export const masGrave = (a: DeteccionDlp | null, b: DeteccionDlp | null) =>
   !a || (b && PRIORIDAD[b.accion] > PRIORIDAD[a.accion]) ? b : a;
 
 /**
- * Minúsculas, sin tildes ni diéresis (ñ → n) y espacios simples. Las reglas se escriben
- * sobre este texto normalizado. La detección de evasión (F23) trabaja sobre variantes de este
- * texto: ver `variantesEvasion`.
+ * Letras de otros alfabetos que se ven iguales a las latinas (cirílico y griego) y letras latinas
+ * sin descomposición canónica. Se usan para esquivar filtros: «рutа» con р y а cirílicas.
+ */
+const HOMOGLIFOS: Record<string, string> = {
+  а: 'a',
+  в: 'b',
+  е: 'e',
+  ё: 'e',
+  к: 'k',
+  м: 'm',
+  н: 'h',
+  о: 'o',
+  р: 'p',
+  с: 'c',
+  т: 't',
+  у: 'y',
+  х: 'x',
+  і: 'i',
+  ї: 'i',
+  ј: 'j',
+  ѕ: 's',
+  ԁ: 'd',
+  ӏ: 'l',
+  ɡ: 'g',
+  А: 'a',
+  В: 'b',
+  Е: 'e',
+  К: 'k',
+  М: 'm',
+  Н: 'h',
+  О: 'o',
+  Р: 'p',
+  С: 'c',
+  Т: 't',
+  У: 'y',
+  Х: 'x',
+  І: 'i',
+  Ј: 'j',
+  Ѕ: 's',
+  α: 'a',
+  β: 'b',
+  ε: 'e',
+  η: 'n',
+  ι: 'i',
+  κ: 'k',
+  ν: 'v',
+  ο: 'o',
+  ρ: 'p',
+  τ: 't',
+  υ: 'u',
+  χ: 'x',
+  Α: 'a',
+  Β: 'b',
+  Ε: 'e',
+  Ζ: 'z',
+  Η: 'h',
+  Ι: 'i',
+  Κ: 'k',
+  Μ: 'm',
+  Ν: 'n',
+  Ο: 'o',
+  Ρ: 'p',
+  Τ: 't',
+  Υ: 'y',
+  Χ: 'x',
+  ø: 'o',
+  Ø: 'o',
+  ł: 'l',
+  Ł: 'l',
+  đ: 'd',
+  Đ: 'd',
+  ı: 'i',
+  ß: 'ss',
+  æ: 'ae',
+  Æ: 'ae',
+  œ: 'oe',
+  Œ: 'oe',
+};
+const RE_HOMOGLIFOS = new RegExp(`[${Object.keys(HOMOGLIFOS).join('')}]`, 'g');
+
+/**
+ * Caracteres invisibles (ancho cero, guion suave, marcas de dirección) que parten palabras. Las
+ * marcas combinantes invisibles (U+034F, U+17B4…) ya las quita el paso NFD que elimina \p{M}.
+ */
+const INVISIBLES =
+  /[\u00ad\u061c\u115f\u1160\u180e\u200b-\u200f\u202a-\u202e\u2060-\u2064\u206a-\u206f\ufeff]/g;
+
+/**
+ * Minúsculas, sin tildes ni diéresis (ñ → n) y espacios simples. Antes unifica formas Unicode
+ * equivalentes (NFKC: «ｐｕｔａ» de ancho completo → «puta»), cambia homoglifos por su letra latina
+ * y quita caracteres invisibles. Las reglas se escriben sobre este texto normalizado. La detección
+ * de evasión (F23) trabaja sobre variantes de este texto: ver `variantesEvasion` y
+ * `variantesLenguaje`.
  */
 export function normalizar(texto: string): string {
-  return texto.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/\s+/g, ' ').trim();
+  return texto
+    .normalize('NFKC')
+    .replace(INVISIBLES, '')
+    .replace(RE_HOMOGLIFOS, (letra) => HOMOGLIFOS[letra] ?? letra)
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 export function compilarPatron(patron: string): RegExp {
@@ -97,6 +221,25 @@ const SUSTITUCIONES: Record<string, string> = {
 
 const unicas = (lista: string[]) => [...new Set(lista)];
 
+/** Letras o dígitos sueltos separados («i n s t a», «w.h.a.t.s»): se juntan si son 3 o más. */
+const juntarSueltas = (normalizado: string) =>
+  normalizado.replace(/\b(?:[a-z0-9][\s.\-_*|·]){2,}[a-z0-9]\b/g, (grupo) =>
+    grupo.replace(/[\s.\-_*|·]/g, ''),
+  );
+
+/**
+ * Números y símbolos en lugar de letras dentro de palabras («1nst4gr4m», «wh@ts»). Solo en
+ * palabras que ya tienen letras; un «@» inicial (usuario externo) se conserva.
+ */
+const sinSustituciones = (texto: string) =>
+  texto.replace(/[a-z0-9@$]*[a-z][a-z0-9@$]*/g, (palabra) => {
+    const arroba = palabra.startsWith('@') ? '@' : '';
+    const resto = palabra.slice(arroba.length);
+    return /[0-9@$]/.test(resto)
+      ? arroba + [...resto].map((c) => SUSTITUCIONES[c] ?? c).join('')
+      : palabra;
+  });
+
 export function variantesEvasion(normalizado: string): string[] {
   const variantes: string[] = [];
 
@@ -113,22 +256,11 @@ export function variantesEvasion(normalizado: string): string[] {
   //    se quita, para no confundir fechas como 21/10/2026 con un teléfono.
   variantes.push(dictado.replace(/(\d)[\s.\-_*|·,~+()]+(?=\d)/g, '$1'));
 
-  // 3. Letras o dígitos sueltos separados («i n s t a», «w.h.a.t.s»): se juntan si son 3 o más.
-  const juntas = normalizado.replace(/\b(?:[a-z0-9][\s.\-_*|·]){2,}[a-z0-9]\b/g, (grupo) =>
-    grupo.replace(/[\s.\-_*|·]/g, ''),
-  );
+  // 3. Letras o dígitos sueltos separados.
+  const juntas = juntarSueltas(normalizado);
   variantes.push(juntas);
 
-  // 4. Números y símbolos en lugar de letras dentro de palabras («1nst4gr4m», «wh@ts»).
-  //    Solo en palabras que ya tienen letras; un «@» inicial (usuario externo) se conserva.
-  const sinSustituciones = (texto: string) =>
-    texto.replace(/[a-z0-9@$]*[a-z][a-z0-9@$]*/g, (palabra) => {
-      const arroba = palabra.startsWith('@') ? '@' : '';
-      const resto = palabra.slice(arroba.length);
-      return /[0-9@$]/.test(resto)
-        ? arroba + [...resto].map((c) => SUSTITUCIONES[c] ?? c).join('')
-        : palabra;
-    });
+  // 4. Números y símbolos en lugar de letras dentro de palabras.
   variantes.push(sinSustituciones(juntas));
 
   // 5. Letras repetidas tres o más veces («whaaatsapp» → «whatsapp»).
@@ -144,13 +276,102 @@ export function variantesEvasion(normalizado: string): string[] {
   return unicas(variantes).filter((v) => v !== normalizado);
 }
 
+// ─── Variantes para las reglas de lenguaje ofensivo y sexual ───────────────────
+// Más agresivas que las de evasión: solo las ven las reglas de CATEGORIAS_LENGUAJE. En datos de
+// contacto producirían falsos positivos (quitar signos dentro de palabras convierte una fecha en
+// un número largo), pero una grosería no cambia de sentido por quitarle los puntos.
+
+/** Símbolos que reemplazan una letra cuando están entre letras o dígitos («pu+a», «p!to»). */
+const SUSTITUCIONES_ENTRE_LETRAS: Record<string, string> = {
+  '+': 't',
+  '!': 'i',
+  '¡': 'i',
+  '|': 'i',
+  '€': 'e',
+};
+
+const sinSustitucionesExtendidas = (texto: string) =>
+  sinSustituciones(
+    texto.replace(/(?<=[a-z0-9])[+!¡|€](?=[a-z0-9])/g, (c) => SUSTITUCIONES_ENTRE_LETRAS[c] ?? c),
+  );
+
+/** Signos intercalados dentro de una palabra: «hijue.puta», «m-a-l-p-a-r-i-d-o», «p/u/t/a». */
+const sinSignosInternos = (texto: string) =>
+  texto.replace(/(?<=[a-z0-9])[^a-z0-9\s]+(?=[a-z0-9])/g, '');
+
+/** Toda letra repetida queda una sola vez: «puuta» → «puta», «mieeerda» → «mierda». */
+const sinRepeticiones = (texto: string) => texto.replace(/([a-z])\1+/g, '$1');
+
+/** Fragmentos cortos separados por espacios: «hi jue pu ta» → «hijueputa». */
+const pegarFragmentos = (texto: string) =>
+  texto.replace(/(?<![a-z0-9])[a-z]{1,3}(?: [a-z]{1,3})+(?![a-z0-9])/g, (grupo) =>
+    grupo.replace(/ /g, ''),
+  );
+
+/**
+ * Letras ocultas con asterisco o numeral («p*ta», «m*erda», «hijuep*ta»): prueba las letras más
+ * frecuentes en esa posición. La misma elección se aplica a la vez a todas las palabras
+ * enmascaradas, así que el costo no crece con el número de palabras: 7 variantes, o 49 si alguna
+ * palabra tiene dos comodines. Las palabras con más de dos comodines no se rellenan.
+ */
+const LETRAS_COMODIN = ['a', 'e', 'i', 'o', 'u', 'r', 't'];
+const PALABRA_CON_COMODIN = /(?<![a-z*#])(?=[a-z*#]*[a-z][a-z*#]*[a-z])[a-z]*[*#][a-z*#]*/g;
+
+function rellenarComodines(texto: string): string[] {
+  const palabras = [...texto.matchAll(PALABRA_CON_COMODIN)].filter(
+    ([palabra]) => (palabra.match(/[*#]/g)?.length ?? 0) <= 2,
+  );
+  if (palabras.length === 0) return [];
+  const dosComodines = palabras.some(([palabra]) => palabra.match(/[*#]/g)!.length === 2);
+  const pares = LETRAS_COMODIN.flatMap((primera) =>
+    dosComodines ? LETRAS_COMODIN.map((segunda) => [primera, segunda]) : [[primera, primera]],
+  );
+  return pares.map(([primera, segunda]) => {
+    let resultado = '';
+    let desde = 0;
+    for (const { 0: palabra, index } of palabras) {
+      let n = 0;
+      resultado +=
+        texto.slice(desde, index) +
+        palabra.replace(/[*#]/g, () => (n++ === 0 ? primera! : segunda!));
+      desde = index + palabra.length;
+    }
+    return resultado + texto.slice(desde);
+  });
+}
+
+/**
+ * Variantes del texto normalizado para las reglas de lenguaje: leetspeak extendido, comodines,
+ * signos intercalados, letras repetidas y fragmentos separados por espacios. Se combinan entre sí
+ * («h1jue.puuta» → «hijueputa»). NO detecta todas las formas posibles de escribir una grosería.
+ */
+export function variantesLenguaje(normalizado: string): string[] {
+  const variantes: string[] = [];
+  for (const base of unicas([normalizado, juntarSueltas(normalizado)])) {
+    const leet = sinSustitucionesExtendidas(base);
+    const sinSignos = sinSignosInternos(leet);
+    const sinRepetir = sinRepeticiones(sinSignos);
+    variantes.push(leet, sinSignos, sinRepetir, pegarFragmentos(sinRepetir));
+    // Con comodines basta quitar signos y repeticiones: los rellenos ya son palabras completas.
+    for (const relleno of rellenarComodines(leet)) {
+      variantes.push(relleno, sinRepeticiones(sinSignosInternos(relleno)));
+    }
+  }
+  return unicas(variantes).filter((v) => v !== normalizado);
+}
+
 /** La detección más grave entre las reglas que coinciden, o null si ninguna coincide. */
 export function analizar(texto: string, reglas: ReglaCompilada[]): DeteccionDlp | null {
   const normalizado = normalizar(texto);
   const textos = [normalizado, ...variantesEvasion(normalizado)];
+  // Solo se calculan si hay alguna regla de lenguaje activa.
+  let textosLenguaje: string[] | undefined;
   let resultado: DeteccionDlp | null = null;
   for (const regla of reglas) {
-    if (!textos.some((t) => regla.patron.test(t))) continue;
+    const candidatos = esCategoriaLenguaje(regla.categoria)
+      ? (textosLenguaje ??= unicas([...textos, ...variantesLenguaje(normalizado)]))
+      : textos;
+    if (!candidatos.some((t) => regla.patron.test(t))) continue;
     resultado = masGrave(resultado, {
       categoria: regla.categoria,
       accion: regla.accion,
