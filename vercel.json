@@ -4,7 +4,7 @@
     "backend": {
       "root": "apps/backend",
       "framework": "express",
-      "entrypoint": "index.ts"
+      "entrypoint": "src/vercel-probe.ts"
     },
     "frontend": {
       "root": "apps/frontend",
