@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { ChatCocuyoPagina } from '@/components/guia/ChatCocuyo';
 import { Cocuyo } from '@/components/guia/Cocuyo';
 import { PreguntasFrecuentes } from '@/components/guia/PreguntasFrecuentes';
 import { ComoFunciona } from '@/components/inicio/ComoFunciona';
@@ -9,8 +10,8 @@ import { PRESENTACION_GUIA, TEMAS_GUIA } from '@/config/guia';
 export const metadata: Metadata = { title: 'Cómo funciona' };
 
 /**
- * Página «Cómo funciona»: las seis etapas narrativas y, debajo, la guía virtual (F25) completa
- * como preguntas frecuentes en acordeón, con el mismo contenido preestablecido.
+ * Página «Cómo funciona»: las seis etapas narrativas, el chat de Cocuyo (F25) y, debajo, la guía
+ * completa como preguntas frecuentes en acordeón, con el mismo contenido preestablecido.
  */
 export default function PaginaGuia() {
   return (
@@ -24,6 +25,12 @@ export default function PaginaGuia() {
       <div className={estilos.ancho}>
         <ComoFunciona />
       </div>
+      <section className={estilos.chat} aria-labelledby="pregunta-a-cocuyo">
+        <h2 id="pregunta-a-cocuyo" className={estilos.subtitulo}>
+          Pregúntale a Cocuyo
+        </h2>
+        <ChatCocuyoPagina />
+      </section>
       <h2 className={estilos.subtitulo}>Preguntas frecuentes</h2>
       <PreguntasFrecuentes temas={TEMAS_GUIA} />
     </div>
