@@ -14,6 +14,7 @@ import {
 import { ErrorApi, mensajeDeError } from '@/lib/api/cliente';
 import { obtenerServiciosDe, type FichaServicio, type Necesidad } from '@/lib/api/orientacion';
 import comun from '../comun.module.css';
+import { recordarTema } from './ExploradorTemas';
 import estilos from './Orientacion.module.css';
 import { TarjetaServicio } from './TarjetaServicio';
 
@@ -29,7 +30,11 @@ export function ServiciosPorNecesidad() {
   useEffect(() => {
     let vigente = true;
     obtenerServiciosDe(codigo)
-      .then((r) => vigente && setEstado({ tipo: 'listo', ...r }))
+      .then((r) => {
+        if (!vigente) return;
+        setEstado({ tipo: 'listo', ...r });
+        recordarTema(r.necesidad.codigo);
+      })
       .catch((e: unknown) => {
         if (!vigente) return;
         const mensaje =

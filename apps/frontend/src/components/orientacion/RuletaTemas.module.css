@@ -1,0 +1,231 @@
+/*
+ * Ruleta de temas. El disco gira (`--giro`) para dejar el tema elegido frente al puntero
+ * (`--puntero`: arriba en el móvil, a la derecha en escritorio, hacia el edificio) y el
+ * contenido de cada sector gira al revés para leerse siempre derecho.
+ */
+.ruleta {
+  --puntero: 0deg;
+  --giro-disco: calc(var(--puntero) - var(--giro, 0deg));
+  --duracion-giro: 560ms;
+
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  container-type: inline-size;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Mismo punto de corte que la distribución horizontal de `Orientacion.module.css`. */
+@media (min-width: 48rem) {
+  .ruleta {
+    --puntero: 90deg;
+  }
+}
+
+.disco {
+  position: absolute;
+  inset: 0;
+  transform: rotate(var(--giro-disco));
+  transition: transform var(--duracion-giro) var(--curva-resorte);
+}
+
+.sectores {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 10px 22px rgb(51 25 138 / 0.18));
+}
+
+.aro {
+  fill: rgb(255 255 255 / 0.35);
+  stroke: var(--cristal-borde);
+  stroke-width: 0.8;
+}
+
+.sector {
+  fill: var(--cristal-lectura);
+  stroke: rgb(38 20 99 / 0.1);
+  stroke-width: 0.6;
+  cursor: pointer;
+  transition:
+    fill var(--transicion),
+    transform var(--duracion-giro) var(--curva-resorte);
+}
+
+.sector[data-vista] {
+  fill: var(--morado-50);
+}
+
+.sector[data-elegido] {
+  fill: url(#ruleta-elegido);
+  stroke: var(--morado-700);
+}
+
+/* Botones de cada sector: círculos táctiles de al menos 44 px sobre el radio medio. */
+.opciones {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.opcion {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: max(2.75rem, var(--lado));
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-texto);
+  cursor: pointer;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+}
+
+.opcion:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgb(255 255 255 / 0.9);
+}
+
+.opcion[aria-checked='true']:focus-visible {
+  outline-color: #ffffff;
+  box-shadow: 0 0 0 6px var(--morado-800);
+}
+
+.contenido {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  transform: rotate(calc(-1 * var(--giro-disco)));
+  transition: transform var(--duracion-giro) var(--curva-resorte);
+}
+
+.ficha {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radio-sm);
+  transition: transform 220ms var(--curva-resorte);
+}
+
+.etiqueta {
+  max-width: 7.5rem;
+  font-size: 0.75rem;
+  font-weight: var(--peso-fuerte);
+  line-height: 1.15;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.opcion[aria-checked='true'] .etiqueta {
+  color: #ffffff;
+}
+
+.opcion[aria-checked='true'] .ficha {
+  transform: scale(1.12);
+  box-shadow: 0 0 0 2px rgb(255 255 255 / 0.85);
+}
+
+@media (hover: hover) {
+  .opcion:hover .ficha {
+    transform: scale(1.08);
+  }
+}
+
+.opcion:active .ficha {
+  transform: scale(0.94);
+}
+
+/* Centro fijo: nombre completo del tema elegido (o del que está bajo el cursor). */
+.centro {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 42%;
+  aspect-ratio: 1;
+  border: 1px solid var(--cristal-borde);
+  border-radius: 50%;
+  background: var(--color-superficie-solida);
+  box-shadow: var(--cristal-brillo), var(--sombra-2);
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+
+.textoCentro {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  width: 82%;
+  text-align: center;
+  animation: aparecer 260ms var(--curva-salida);
+}
+
+.textoCentro > :first-child {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.nombreCentro {
+  display: -webkit-box;
+  overflow: hidden;
+  font-family: var(--fuente-titulos);
+  font-size: clamp(0.8125rem, 3.4cqi, 1rem);
+  font-weight: var(--peso-titulo);
+  line-height: 1.15;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.cuentaCentro {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--color-primario);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+}
+
+.centro[data-vista] .cuentaCentro {
+  color: var(--color-texto-tenue);
+}
+
+/* Puntero fijo que señala el edificio: una pestaña fuera del aro, en el ángulo `--puntero`. */
+.puntero {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-right: 9px solid transparent;
+  border-bottom: 12px solid var(--morado-600);
+  border-left: 9px solid transparent;
+  filter: drop-shadow(0 2px 3px rgb(51 25 138 / 0.35));
+  transform: translate(-50%, -50%) rotate(var(--puntero)) translateY(calc(-50cqi - 9px));
+  pointer-events: none;
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* Con movimiento reducido el disco cambia de posición sin girar ni rebotar. */
+@media (prefers-reduced-motion: reduce) {
+  .disco,
+  .contenido,
+  .sector {
+    transition: fill var(--transicion);
+  }
+
+  .textoCentro {
+    animation: none;
+  }
+}

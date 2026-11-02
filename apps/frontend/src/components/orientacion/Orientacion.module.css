@@ -1,21 +1,66 @@
-/* Navegador de necesidades */
-.necesidades {
+/*
+ * Explorador de temas: ruleta y edificio. En el móvil, el edificio arriba y la ruleta debajo
+ * (el puntero de la ruleta mira hacia arriba); desde tableta y en escritorio, la ruleta a la
+ * izquierda y el edificio a la derecha (el puntero mira a la derecha). En el DOM la ruleta va primero: se elige
+ * y después se entra.
+ */
+.explorador {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
-  gap: var(--espacio-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  grid-template-areas:
+    'edificio'
+    'ruleta';
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-5);
+  align-items: center;
 }
 
-.necesidad {
+.zonaRuleta {
   display: grid;
-  grid-template-rows: auto auto 1fr auto;
-  gap: var(--espacio-2);
-  height: 100%;
-  padding: var(--espacio-5);
+  grid-area: ruleta;
+  justify-items: center;
+  gap: var(--espacio-3);
+  /* Espacio para el puntero, que asoma por fuera del aro. */
+  padding-top: 1.5rem;
+  /* El disco gira: su caja girada (no el círculo visible) no debe crear desplazamiento lateral. */
+  overflow-x: clip;
+}
+
+.zonaRuleta > :first-child {
+  max-width: 19.5rem;
+}
+
+.ayudaRuleta {
+  max-width: 24rem;
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+  text-align: center;
+}
+
+/* El texto de ayuda habla del cursor o del toque según el dispositivo (como en el valle). */
+.ayudaTactil {
+  display: none;
+}
+
+@media (hover: none) {
+  .ayudaPuntero {
+    display: none;
+  }
+
+  .ayudaTactil {
+    display: inline;
+  }
+}
+
+.edificio {
+  display: grid;
+  grid-area: edificio;
+  gap: var(--espacio-3);
+  justify-self: center;
+  width: 100%;
+  max-width: 36rem;
+  padding: var(--espacio-3);
   border: 1px solid var(--cristal-borde);
-  border-radius: var(--radio-lg);
+  border-radius: var(--radio-xl);
   background: var(--cristal-lectura);
   color: var(--color-texto);
   text-decoration: none;
@@ -26,7 +71,7 @@
     transform var(--transicion-lenta);
 }
 
-.necesidad:hover {
+.edificio:hover {
   border-color: rgb(91 53 213 / 0.28);
   color: var(--color-texto);
   text-decoration: none;
@@ -34,24 +79,35 @@
   transform: translateY(-2px);
 }
 
-.nombreNecesidad {
-  margin-top: var(--espacio-2);
-  font-family: var(--fuente-titulos);
-  font-size: var(--texto-lg);
-  font-weight: var(--peso-titulo);
-  line-height: 1.25;
+.edificio:active {
+  transform: translateY(0) scale(0.99);
 }
 
-.descripcionNecesidad {
+.rotulo {
+  display: grid;
+  gap: var(--espacio-1);
+  padding: 0 var(--espacio-2) var(--espacio-1);
+}
+
+.nombreTema {
+  font-family: var(--fuente-titulos);
+  font-size: var(--texto-xl);
+  font-weight: var(--peso-titulo);
+  line-height: 1.2;
+}
+
+.descripcionTema {
   color: var(--color-texto-suave);
   font-size: var(--texto-sm);
 }
 
-.pieNecesidad {
+.pieTema {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  margin-top: var(--espacio-3);
+  gap: var(--espacio-2) var(--espacio-4);
+  margin-top: var(--espacio-2);
   padding-top: var(--espacio-3);
   border-top: 1px solid var(--color-borde);
   color: var(--color-texto-tenue);
@@ -59,16 +115,101 @@
   font-weight: var(--peso-fuerte);
 }
 
-.pieNecesidad svg {
-  color: var(--color-borde-fuerte);
-  transition:
-    color var(--transicion),
-    transform var(--transicion);
+.entrarTema {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: 2.75rem;
+  padding: 0 var(--espacio-4);
+  border-radius: var(--radio-total);
+  background: var(--degradado-accion);
+  color: var(--color-sobre-primario);
+  box-shadow: var(--sombra-primario);
 }
 
-.necesidad:hover .pieNecesidad svg {
-  color: var(--color-primario);
+.entrarTema svg {
+  transition: transform var(--transicion);
+}
+
+.edificio:hover .entrarTema svg {
   transform: translateX(3px);
+}
+
+/* En pantallas estrechas el rótulo es una sola fila (nombre y flecha) para que el edificio y la
+   ruleta quepan juntos; la descripción la da el centro de la ruleta y la página del tema. */
+@media (max-width: 47.99rem) {
+  .explorador {
+    gap: var(--espacio-4);
+  }
+
+  .edificio {
+    gap: var(--espacio-2);
+    padding: var(--espacio-2);
+    border-radius: var(--radio-lg);
+  }
+
+  .rotulo {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--espacio-3);
+    padding: 0 var(--espacio-1) 0 var(--espacio-2);
+  }
+
+  .nombreTema {
+    font-size: var(--texto-lg);
+  }
+
+  .descripcionTema,
+  .pieTema > :first-child {
+    display: none;
+  }
+
+  .pieTema {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .entrarTema {
+    padding: 0 var(--espacio-3);
+  }
+}
+
+/* Desde tableta, ruleta a la izquierda y edificio a la derecha. */
+@media (min-width: 48rem) {
+  .explorador {
+    grid-template-areas: 'ruleta edificio';
+    grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr);
+    gap: var(--espacio-6);
+  }
+
+  .zonaRuleta {
+    padding-top: 0;
+    /* El puntero asoma por la derecha, hacia el edificio; a la izquierda, margen para la sombra. */
+    padding-inline: 0.75rem 1.5rem;
+  }
+
+  .zonaRuleta > :first-child {
+    max-width: none;
+  }
+
+  .edificio {
+    max-width: 40rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  .explorador {
+    grid-template-columns: minmax(20rem, 25rem) minmax(0, 1fr);
+    gap: var(--espacio-7);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edificio:hover,
+  .edificio:active {
+    transform: none;
+  }
 }
 
 /* Tarjeta resumen de servicio */

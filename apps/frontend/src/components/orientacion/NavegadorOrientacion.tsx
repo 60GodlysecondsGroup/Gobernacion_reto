@@ -1,22 +1,18 @@
 'use client';
 
-import { ElementoEscalonado, ListaEscalonada } from '@/components/movimiento/Escalonado';
-import { ArrowRight } from 'lucide-react';
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
-import { Aviso, CargandoLista, EstadoError } from '@/components/ui';
-import { iconoNecesidad, tonoNecesidad } from '@/config/necesidades';
+import { Aviso, CargandoLista, EstadoError, EstadoVacio } from '@/components/ui';
 import { AVISO_LIMITES } from '@/config/textos';
 import { mensajeDeError } from '@/lib/api/cliente';
 import { obtenerNecesidades, type Necesidad } from '@/lib/api/orientacion';
-import ventanas from '@/styles/ventanas.module.css';
 import comun from '../comun.module.css';
-import estilos from './Orientacion.module.css';
+import { ExploradorTemas } from './ExploradorTemas';
 
 /**
  * Navegador de orientación (F04). Las necesidades son categorías para buscar información:
- * aquí no hay preguntas, puntajes ni mensajes sobre el estado de nadie.
+ * aquí no hay preguntas, puntajes ni mensajes sobre el estado de nadie. Se eligen con la ruleta
+ * de temas y se entra por el edificio de cada uno (`ExploradorTemas`).
  */
 export function NavegadorOrientacion() {
   const [necesidades, setNecesidades] = useState<Necesidad[] | null>(null);
@@ -54,34 +50,12 @@ export function NavegadorOrientacion() {
         <CargandoLista filas={2} alto="11rem" etiqueta="Cargando temas…" />
       )}
 
-      {necesidades && (
-        <ListaEscalonada className={estilos.necesidades}>
-          {necesidades.map((necesidad) => {
-            const Icono = iconoNecesidad(necesidad.codigo);
-            return (
-              <ElementoEscalonado key={necesidad.codigo}>
-                <Link
-                  href={`/orientacion/${necesidad.codigo}`}
-                  className={`${estilos.necesidad} con-luz`}
-                >
-                  <span
-                    className={`${ventanas.ficha} ${ventanas[tonoNecesidad(necesidad.codigo)]}`}
-                    aria-hidden="true"
-                  >
-                    <Icono size={22} strokeWidth={1.9} />
-                  </span>
-                  <span className={estilos.nombreNecesidad}>{necesidad.nombre}</span>
-                  <span className={estilos.descripcionNecesidad}>{necesidad.descripcion}</span>
-                  <span className={estilos.pieNecesidad}>
-                    {necesidad.servicios === 1 ? '1 servicio' : `${necesidad.servicios} servicios`}
-                    <ArrowRight aria-hidden="true" size={18} />
-                  </span>
-                </Link>
-              </ElementoEscalonado>
-            );
-          })}
-        </ListaEscalonada>
+      {necesidades && necesidades.length === 0 && (
+        <EstadoVacio titulo="Aún no hay temas disponibles">
+          Mientras tanto, «Necesito ayuda» muestra los canales institucionales disponibles.
+        </EstadoVacio>
       )}
+      {necesidades && necesidades.length > 0 && <ExploradorTemas necesidades={necesidades} />}
 
       <Aviso tono="info" titulo="Qué hace y qué no hace esta plataforma">
         {AVISO_LIMITES}
