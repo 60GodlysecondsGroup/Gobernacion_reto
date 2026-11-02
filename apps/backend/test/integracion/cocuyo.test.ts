@@ -78,6 +78,17 @@ describe('Cocuyo con PostgreSQL', () => {
     expect(eventosDespues.rows[0].total).toBe(eventosAntes.rows[0].total);
   });
 
+  it('una grosería no recibe el aviso de datos personales ni llega a la IA (reglas 0008)', async () => {
+    const respuesta = await preguntar('un hijueputa me molesta en la sala, ¿cómo lo reporto?');
+    expect(respuesta.status).toBe(200);
+    expect(respuesta.body).toMatchObject({
+      intencion: 'reportar',
+      origen: 'predeterminada',
+      aviso: null,
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('si el proveedor falla, responde igual con la respuesta predeterminada', async () => {
     fetchMock.mockImplementation(async () => new Response('caído', { status: 503 }));
     const respuesta = await preguntar('¿Qué hago si algo me incomoda?');

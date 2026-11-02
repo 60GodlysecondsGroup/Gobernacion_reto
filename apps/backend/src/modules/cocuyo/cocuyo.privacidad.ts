@@ -5,12 +5,16 @@
  *
  * Falla cerrado: si las reglas no se pueden leer, el resultado es «desconocido» y el mensaje no
  * se envía a la IA (Cocuyo responde igual, con la respuesta predeterminada).
+ *
+ * Las reglas de convivencia (lenguaje ofensivo y contenido sexual, migración 0008) no son datos
+ * personales: un insulto no debe recibir el aviso de privacidad. Se evalúan aparte y dan
+ * «ofensivo»: el mensaje tampoco sale hacia la IA, pero sin aviso de datos personales.
  */
 import type { Logger } from '../../lib/logger.js';
-import { analizar, type ReglaCompilada } from '../dlp/dlp.analizador.js';
+import { analizar, esCategoriaLenguaje, type ReglaCompilada } from '../dlp/dlp.analizador.js';
 import { pareceDatoPersonal } from './cocuyo.clasificador.js';
 
-export type ResultadoPrivacidad = 'limpio' | 'personal' | 'desconocido';
+export type ResultadoPrivacidad = 'limpio' | 'personal' | 'ofensivo' | 'desconocido';
 export type RevisorPrivacidad = (texto: string) => Promise<ResultadoPrivacidad>;
 
 /** Categorías DLP que identifican o ubican a una persona. */
@@ -45,10 +49,19 @@ export function crearRevisorPrivacidad({
       });
       return 'desconocido';
     }
-    const deteccion = analizar(texto, activas);
-    if (!deteccion) return 'limpio';
-    return deteccion.accion === 'bloquear' || CATEGORIAS_PERSONALES.has(deteccion.categoria)
-      ? 'personal'
-      : 'limpio';
+    // Primero los datos personales, sin las reglas de lenguaje: así una grosería en el mismo
+    // mensaje no tapa un dato personal (`analizar` devuelve una sola detección).
+    const deteccion = analizar(
+      texto,
+      activas.filter((regla) => !esCategoriaLenguaje(regla.categoria)),
+    );
+    if (
+      deteccion &&
+      (deteccion.accion === 'bloquear' || CATEGORIAS_PERSONALES.has(deteccion.categoria))
+    ) {
+      return 'personal';
+    }
+    const lenguaje = activas.filter((regla) => esCategoriaLenguaje(regla.categoria));
+    return lenguaje.length > 0 && analizar(texto, lenguaje) ? 'ofensivo' : 'limpio';
   };
 }

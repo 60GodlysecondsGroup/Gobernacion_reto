@@ -611,6 +611,25 @@ describe('servicio de Cocuyo con IA simulada', () => {
       expect(await revisarPrivacidad('¿Cómo funcionan las salas?')).toBe('limpio');
     });
 
+    it('el lenguaje ofensivo no se trata como dato personal ni se envía a la IA', async () => {
+      const fetcher = proveedor({ generacion: REFORMULACIONES.reportar });
+      const revisarPrivacidad = crearRevisorPrivacidad({ reglas: async () => reglas });
+      expect(await revisarPrivacidad('eres un idiota')).toBe('ofensivo');
+      expect(await revisarPrivacidad('hijueputa')).toBe('ofensivo');
+      // Un dato personal en el mismo mensaje sigue mandando: no lo tapa la grosería.
+      expect(await revisarPrivacidad('eres un idiota, voy a cumplir quince años')).toBe('personal');
+
+      const resultado = await servicioCon(fetcher, { revisarPrivacidad }).responder(
+        'un hijueputa me molesta en la sala, ¿cómo lo reporto?',
+      );
+      expect(resultado).toMatchObject({
+        intencion: 'reportar',
+        origen: 'predeterminada',
+        aviso: null,
+      });
+      expect(fetcher).not.toHaveBeenCalled();
+    });
+
     it('falla cerrado: sin reglas DLP no envía nada a la IA, pero responde', async () => {
       const fetcher = proveedor({ generacion: REFORMULACIONES.salas });
       const revisarPrivacidad = crearRevisorPrivacidad({
