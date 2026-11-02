@@ -28,7 +28,7 @@
   display: grid;
   justify-items: center;
   gap: var(--espacio-3);
-  padding: var(--espacio-5);
+  padding: var(--padding-caja);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-lg);
   background: var(--color-superficie);
@@ -83,7 +83,7 @@
 
 .capa {
   margin: 0;
-  padding: var(--espacio-5);
+  padding: var(--padding-caja);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-lg);
   background: var(--color-superficie);

@@ -111,6 +111,13 @@ svg {
   padding-block: var(--espacio-6) var(--espacio-8);
 }
 
+/* En móvil el encabezado flotante ya separa del borde: menos aire arriba y antes del pie. */
+@media (max-width: 47.99rem) {
+  .contenedor-principal {
+    padding-block: var(--espacio-5) var(--espacio-7);
+  }
+}
+
 .visualmente-oculto {
   position: absolute;
   width: 1px;

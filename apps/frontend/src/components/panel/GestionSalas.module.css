@@ -9,7 +9,7 @@
 .sala {
   display: grid;
   gap: var(--espacio-3);
-  padding: var(--espacio-4) var(--espacio-5);
+  padding: var(--espacio-4) var(--padding-caja);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-md);
   background: var(--color-superficie);
@@ -66,11 +66,11 @@
   flex-wrap: wrap;
   align-items: flex-end;
   gap: var(--espacio-3);
-  padding: var(--espacio-4) var(--espacio-5);
+  padding: var(--espacio-4) var(--padding-caja);
   border: 1.5px dashed var(--color-borde-fuerte);
   border-radius: var(--radio-md);
 }
 
 .nueva label {
-  min-width: 16rem;
+  min-width: min(16rem, 100%);
 }

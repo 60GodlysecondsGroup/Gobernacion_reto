@@ -9,7 +9,7 @@
   display: grid;
   justify-items: start;
   gap: var(--espacio-2);
-  padding: var(--espacio-4) var(--espacio-5);
+  padding: var(--espacio-4) var(--padding-caja);
   border: 1px solid var(--cristal-borde);
   border-left-width: 6px;
   border-radius: var(--radio-lg);

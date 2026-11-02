@@ -3,7 +3,7 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: var(--espacio-1) var(--espacio-3);
-  padding: var(--espacio-4) var(--espacio-4) var(--espacio-4) var(--espacio-5);
+  padding: var(--espacio-4) var(--espacio-4) var(--espacio-4) var(--padding-caja);
   overflow: hidden;
   border: 1px solid transparent;
   border-radius: var(--radio-md);

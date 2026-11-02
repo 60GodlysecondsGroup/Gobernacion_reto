@@ -83,7 +83,7 @@
   display: grid;
   align-content: start;
   gap: var(--espacio-2);
-  padding: var(--espacio-4) var(--espacio-5) 0;
+  padding: var(--espacio-4) var(--padding-caja) 0;
 }
 
 .nombreSala {
@@ -94,7 +94,7 @@
   display: grid;
   justify-items: start;
   gap: var(--espacio-3);
-  padding: var(--espacio-4) var(--espacio-5) var(--espacio-5);
+  padding: var(--espacio-4) var(--padding-caja) var(--espacio-5);
 }
 
 .pieSala > a {

@@ -1,5 +1,5 @@
 .dialogo {
-  width: min(100% - 2rem, 30rem);
+  width: min(100% - 2 * var(--margen-lateral), 30rem);
   max-height: calc(100dvh - 2rem);
   padding: 0;
   border: 0;
@@ -27,7 +27,7 @@
   position: relative;
   display: grid;
   gap: var(--espacio-3);
-  padding: var(--espacio-6);
+  padding: var(--padding-caja-amplia);
   border: 1px solid var(--cristal-borde);
   border-radius: var(--radio-xl);
   background: var(--cristal-medio);

@@ -163,7 +163,7 @@
   position: relative;
   display: grid;
   gap: var(--espacio-2);
-  padding: var(--espacio-5);
+  padding: var(--padding-caja);
   border: 1px solid var(--cristal-borde);
   border-radius: var(--radio-lg);
   background: var(--cristal-lectura);
@@ -261,7 +261,7 @@
 .respuesta {
   display: grid;
   gap: var(--espacio-2);
-  padding: var(--espacio-4) var(--espacio-5);
+  padding: var(--espacio-4) var(--padding-caja);
   border: 1px solid var(--cristal-borde);
   border-left: 3px solid var(--ventana-lila);
   border-radius: var(--radio-md);
@@ -357,7 +357,7 @@
 .atajoSalas {
   display: flex;
   gap: var(--espacio-3);
-  padding: var(--espacio-5);
+  padding: var(--padding-caja);
   border: 1px solid var(--cristal-borde-oscuro);
   border-radius: var(--radio-lg);
   background: var(--fondo-profundo);

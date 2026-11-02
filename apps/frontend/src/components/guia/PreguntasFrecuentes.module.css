@@ -35,7 +35,7 @@
   gap: var(--espacio-4);
   width: 100%;
   min-height: 3.5rem;
-  padding: var(--espacio-4) var(--espacio-5);
+  padding: var(--espacio-4) var(--padding-caja);
   border: 0;
   background: transparent;
   color: var(--tinta);
@@ -73,6 +73,6 @@
 }
 
 .cuerpo {
-  padding: 0 var(--espacio-5) var(--espacio-5);
+  padding: 0 var(--padding-caja) var(--padding-caja);
   color: var(--color-texto-suave);
 }

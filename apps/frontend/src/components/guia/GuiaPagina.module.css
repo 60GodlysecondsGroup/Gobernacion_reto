@@ -61,6 +61,13 @@
   font-size: clamp(1.4rem, 1.2rem + 0.8vw, 1.75rem);
 }
 
+@media (max-width: 47.99rem) {
+  .subtitulo {
+    margin-top: var(--espacio-4);
+    padding-top: var(--espacio-5);
+  }
+}
+
 /* Chat de Cocuyo en la página (en móvil y tableta es la forma de conversar con la guía). */
 .chat {
   display: grid;
