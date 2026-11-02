@@ -70,6 +70,8 @@ export type Dependencias = {
    * servidor tiene la suya en memoria: sirve para pruebas y para un solo backend local.
    */
   coordinacion?: CoordinacionSalas;
+  /** Preparación idempotente de recursos antes de atender cada solicitud. */
+  prepararSolicitud?: () => Promise<void>;
   /** Reemplazable cuando exista la verificación de edad definitiva. */
   proveedorRango?: ProveedorRangoEdad;
   /** Límites de intentos de inicio de sesión y registro (las pruebas los ajustan). */
@@ -105,6 +107,7 @@ export function crearServidor({
   logger,
   config,
   coordinacion = crearCoordinacionMemoria({ presenciaMs: config.salas.presenciaMs }),
+  prepararSolicitud,
   proveedorRango = proveedorRangoSintetico,
   limitesAcceso,
   ttlReglasDlpMs,
@@ -117,6 +120,12 @@ export function crearServidor({
   app.use(cors({ origin: config.origenesPermitidos, credentials: true }));
   app.use(verificarOrigen(config.origenesPermitidos));
   app.use(express.json({ limit: '50kb' }));
+
+  if (prepararSolicitud) {
+    app.use((req, res, next) => {
+      void prepararSolicitud().then(() => next(), next);
+    });
+  }
 
   const comunidades = crearRepositorioComunidades(db);
   const dlp = crearServicioDlp({

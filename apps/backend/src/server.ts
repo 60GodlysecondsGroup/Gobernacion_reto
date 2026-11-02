@@ -1,3 +1,4 @@
+import { createServer } from 'node:http';
 import { crearServidor } from './app.js';
 import { cargarConfig, type Config } from './config/env.js';
 import { crearPool, type PoolDeDatos } from './db/database.js';
@@ -118,8 +119,15 @@ emitirDiagnostico('info', 'backend.express.creacion.inicio');
 let app: ReturnType<typeof crearServidor>['app'];
 let salas: ReturnType<typeof crearServidor>['salas'];
 let tiempoReal: ReturnType<typeof crearServidor>['tiempoReal'];
+let inicio: Promise<void> | null = null;
 try {
-  ({ app, salas, tiempoReal } = crearServidor({ db: pool, logger, config, coordinacion }));
+  ({ app, salas, tiempoReal } = crearServidor({
+    db: pool,
+    logger,
+    config,
+    coordinacion,
+    prepararSolicitud: arrancar,
+  }));
   emitirDiagnostico('info', 'backend.express.creacion.correcta');
 } catch (error) {
   emitirDiagnostico('error', 'backend.express.creacion.fallida', datosError(error));
@@ -132,34 +140,35 @@ try {
  * DATABASE_URL falla) y a la coordinación de salas. Las migraciones no corren aquí
  * (npm run db:migrate); lo vencido lo limpia el mantenimiento de las salas.
  */
-function arrancar() {
+function arrancar(): Promise<void> {
+  if (inicio) return inicio;
+
   emitirDiagnostico('info', 'backend.inicializacion.primera_solicitud');
-  emitirDiagnostico('info', 'backend.postgres.prueba_conexion.inicio');
-  pool
-    .query('select 1')
-    .then(() => {
+  const postgres = (async () => {
+    emitirDiagnostico('info', 'backend.postgres.prueba_conexion.inicio');
+    try {
+      await pool.query('select 1');
       emitirDiagnostico('info', 'backend.postgres.prueba_conexion.correcta');
       logger.info('Base de datos conectada');
-    })
-    .catch((errorDb: Error) => {
+    } catch (errorDb) {
       emitirDiagnostico('error', 'backend.postgres.prueba_conexion.fallida', datosError(errorDb));
       logger.warn('No se pudo conectar con la base de datos', {
         error: datosError(errorDb),
         ayuda: AYUDA_BASE,
       });
+    }
+  })();
+  const redis = (async () => {
+    emitirDiagnostico('info', 'backend.redis.inicializacion_salas.inicio', {
+      transporte: config.redis.url ? 'tcp' : 'memoria',
     });
-  emitirDiagnostico('info', 'backend.redis.inicializacion_salas.inicio', {
-    transporte: config.redis.url ? 'tcp' : 'memoria',
-  });
-  salas
-    .iniciar()
-    .then(() => {
+    try {
+      await salas.iniciar();
       emitirDiagnostico('info', 'backend.redis.inicializacion_salas.correcta');
       logger.info('Salas en tiempo real listas', {
         coordinacion: config.redis.url ? 'redis' : 'memoria',
       });
-    })
-    .catch((error: Error) => {
+    } catch (error) {
       emitirDiagnostico(
         'error',
         'backend.redis.inicializacion_salas.fallida',
@@ -168,41 +177,39 @@ function arrancar() {
       logger.warn('La coordinación de salas no responde; se reintentará con la próxima entrada', {
         error: datosError(error, true),
       });
-    });
+    }
+  })();
+  inicio = Promise.all([postgres, redis]).then(() => undefined);
+  return inicio;
 }
 
-// En Vercel (vercel.json) la plataforma intercepta listen(): se queda con este servidor (y su
-// WebSocket) sin abrir el puerto. Allí se arranca con la primera solicitud de cada instancia y no
-// al cargar el módulo, porque el build también lo carga para inspeccionarlo.
-emitirDiagnostico('info', 'backend.http.listen.inicio', {
-  enVercel: config.enVercel,
-});
-const servidor = app.listen(config.puerto, (error) => {
-  if (error) {
-    emitirDiagnostico('error', 'backend.http.listen.fallido', datosError(error, true));
-    logger.error(`No se pudo abrir el puerto ${config.puerto}`, {
-      error: datosError(error, true),
-    });
-    process.exit(1);
-  }
-  emitirDiagnostico('info', 'backend.http.listen.correcto', {
-    enVercel: config.enVercel,
-  });
-  logger.info(`Backend escuchando en http://localhost:${config.puerto}`, {
-    entorno: config.entorno,
-    cors: config.origenesPermitidos,
-  });
-  if (!config.enVercel) arrancar();
-});
-servidor.once('request', () => {
-  emitirDiagnostico('info', 'backend.http.primera_solicitud.recibida', {
-    enVercel: config.enVercel,
-  });
-  if (config.enVercel) arrancar();
-});
+// Vercel recibe el servidor sin abrir un puerto; localmente escuchamos en BACKEND_PORT.
+emitirDiagnostico('info', 'backend.http.servidor.creacion.inicio', { enVercel: config.enVercel });
+const servidor = createServer(app);
+emitirDiagnostico('info', 'backend.http.servidor.creado', { enVercel: config.enVercel });
 
 // WebSocket de salas en /ws/salas/:id, sobre el mismo puerto.
-servidor.on('upgrade', (req, socket, cabecera) => tiempoReal.manejarUpgrade(req, socket, cabecera));
+servidor.on('upgrade', (req, socket, cabecera) => {
+  void arrancar().then(() => tiempoReal.manejarUpgrade(req, socket, cabecera));
+});
+
+if (config.enVercel) {
+  emitirDiagnostico('info', 'backend.http.listen.omitido', { motivo: 'vercel' });
+} else {
+  emitirDiagnostico('info', 'backend.http.listen.inicio', { puerto: config.puerto });
+  servidor.on('error', (error) => {
+    emitirDiagnostico('error', 'backend.http.listen.fallido', datosError(error, true));
+    logger.error(`No se pudo abrir el puerto ${config.puerto}`, { error: datosError(error, true) });
+  });
+  servidor.listen(config.puerto, () => {
+    emitirDiagnostico('info', 'backend.http.listen.correcto', { puerto: config.puerto });
+    logger.info(`Backend escuchando en http://localhost:${config.puerto}`, {
+      entorno: config.entorno,
+      cors: config.origenesPermitidos,
+    });
+    void arrancar();
+  });
+}
 
 function apagar(senal: string) {
   logger.info(`Señal ${senal} recibida, cerrando el backend…`);
