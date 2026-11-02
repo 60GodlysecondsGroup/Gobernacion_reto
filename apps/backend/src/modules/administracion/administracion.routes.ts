@@ -1,30 +1,34 @@
 import { Router } from 'express';
 import { validar } from '../../http/validacion.js';
 import { z } from 'zod';
-import type { RepositorioAuditoria } from '../auditoria/auditoria.js';
+import type { EntidadAuditoria, RepositorioAuditoria } from '../auditoria/auditoria.js';
 import { exigirPermiso, type Rol } from '../seguridad/permisos.js';
 import type { ServicioAdministracion } from './administracion.service.js';
 
 const REGISTROS_POR_PAGINA = 25;
 
+const ENTIDADES_ADMINISTRACION = [
+  'reporte',
+  'hilo',
+  'respuesta',
+  'usuario',
+  'sala',
+  'escenario',
+  'categoria',
+  'comunidad',
+  'regla_dlp',
+] as const;
+
 /**
  * Qué parte del registro de acciones consulta cada rol («Consultar registros administrativos»,
- * matriz A.2). La moderación ve lo que ella misma gestiona; la administración, todo. El gestor de
- * fuentes ya tiene la bitácora de fuentes (F33) en su propio panel.
+ * matriz A.2). La moderación ve lo que ella misma gestiona; la administración, todo salvo la
+ * gestión de sus propias cuentas, que solo ve la superadministración. El gestor de fuentes ya
+ * tiene la bitácora de fuentes (F33) en su propio panel.
  */
-const ENTIDADES_VISIBLES: Partial<Record<Rol, readonly string[]>> = {
+const ENTIDADES_VISIBLES: Partial<Record<Rol, readonly EntidadAuditoria[]>> = {
   moderador: ['reporte', 'hilo', 'respuesta', 'usuario'],
-  admin_plataforma: [
-    'reporte',
-    'hilo',
-    'respuesta',
-    'usuario',
-    'sala',
-    'escenario',
-    'categoria',
-    'comunidad',
-    'regla_dlp',
-  ],
+  admin_plataforma: ENTIDADES_ADMINISTRACION,
+  superadmin: [...ENTIDADES_ADMINISTRACION, 'cuenta_administracion'],
 };
 
 const esquemaAuditoria = z.object({

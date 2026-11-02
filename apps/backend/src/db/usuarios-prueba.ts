@@ -18,13 +18,13 @@ export const CODIGOS_USUARIOS_PRUEBA = [
  * Una cuenta es de prueba solo si cumple TODO:
  *  - su código es uno de CODIGOS_USUARIOS_PRUEBA o `Simulado_NNN` (npm run salas:simular);
  *  - no tiene contraseña (nunca se registró ni se le definió una: no es de una persona);
- *  - no es de administración de la plataforma.
+ *  - no es de administración ni de superadministración de la plataforma.
  * No se decide por el alias ni por la apariencia.
  */
 const CONDICION_PRUEBA = `
   (u.codigo = any($1::text[]) or u.codigo ~ '^Simulado_[0-9]{3}$')
   and not exists (select 1 from app.credencial c where c.id_usuario = u.id_usuario)
-  and u.rol <> 'admin_plataforma'`;
+  and u.rol not in ('admin_plataforma', 'superadmin')`;
 
 export type CuentaDePrueba = {
   id: string;
@@ -107,11 +107,11 @@ export async function inventariarUsuariosPrueba(db: Database): Promise<Inventari
               as "tieneContrasena",
             exists (select 1 from app.configuracion_avatar a where a.id_usuario = u.id_usuario)
               as "tieneAvatar"
-     from app.usuario u where u.rol = 'admin_plataforma' order by u.codigo`,
+     from app.usuario u where u.rol in ('admin_plataforma', 'superadmin') order by u.codigo`,
   );
   const otras = await db.query<{ total: number }>(
     `select count(*)::int as total from app.usuario u
-     where u.rol <> 'admin_plataforma' and not (${CONDICION_PRUEBA})`,
+     where u.rol not in ('admin_plataforma', 'superadmin') and not (${CONDICION_PRUEBA})`,
     [codigos],
   );
   return {

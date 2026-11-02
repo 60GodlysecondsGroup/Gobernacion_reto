@@ -19,6 +19,12 @@ insert into app.usuario (codigo, alias, rol, rango_edad, intereses_generales) va
   ('Moderador_001', 'ModeradorDemo', 'moderador', null, '{}'),
   ('Gestor_001', 'GestorDemo', 'gestor_fuentes', null, '{}');
 
+-- Superadministración de prueba (sin contraseña, como las demás): las pruebas la necesitan para
+-- que siempre quede un superadmin activo (disparador de 0009). Se conserva como la administración:
+-- no está en CODIGOS_USUARIOS_PRUEBA y la limpieza nunca la borra.
+insert into app.usuario (codigo, alias, rol, rango_edad, intereses_generales, correo) values
+  ('Superadmin_001', 'SuperadminDemo', 'superadmin', null, '{}', 'superadmin.demo@prueba.test');
+
 -- La misma fórmula de datos_base.sql, numerando todas las cuentas por código: cada una conserva
 -- su apariencia de siempre. Solo para las que aún no tienen avatar.
 insert into app.configuracion_avatar (id_usuario, id_personaje, id_cabello, id_rasgos, id_prenda, id_accesorio)

@@ -15,7 +15,13 @@ import {
   LARGO_MAXIMO_CONTRASENA,
   problemaDeContrasena,
 } from '../seguridad/contrasena.js';
-import { esRolPersonal, ROLES, ROLES_PERSONAL, tienePermiso } from '../seguridad/permisos.js';
+import {
+  esRolAdministracion,
+  esRolPersonal,
+  ROLES,
+  ROLES_PERSONAL,
+  tienePermiso,
+} from '../seguridad/permisos.js';
 import { esquemaCorreo, nuevoCodigo, type Sesion } from '../seguridad/sesion.service.js';
 import {
   ESTADOS_USUARIO,
@@ -40,6 +46,83 @@ const esquemaRolPersonal = z.enum(ROLES_PERSONAL, {
   error: 'Elige el rol: moderación o gestión de fuentes.',
 });
 
+/** Nombre visible de una cuenta de personal o de administración (es su alias). */
+export const esquemaNombreCuenta = z
+  .string({ error: 'Escribe el nombre.' })
+  .trim()
+  .min(3, 'Usa al menos 3 caracteres.')
+  .max(30, 'Usa máximo 30 caracteres.')
+  .regex(
+    /^[\p{L}\p{N}._-]+( [\p{L}\p{N}._-]+)*$/u,
+    'Usa letras, números, punto, guion o guion bajo, con un solo espacio entre palabras.',
+  );
+
+/** Contraseña nueva y su confirmación; las reglas de fondo las aplica `hashContrasenaNueva`. */
+export const camposContrasenaNueva = {
+  contrasena: z
+    .string({ error: 'Escribe la contraseña.' })
+    .max(LARGO_MAXIMO_CONTRASENA, `Usa máximo ${LARGO_MAXIMO_CONTRASENA} caracteres.`),
+  confirmacion: z.string({ error: 'Repite la contraseña.' }),
+};
+
+/**
+ * Comprueba una contraseña asignada por la administración (largo, demasiado común, sin el nombre
+ * de la cuenta, confirmación igual) y devuelve su hash scrypt. Nunca se guarda en claro.
+ */
+export async function hashContrasenaNueva(datos: {
+  nombre: string;
+  contrasena: string;
+  confirmacion: string;
+}): Promise<string> {
+  const problema = problemaDeContrasena(
+    datos.contrasena,
+    datos.nombre,
+    'La contraseña no puede contener el nombre de la cuenta.',
+  );
+  if (problema) throw errores.solicitudInvalida([{ campo: 'contrasena', mensaje: problema }]);
+  if (datos.confirmacion !== datos.contrasena) {
+    throw errores.solicitudInvalida([
+      { campo: 'confirmacion', mensaje: 'Las contraseñas no coinciden.' },
+    ]);
+  }
+  return hashearContrasena(datos.contrasena);
+}
+
+/** Correo o nombre repetidos (índices únicos) como 409 con el campo; null si es otro error. */
+export function conflictoDeCuenta(error: unknown): ErrorApp | null {
+  const { code, constraint } = error as { code?: string; constraint?: string };
+  if (code !== '23505') return null;
+  if (constraint === 'usuario_correo_unico') {
+    return new ErrorApp(409, 'CORREO_EN_USO', 'Ya existe una cuenta con ese correo.', {
+      campo: 'correo',
+    });
+  }
+  if (constraint === 'usuario_alias_unico') {
+    return new ErrorApp(409, 'NOMBRE_EN_USO', 'Ese nombre ya lo usa otra cuenta.', {
+      campo: 'nombre',
+    });
+  }
+  return null;
+}
+
+/**
+ * Crea una cuenta con un código interno aleatorio y reintenta con otro si choca (improbable).
+ * Correo o nombre repetidos se responden como 409.
+ */
+export async function crearConCodigoNuevo<T>(crear: (codigo: string) => Promise<T>): Promise<T> {
+  for (let intento = 0; ; intento++) {
+    try {
+      return await crear(nuevoCodigo());
+    } catch (error) {
+      const conflicto = conflictoDeCuenta(error);
+      if (conflicto) throw conflicto;
+      const { code, constraint } = error as { code?: string; constraint?: string };
+      if (code === '23505' && constraint === 'usuario_codigo_key' && intento < 2) continue;
+      throw error;
+    }
+  }
+}
+
 /**
  * Cuenta de personal nueva. `.strict()` rechaza cualquier otro campo (`estado`, `codigo`, `rango`…)
  * y el rol solo puede ser de personal: nadie crea por aquí otra administración ni un joven.
@@ -47,20 +130,9 @@ const esquemaRolPersonal = z.enum(ROLES_PERSONAL, {
 const esquemaCuentaPersonal = z
   .object({
     // Es el alias de la cuenta: lo que se ve en el panel y en sus respuestas en la comunidad.
-    nombre: z
-      .string({ error: 'Escribe el nombre.' })
-      .trim()
-      .min(3, 'Usa al menos 3 caracteres.')
-      .max(30, 'Usa máximo 30 caracteres.')
-      .regex(
-        /^[\p{L}\p{N}._-]+( [\p{L}\p{N}._-]+)*$/u,
-        'Usa letras, números, punto, guion o guion bajo, con un solo espacio entre palabras.',
-      ),
+    nombre: esquemaNombreCuenta,
     correo: esquemaCorreo,
-    contrasena: z
-      .string({ error: 'Escribe la contraseña.' })
-      .max(LARGO_MAXIMO_CONTRASENA, `Usa máximo ${LARGO_MAXIMO_CONTRASENA} caracteres.`),
-    confirmacion: z.string({ error: 'Repite la contraseña.' }),
+    ...camposContrasenaNueva,
     rol: esquemaRolPersonal,
   })
   .strict();
@@ -181,7 +253,8 @@ const conflicto = (codigo: string, mensaje: string) => new ErrorApp(409, codigo,
 export function crearServicioAdministracion({ repositorio, salas, dlp }: Dependencias) {
   /**
    * Medida sobre una cuenta. Nadie cambia su propia cuenta; la moderación solo actúa sobre
-   * cuentas de jóvenes (gestión «limitada» de la matriz A.2). Suspender saca de las salas.
+   * cuentas de jóvenes (gestión «limitada» de la matriz A.2) y la administración, además, sobre
+   * el personal. Las cuentas de administración no se tocan aquí. Suspender saca de las salas.
    */
   async function cambiarEstadoUsuario(
     sesion: Sesion,
@@ -195,7 +268,16 @@ export function crearServicioAdministracion({ repositorio, salas, dlp }: Depende
     if (usuario.id === sesion.idUsuario) {
       throw new ErrorApp(403, 'PROHIBIDO', 'No puedes aplicar medidas sobre tu propia cuenta.');
     }
-    if (sesion.rol !== 'admin_plataforma' && usuario.rol !== 'usuario') {
+    // Nadie suspende desde aquí a la administración ni a la superadministración: esas cuentas
+    // solo se gestionan en la sección Superadmin, con sus propias reglas.
+    if (esRolAdministracion(usuario.rol)) {
+      throw new ErrorApp(
+        403,
+        'PROHIBIDO',
+        'Las cuentas de administración solo se gestionan desde la sección Superadmin.',
+      );
+    }
+    if (!tienePermiso(sesion.rol, 'gestionar_personal') && usuario.rol !== 'usuario') {
       throw new ErrorApp(
         403,
         'PROHIBIDO',
@@ -270,46 +352,17 @@ export function crearServicioAdministracion({ repositorio, salas, dlp }: Depende
     async crearCuentaPersonal(sesion: Sesion, entrada: unknown): Promise<CuentaPersonal> {
       if (!tienePermiso(sesion.rol, 'gestionar_personal')) throw errores.prohibido();
       const datos = validar(esquemaCuentaPersonal, entrada);
-      const problema = problemaDeContrasena(
-        datos.contrasena,
-        datos.nombre,
-        'La contraseña no puede contener el nombre de la cuenta.',
+      const hashContrasena = await hashContrasenaNueva(datos);
+      return crearConCodigoNuevo((codigo) =>
+        repositorio.crearCuentaPersonal({
+          codigo,
+          nombre: datos.nombre,
+          correo: datos.correo,
+          rol: datos.rol,
+          hashContrasena,
+          actor: sesion.idUsuario,
+        }),
       );
-      if (problema) throw errores.solicitudInvalida([{ campo: 'contrasena', mensaje: problema }]);
-      if (datos.confirmacion !== datos.contrasena) {
-        throw errores.solicitudInvalida([
-          { campo: 'confirmacion', mensaje: 'Las contraseñas no coinciden.' },
-        ]);
-      }
-
-      const hashContrasena = await hashearContrasena(datos.contrasena);
-      for (let intento = 0; ; intento++) {
-        try {
-          return await repositorio.crearCuentaPersonal({
-            codigo: nuevoCodigo(),
-            nombre: datos.nombre,
-            correo: datos.correo,
-            rol: datos.rol,
-            hashContrasena,
-            actor: sesion.idUsuario,
-          });
-        } catch (error) {
-          const { code, constraint } = error as { code?: string; constraint?: string };
-          if (code === '23505' && constraint === 'usuario_correo_unico') {
-            throw new ErrorApp(409, 'CORREO_EN_USO', 'Ya existe una cuenta con ese correo.', {
-              campo: 'correo',
-            });
-          }
-          if (code === '23505' && constraint === 'usuario_alias_unico') {
-            throw new ErrorApp(409, 'NOMBRE_EN_USO', 'Ese nombre ya lo usa otra cuenta.', {
-              campo: 'nombre',
-            });
-          }
-          // Choque (improbable) del código interno aleatorio: se intenta con otro.
-          if (code === '23505' && constraint === 'usuario_codigo_key' && intento < 2) continue;
-          throw error;
-        }
-      }
     },
 
     /**

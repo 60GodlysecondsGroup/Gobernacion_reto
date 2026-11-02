@@ -17,6 +17,8 @@ export const ENTIDADES_AUDITORIA = [
   'categoria',
   'comunidad',
   'regla_dlp',
+  // Cuentas de administración y superadministración: solo las ve la superadministración.
+  'cuenta_administracion',
 ] as const;
 export type EntidadAuditoria = (typeof ENTIDADES_AUDITORIA)[number];
 

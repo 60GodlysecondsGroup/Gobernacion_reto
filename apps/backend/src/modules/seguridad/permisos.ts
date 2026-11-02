@@ -2,7 +2,13 @@ import type { RequestHandler, Response } from 'express';
 import { errores } from '../../http/errores.js';
 import type { Sesion } from './sesion.service.js';
 
-export const ROLES = ['usuario', 'moderador', 'admin_plataforma', 'gestor_fuentes'] as const;
+export const ROLES = [
+  'usuario',
+  'moderador',
+  'admin_plataforma',
+  'gestor_fuentes',
+  'superadmin',
+] as const;
 export type Rol = (typeof ROLES)[number];
 
 /**
@@ -15,7 +21,22 @@ export type RolPersonal = (typeof ROLES_PERSONAL)[number];
 export const esRolPersonal = (rol: string): rol is RolPersonal =>
   (ROLES_PERSONAL as readonly string[]).includes(rol);
 
+/**
+ * Roles de administración de la plataforma. `superadmin` tiene todos los permisos de
+ * `admin_plataforma` y, además, gestiona estas mismas cuentas (`gestionar_administradores`).
+ * Sus cuentas solo se gestionan desde la sección Superadmin, nunca desde el panel general.
+ */
+export const ROLES_ADMINISTRACION = [
+  'admin_plataforma',
+  'superadmin',
+] as const satisfies readonly Rol[];
+export type RolAdministracion = (typeof ROLES_ADMINISTRACION)[number];
+
+export const esRolAdministracion = (rol: string): rol is RolAdministracion =>
+  (ROLES_ADMINISTRACION as readonly string[]).includes(rol);
+
 const TODOS: readonly Rol[] = ROLES;
+const ADMIN = ROLES_ADMINISTRACION;
 
 /**
  * Matriz general de permisos del Anexo A.2. Las celdas «según permisos / configuración /
@@ -23,28 +44,33 @@ const TODOS: readonly Rol[] = ROLES;
  *  - moderador: ve comunidad solo si tiene una asignada, responde, entra a salas, consulta
  *    registros y gestiona usuarios de forma limitada (Fase 7); no crea hilos por defecto.
  *  - gestor de fuentes: consulta registros administrativos (bitácora de fuentes).
+ *  - superadmin: todo lo de la administración y, solo él, la gestión de sus cuentas.
  */
 const MATRIZ = {
   consultar_orientacion: TODOS,
   editar_perfil_propio: TODOS,
-  ver_comunidad_propia: ['usuario', 'moderador', 'admin_plataforma'],
-  crear_hilo: ['usuario', 'admin_plataforma'],
-  responder_hilo: ['usuario', 'moderador', 'admin_plataforma'],
-  acceder_salas: ['usuario', 'moderador', 'admin_plataforma'],
-  personalizar_avatar_propio: ['usuario', 'admin_plataforma'],
-  crear_sala_tematica: ['admin_plataforma'],
-  reportar_contenido: ['usuario', 'moderador', 'admin_plataforma'],
-  revisar_reportes: ['moderador', 'admin_plataforma'],
-  revisar_incidencias_dlp: ['moderador', 'admin_plataforma'],
-  gestionar_usuarios: ['moderador', 'admin_plataforma'],
+  ver_comunidad_propia: ['usuario', 'moderador', ...ADMIN],
+  crear_hilo: ['usuario', ...ADMIN],
+  responder_hilo: ['usuario', 'moderador', ...ADMIN],
+  acceder_salas: ['usuario', 'moderador', ...ADMIN],
+  personalizar_avatar_propio: ['usuario', ...ADMIN],
+  crear_sala_tematica: [...ADMIN],
+  reportar_contenido: ['usuario', 'moderador', ...ADMIN],
+  revisar_reportes: ['moderador', ...ADMIN],
+  revisar_incidencias_dlp: ['moderador', ...ADMIN],
+  gestionar_usuarios: ['moderador', ...ADMIN],
   // Crear cuentas de personal y cambiar su rol: nadie se asigna privilegios a sí mismo.
-  gestionar_personal: ['admin_plataforma'],
-  consultar_reglas_dlp: ['moderador', 'admin_plataforma'],
-  gestionar_reglas_dlp: ['admin_plataforma'],
-  gestionar_fuentes: ['admin_plataforma', 'gestor_fuentes'],
-  configurar_comunidades: ['admin_plataforma'],
-  consultar_registros_administrativos: ['moderador', 'admin_plataforma', 'gestor_fuentes'],
-  usar_asistente_admin: ['admin_plataforma'],
+  gestionar_personal: [...ADMIN],
+  consultar_reglas_dlp: ['moderador', ...ADMIN],
+  gestionar_reglas_dlp: [...ADMIN],
+  gestionar_fuentes: [...ADMIN, 'gestor_fuentes'],
+  configurar_comunidades: [...ADMIN],
+  consultar_registros_administrativos: ['moderador', ...ADMIN, 'gestor_fuentes'],
+  usar_asistente_admin: [...ADMIN],
+  // Cuentas de administración (crear, editar, activar, desactivar, cambiar o revocar el rol,
+  // restablecer la contraseña). Solo la superadministración: la administración no se gestiona a
+  // sí misma ni puede elevarse.
+  gestionar_administradores: ['superadmin'],
   usar_asistente_usuario: ['usuario'],
 } as const satisfies Record<string, readonly Rol[]>;
 

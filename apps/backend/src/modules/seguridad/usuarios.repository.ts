@@ -23,6 +23,9 @@ export type CuentaNueva = {
   avatar: ConfiguracionAvatar;
 };
 
+/** Roles que solo entran con correo, aunque una fila antigua no lo tuviera. */
+const SOLO_CON_CORREO: readonly Rol[] = [...ROLES_PERSONAL, 'superadmin'];
+
 const COLUMNAS = `
   u.id_usuario as "idUsuario", u.codigo, u.alias, u.rol, u.rango_edad as "rangoEdad", u.estado`;
 
@@ -59,14 +62,15 @@ export function crearRepositorioUsuarios(db: Database) {
     /**
      * Cuenta por nametag (sin distinguir mayúsculas) y el hash de su contraseña, o null si no hay
      * una cuenta con ese nametag. `hash` es null si la cuenta no tiene contraseña.
-     * Las cuentas de personal (con correo o con rol de moderación o gestión de fuentes) no
-     * existen para este acceso: entran solo con correo (`paraIniciarSesionConCorreo`).
+     * Las cuentas con correo y las de personal o superadministración no existen para este
+     * acceso: entran solo con correo (`paraIniciarSesionConCorreo`). Solo una administración
+     * antigua sin correo (Admin_001 antes de regularizarla) sigue entrando con su nametag.
      * Solo lo usa el inicio de sesión: el hash nunca sale del backend.
      */
     paraIniciarSesion: (alias: string) =>
       cuentaConHash(
         'lower(u.alias) = lower($1) and u.correo is null and u.rol <> all($2::text[])',
-        [alias, ROLES_PERSONAL],
+        [alias, SOLO_CON_CORREO],
       ),
 
     /**

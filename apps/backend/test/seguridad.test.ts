@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  esRolAdministracion,
   esRolPersonal,
   permisosDe,
   ROLES,
+  ROLES_ADMINISTRACION,
   ROLES_PERSONAL,
   tienePermiso,
   type Permiso,
@@ -67,6 +69,13 @@ describe('Matriz de permisos (Anexo A.2)', () => {
     ['moderador', 'gestionar_personal', false],
     ['gestor_fuentes', 'gestionar_personal', false],
     ['usuario', 'gestionar_personal', false],
+    // Cuentas de administración: solo la superadministración.
+    ['superadmin', 'gestionar_administradores', true],
+    ['superadmin', 'gestionar_personal', true],
+    ['admin_plataforma', 'gestionar_administradores', false],
+    ['moderador', 'gestionar_administradores', false],
+    ['gestor_fuentes', 'gestionar_administradores', false],
+    ['usuario', 'gestionar_administradores', false],
   ];
 
   it.each(casos)('%s → %s: %s', (rol, permiso, esperado) => {
@@ -75,7 +84,7 @@ describe('Matriz de permisos (Anexo A.2)', () => {
 
   it('ningún rol de personal tiene permisos exclusivos de la administración', () => {
     const exclusivos = permisosDe('admin_plataforma').filter((permiso) =>
-      ROLES.every((rol) => rol === 'admin_plataforma' || !tienePermiso(rol, permiso)),
+      ROLES.every((rol) => esRolAdministracion(rol) || !tienePermiso(rol, permiso)),
     );
     expect(exclusivos).toEqual(
       expect.arrayContaining([
@@ -89,6 +98,24 @@ describe('Matriz de permisos (Anexo A.2)', () => {
     for (const rol of ROLES_PERSONAL) {
       for (const permiso of exclusivos) expect(tienePermiso(rol, permiso), permiso).toBe(false);
     }
+  });
+
+  it('la superadministración tiene todo lo de la administración y además gestiona sus cuentas', () => {
+    expect([...ROLES_ADMINISTRACION]).toEqual(['admin_plataforma', 'superadmin']);
+    expect(permisosDe('superadmin')).toEqual(
+      expect.arrayContaining(permisosDe('admin_plataforma')),
+    );
+    const soloSuperadmin = permisosDe('superadmin').filter(
+      (permiso) => !tienePermiso('admin_plataforma', permiso),
+    );
+    expect(soloSuperadmin).toEqual(['gestionar_administradores']);
+    // Ningún otro rol puede gestionar cuentas de administración.
+    for (const rol of ROLES.filter((r) => r !== 'superadmin')) {
+      expect(tienePermiso(rol, 'gestionar_administradores'), rol).toBe(false);
+    }
+    expect(esRolAdministracion('superadmin')).toBe(true);
+    expect(esRolAdministracion('moderador')).toBe(false);
+    expect(esRolPersonal('superadmin')).toBe(false);
   });
 
   it('los roles de personal son moderación y gestión de fuentes, nunca administración', () => {
