@@ -167,6 +167,7 @@ export const TEMAS: TemaCocuyo[] = [
       ],
       [2, 'moderacion|moderador*'],
       [2, 'alguien + feo|mal|raro|groser*|pesad*'],
+      [2, 'fea|feas|feo|feos|ofensiv*'],
       [2, 'bloque* + persona|usuario|usuaria|alguien|perfil|cuenta'],
       [1, 'respeto|reglas'],
     ],

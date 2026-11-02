@@ -116,6 +116,7 @@ const REFORMULADAS: [string, IdTema][] = [
   ['alguien me está molestando, qué hago', 'reportar'],
   ['me están acosando en el chat', 'reportar'],
   ['¿cómo denuncio un perfil?', 'reportar'],
+  ['me escribieron cosas feas en un hilo, ¿qué hago?', 'reportar'],
   ['dónde busco apoyo de una institución', 'orientacion'],
   ['necesito hablar con alguien', 'orientacion'],
   ['¿cómo puedo contactar a una línea de ayuda?', 'orientacion'],
@@ -427,7 +428,7 @@ describe('servicio de Cocuyo con IA simulada', () => {
         generacion: REFORMULACIONES.reportar,
       });
       const resultado = await servicioCon(fetcher).responder(
-        'me escribieron cosas feas en un hilo y no sé qué hacer',
+        'me pasó algo raro hoy y no sé qué hacer',
       );
       expect(resultado).toMatchObject({ tipo: 'respuesta', intencion: 'reportar', origen: 'ia' });
       const clasificacion = cuerpoDe(fetcher, 0);
