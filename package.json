@@ -8,7 +8,7 @@
     "apps/frontend"
   ],
   "engines": {
-    "node": ">=22.12.0"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "concurrently -k -n backend,frontend -c cyan,magenta \"npm run dev -w apps/backend\" \"npm run dev -w apps/frontend\"",
