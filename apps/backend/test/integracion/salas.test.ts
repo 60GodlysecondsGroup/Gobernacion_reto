@@ -12,7 +12,7 @@ import { crearServidor, type Servidor } from '../../src/app.js';
 import { cargarConfig } from '../../src/config/env.js';
 import { crearPool, type PoolDeDatos } from '../../src/db/database.js';
 import { crearLogger } from '../../src/lib/logger.js';
-import { MENSAJE_BLOQUEO } from '../../src/modules/dlp/dlp.analizador.js';
+import { MENSAJE_BLOQUEO, MENSAJE_BLOQUEO_LENGUAJE } from '../../src/modules/dlp/dlp.analizador.js';
 import type { MensajeServidor } from '../../src/modules/salas/salas.protocolo.js';
 import { crearRepositorioSalas } from '../../src/modules/salas/salas.repository.js';
 import { abrirSesionInterna } from '../../src/modules/seguridad/sesion.service.js';
@@ -353,6 +353,34 @@ describe('F14 · Chat de sala con DLP', () => {
       `select tipo_contenido, resultado from app.evento_dlp order by fecha desc limit 1`,
     );
     expect(eventos.rows[0]).toEqual({ tipo_contenido: 'sala', resultado: 'bloqueado' });
+  });
+
+  it('un insulto evadido no llega a los demás; el autor ve el aviso de convivencia', async () => {
+    const sala = salas['B:Bienestar cotidiano']!;
+    const luna = conectar(sala, await tokenDe('Usuario_001'));
+    await luna.esperar('estado');
+    const sol = conectar(sala, await tokenDe('Usuario_002'));
+    await sol.esperar('estado');
+
+    luna.enviar({ tipo: 'mensaje', texto: 'Cállate, m4lp4r1d0' });
+    expect(await luna.esperar('mensaje_bloqueado')).toEqual({
+      tipo: 'mensaje_bloqueado',
+      mensaje: MENSAJE_BLOQUEO_LENGUAJE,
+    });
+
+    luna.enviar({ tipo: 'mensaje', texto: 'Hoy hay pico y placa' });
+    await sol.esperar('mensaje', (m) => m.texto === 'Hoy hay pico y placa');
+    expect(sol.mensajes.filter((m) => m.tipo === 'mensaje')).toHaveLength(1);
+
+    const eventos = await cliente.query(
+      `select tipo_contenido, categoria, resultado from app.evento_dlp
+       order by fecha desc limit 1`,
+    );
+    expect(eventos.rows[0]).toEqual({
+      tipo_contenido: 'sala',
+      categoria: 'lenguaje_ofensivo',
+      resultado: 'bloqueado',
+    });
   });
 });
 

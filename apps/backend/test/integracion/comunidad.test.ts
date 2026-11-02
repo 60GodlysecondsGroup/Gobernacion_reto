@@ -9,7 +9,7 @@ import { crearApp } from '../../src/app.js';
 import { cargarConfig } from '../../src/config/env.js';
 import { crearPool, type PoolDeDatos } from '../../src/db/database.js';
 import { crearLogger } from '../../src/lib/logger.js';
-import { MENSAJE_BLOQUEO } from '../../src/modules/dlp/dlp.analizador.js';
+import { MENSAJE_BLOQUEO, MENSAJE_BLOQUEO_LENGUAJE } from '../../src/modules/dlp/dlp.analizador.js';
 import { cookieDe, configPrueba } from '../apoyo.js';
 
 const logger = crearLogger('silencioso');
@@ -188,6 +188,70 @@ describe('DLP en hilos y respuestas', () => {
         [ids[HILO_B]],
       );
       expect(respuestas.rows[0].n).toBe(1);
+    });
+  });
+
+  it.each([
+    ['una grosería en el título', { titulo: 'Qué mierda de foro' }, 'titulo', 'lenguaje_ofensivo'],
+    [
+      'un insulto evadido con signos',
+      { contenido: 'eres un h.p.t.a' },
+      'contenido',
+      'lenguaje_ofensivo',
+    ],
+    ['doble sentido sexual', { contenido: 'Te la quiero meter' }, 'contenido', 'contenido_sexual'],
+  ])(
+    'bloquea un hilo con %s, no lo guarda y registra la categoría',
+    async (_caso, cambio, campo, categoria) => {
+      await enTransaccionRevertida(async (enTx, cliente) => {
+        const antes = (await cliente.query('select count(*)::int as n from app.hilo')).rows[0].n;
+        const luna = await entrar(enTx, 'Usuario_001');
+        const res = await luna.post('/api/comunidad/hilos', {
+          categoria: 'bienestar-cotidiano',
+          titulo: 'Un hilo de prueba',
+          contenido: 'Contenido de prueba.',
+          ...cambio,
+        });
+
+        expect(res.status).toBe(422);
+        expect(res.body.error).toEqual({
+          codigo: 'CONTENIDO_BLOQUEADO',
+          mensaje: MENSAJE_BLOQUEO_LENGUAJE,
+          detalles: { campo },
+        });
+        expect((await cliente.query('select count(*)::int as n from app.hilo')).rows[0].n).toBe(
+          antes,
+        );
+        const evento = await cliente.query(
+          `select tipo_contenido, categoria, resultado from app.evento_dlp
+           order by fecha desc limit 1`,
+        );
+        expect(evento.rows[0]).toEqual({
+          tipo_contenido: 'hilo',
+          categoria,
+          resultado: 'bloqueado',
+        });
+      });
+    },
+  );
+
+  it('bloquea una respuesta con un insulto y publica una legítima con palabras parecidas', async () => {
+    await enTransaccionRevertida(async (enTx, cliente) => {
+      const luna = await entrar(enTx, 'Usuario_001');
+      const ruta = `/api/comunidad/hilos/${ids[HILO_B]}/respuestas`;
+      const bloqueada = await luna.post(ruta, { contenido: 'Cállate, gonorrea' });
+      expect(bloqueada.status).toBe(422);
+      expect(bloqueada.body.error.mensaje).toBe(MENSAJE_BLOQUEO_LENGUAJE);
+
+      const publicada = await luna.post(ruta, {
+        contenido: 'Hoy hay pico y placa y comí huevos al desayuno.',
+      });
+      expect(publicada.status).toBe(201);
+      const respuestas = await cliente.query(
+        'select count(*)::int as n from app.respuesta where id_hilo = $1',
+        [ids[HILO_B]],
+      );
+      expect(respuestas.rows[0].n).toBe(2);
     });
   });
 });

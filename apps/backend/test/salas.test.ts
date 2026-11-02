@@ -6,6 +6,7 @@ import type { ServicioComunidad } from '../src/modules/comunidad/comunidad.servi
 import {
   compilarPatron,
   MENSAJE_BLOQUEO,
+  MENSAJE_BLOQUEO_LENGUAJE,
   type CategoriaDlp,
   type ReglaCompilada,
 } from '../src/modules/dlp/dlp.analizador.js';
@@ -389,6 +390,48 @@ describe('Gestor de salas', () => {
     expect(recibido(b, 'mensaje')).toEqual([
       expect.objectContaining({ texto: 'Hola a todos', autor: { id: 'a', alias: 'Alias-a' } }),
     ]);
+  });
+
+  it.each([
+    'Eres un hijueputa',
+    'p.u.t.a',
+    'Cállate, imbécil',
+    'Pásame el pack',
+    'Te la quiero meter',
+    'm13rd4',
+  ])(
+    'F14 · el chat bloquea lenguaje ofensivo o sexual («%s») igual que los foros',
+    async (texto) => {
+      const { gestor: g } = gestor();
+      const a = conexion();
+      const b = conexion();
+      await g.conectar(a, sesion('a'), ID_SALA);
+      await g.conectar(b, sesion('b'), ID_SALA);
+
+      await g.recibir(ID_SALA, 'a', a, JSON.stringify({ tipo: 'mensaje', texto }));
+      expect(recibido(a, 'mensaje_bloqueado')).toEqual([
+        { tipo: 'mensaje_bloqueado', mensaje: MENSAJE_BLOQUEO_LENGUAJE },
+      ]);
+      expect(recibido(b, 'mensaje')).toEqual([]);
+      expect(recibido(a, 'mensaje')).toEqual([]);
+    },
+  );
+
+  it('F14 · el chat deja pasar frases legítimas con palabras parecidas', async () => {
+    const { gestor: g } = gestor();
+    const a = conexion();
+    const b = conexion();
+    await g.conectar(a, sesion('a'), ID_SALA);
+    await g.conectar(b, sesion('b'), ID_SALA);
+
+    const legitimos = ['Hoy hay pico y placa', 'Comí huevos al desayuno', 'La computadora'];
+    for (const texto of legitimos) {
+      await g.recibir(ID_SALA, 'a', a, JSON.stringify({ tipo: 'mensaje', texto }));
+    }
+    expect(recibido(a, 'mensaje_bloqueado')).toEqual([]);
+    expect(recibido(b, 'mensaje').map((m) => (m.tipo === 'mensaje' ? m.texto : null))).toEqual(
+      legitimos,
+    );
   });
 
   it('AV-12 · sin sesión, sin permiso o de otra comunidad no entra', async () => {
