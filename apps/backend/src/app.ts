@@ -61,6 +61,9 @@ import { crearServicioSesion, type LimitesAcceso } from './modules/seguridad/ses
 import { crearRepositorioSesiones } from './modules/seguridad/sesiones.repository.js';
 import { crearRepositorioUsuarios } from './modules/seguridad/usuarios.repository.js';
 import { crearRepositorioSistema } from './modules/sistema/sistema.repository.js';
+import { crearRepositorioSuperadmin } from './modules/superadmin/superadmin.repository.js';
+import { rutasSuperadmin } from './modules/superadmin/superadmin.routes.js';
+import { crearServicioSuperadmin } from './modules/superadmin/superadmin.service.js';
 import { rutasSistema } from './modules/sistema/sistema.routes.js';
 import { crearServicioSistema } from './modules/sistema/sistema.service.js';
 
@@ -261,6 +264,12 @@ export function crearServidor({
     ),
   );
   app.use('/api', rutasAdministracion(administracion, crearRepositorioAuditoria(db)));
+  app.use(
+    '/api',
+    rutasSuperadmin(
+      crearServicioSuperadmin({ repositorio: crearRepositorioSuperadmin(db), salas }),
+    ),
+  );
   app.use(
     '/api',
     rutasAsistente(
