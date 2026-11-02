@@ -1,7 +1,12 @@
 /**
- * Contenido preestablecido de la guía virtual (F25, Fase 8). La guía NO es un chatbot: no recibe
- * texto libre, no simula ser una persona profesional, no diagnostica y no da consejos médicos.
- * Solo explica cómo usar la plataforma y dónde encontrar orientación institucional.
+ * Contenido preestablecido de la guía virtual Cocuyo (F25). Son las respuestas autorizadas: los
+ * botones de acceso rápido las muestran tal cual (sin red) y el chat de Cocuyo solo puede
+ * responder estos temas. No simula ser una persona profesional, no diagnostica y no da consejos
+ * médicos: solo explica cómo usar la plataforma y dónde encontrar orientación institucional.
+ *
+ * El backend tiene el mismo catálogo (`apps/backend/src/modules/cocuyo/cocuyo.catalogo.ts`) y una
+ * prueba exige que ambos sean idénticos: si cambias un texto aquí, cámbialo también allí.
+ * Ver docs/cocuyo-asistente-ia.md.
  */
 export type TemaGuia = {
   id: string;
@@ -13,7 +18,7 @@ export type TemaGuia = {
 };
 
 export const PRESENTACION_GUIA =
-  'Hola, soy Cocuyo. Te explico cómo funciona la plataforma con respuestas preparadas. No soy una persona profesional: no doy diagnósticos ni consejos médicos.';
+  'Hola, soy Cocuyo. Te explico cómo funciona la plataforma: escríbeme tu pregunta o elige una de las preguntas frecuentes. Soy una guía automática, no una persona profesional: no doy diagnósticos ni consejos médicos.';
 
 export const TEMAS_GUIA: TemaGuia[] = [
   {

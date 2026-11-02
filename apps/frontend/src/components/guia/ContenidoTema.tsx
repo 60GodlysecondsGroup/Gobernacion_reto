@@ -10,7 +10,7 @@ import { obtenerCanalesDeAyuda, type FichaServicio } from '@/lib/api/orientacion
 import estilos from './Guia.module.css';
 
 /** Canales institucionales reales, con institución, fuente y fecha de verificación (F25, B.6). */
-function CanalesInstitucionales() {
+export function CanalesInstitucionales() {
   const [canales, setCanales] = useState<FichaServicio[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 

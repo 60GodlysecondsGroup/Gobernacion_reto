@@ -1,13 +1,12 @@
 'use client';
 
-import { ArrowLeft, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ACOMPANANTES, mensajesDeRuta } from '@/config/acompanantes';
-import { PRESENTACION_GUIA, TEMAS_GUIA } from '@/config/guia';
+import { ChatCocuyo, useConversacionCocuyo } from './ChatCocuyo';
 import { Cocuyo } from './Cocuyo';
-import { ContenidoTema } from './ContenidoTema';
 import estilos from './Guia.module.css';
 import {
   consejosSilenciados,
@@ -20,24 +19,21 @@ import {
 const OCULTA_EN = [/^\/salas\/[^/]+/, /^\/panel/, /^\/gestion/, /^\/guia$/];
 
 /**
- * Guía virtual (F25): un botón flotante que abre respuestas preparadas sobre cómo funciona la
- * plataforma. No tiene campo de texto: no es un chatbot ni simula a una persona profesional.
+ * Guía virtual (F25): un botón flotante que abre el chat de Cocuyo. La persona escribe su pregunta
+ * o usa las preguntas frecuentes como accesos rápidos; Cocuyo solo responde sobre cómo funciona la
+ * plataforma (catálogo en config/guia.ts, control de alcance en el backend). No simula a una
+ * persona profesional. La conversación dura mientras la página esté abierta.
  */
 export function GuiaVirtual() {
   const ruta = usePathname();
   const [abierta, setAbierta] = useState(false);
-  const [tema, setTema] = useState<string | null>(null);
-  const titulo = useRef<HTMLHeadingElement>(null);
+  const conversacion = useConversacionCocuyo();
   const boton = useRef<HTMLButtonElement>(null);
   // Consejo pedido desde la guía; solo vale en la página donde se pidió.
   const [pedido, setPedido] = useState<{ ruta: string; indice: number } | null>(null);
   const [silencio, setSilencio] = useState(false);
   const cerrarPedido = useCallback(() => setPedido(null), []);
   const consejos = mensajesDeRuta(ruta);
-
-  useEffect(() => {
-    if (abierta) titulo.current?.focus();
-  }, [abierta, tema]);
 
   useEffect(() => {
     if (!abierta) return;
@@ -53,8 +49,6 @@ export function GuiaVirtual() {
 
   if (OCULTA_EN.some((patron) => patron.test(ruta))) return null;
   const pedidoAqui = pedido?.ruta === ruta ? pedido.indice : null;
-
-  const elegido = TEMAS_GUIA.find((t) => t.id === tema);
 
   return (
     <div className={estilos.flotante}>
@@ -80,10 +74,10 @@ export function GuiaVirtual() {
             <header className={estilos.cabecera}>
               <Cocuyo tamano={36} />
               <div>
-                <h2 id="guia-titulo" ref={titulo} tabIndex={-1} className={estilos.titulo}>
-                  {elegido ? elegido.pregunta : 'Cocuyo, tu guía'}
+                <h2 id="guia-titulo" className={estilos.titulo}>
+                  Cocuyo, tu guía
                 </h2>
-                <p className={estilos.subtitulo}>Respuestas preparadas, sin diagnósticos</p>
+                <p className={estilos.subtitulo}>Guía automática · sin diagnósticos</p>
               </div>
               <button
                 type="button"
@@ -98,71 +92,50 @@ export function GuiaVirtual() {
               </button>
             </header>
 
-            <div className={estilos.cuerpo}>
-              {elegido ? (
-                <>
-                  <button type="button" className={estilos.volver} onClick={() => setTema(null)}>
-                    <ArrowLeft aria-hidden="true" size={16} />
-                    Otras preguntas
-                  </button>
-                  <ContenidoTema tema={elegido} alNavegar={() => setAbierta(false)} />
-                </>
-              ) : (
-                <>
-                  <p className={estilos.burbuja}>{PRESENTACION_GUIA}</p>
-                  {consejos.length > 0 && (
-                    <section className={estilos.consejos} aria-labelledby="guia-consejos">
-                      <h3 id="guia-consejos" className={estilos.tituloConsejos}>
-                        Consejos de esta página
-                      </h3>
-                      <ul className={estilos.listaConsejos}>
-                        {consejos.map((consejo, i) => (
-                          <li key={consejo.texto}>
-                            <button
-                              type="button"
-                              className={estilos.consejo}
-                              onClick={() => {
-                                setAbierta(false);
-                                setPedido({ ruta, indice: i });
-                              }}
-                            >
-                              <PersonajeAcompanante id={consejo.de} tamano={24} />
-                              <span>
-                                <strong>{ACOMPANANTES[consejo.de].nombre}:</strong> {consejo.texto}
-                              </span>
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                      <label className={estilos.interruptor}>
-                        <input
-                          type="checkbox"
-                          checked={!silencio}
-                          onChange={(evento) => {
-                            silenciarConsejos(!evento.target.checked);
-                            setSilencio(!evento.target.checked);
-                          }}
-                        />
-                        Mostrar consejos automáticos al navegar
-                      </label>
-                    </section>
-                  )}
-                  <ul className={estilos.preguntas} aria-label="Preguntas frecuentes">
-                    {TEMAS_GUIA.map((t) => (
-                      <li key={t.id}>
-                        <button
-                          type="button"
-                          className={estilos.pregunta}
-                          onClick={() => setTema(t.id)}
-                        >
-                          {t.pregunta}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </div>
+            <ChatCocuyo
+              conversacion={conversacion}
+              enfocarAlAbrir
+              alNavegar={() => setAbierta(false)}
+              intro={
+                consejos.length > 0 && (
+                  <section className={estilos.consejos} aria-labelledby="guia-consejos">
+                    <h3 id="guia-consejos" className={estilos.tituloConsejos}>
+                      Consejos de esta página
+                    </h3>
+                    <ul className={estilos.listaConsejos}>
+                      {consejos.map((consejo, i) => (
+                        <li key={consejo.texto}>
+                          <button
+                            type="button"
+                            className={estilos.consejo}
+                            onClick={() => {
+                              setAbierta(false);
+                              setPedido({ ruta, indice: i });
+                            }}
+                          >
+                            <PersonajeAcompanante id={consejo.de} tamano={24} />
+                            <span>
+                              <strong>{ACOMPANANTES[consejo.de].nombre}:</strong> {consejo.texto}
+                            </span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    <label className={estilos.interruptor}>
+                      <input
+                        type="checkbox"
+                        checked={!silencio}
+                        onChange={(evento) => {
+                          silenciarConsejos(!evento.target.checked);
+                          setSilencio(!evento.target.checked);
+                        }}
+                      />
+                      Mostrar consejos automáticos al navegar
+                    </label>
+                  </section>
+                )
+              }
+            />
           </motion.section>
         )}
       </AnimatePresence>
@@ -174,7 +147,6 @@ export function GuiaVirtual() {
         aria-expanded={abierta}
         aria-controls="guia-virtual"
         onClick={() => {
-          setTema(null);
           setSilencio(consejosSilenciados());
           setAbierta((a) => !a);
         }}

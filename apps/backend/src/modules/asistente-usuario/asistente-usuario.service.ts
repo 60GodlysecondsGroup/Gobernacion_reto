@@ -15,7 +15,8 @@ const GUIA = [
   'Privacidad: las salas y publicaciones son específicas de la comunidad por rango. El asistente no accede a mensajes privados ni a datos de otras cuentas.',
 ].join('\n');
 
-const esCrisis = (texto: string) =>
+/** Mensajes que indican posible peligro inmediato (también los usa Cocuyo, la guía de inicio). */
+export const esCrisis = (texto: string) =>
   /\b(me voy a matar|voy a matarme|voy a suicidarme|quiere suicidarse|se quiere suicidar|quiero suicidarme|estoy pensando en suicidarme|quiere hacerse daño|se quiere hacer daño|quiero quitarme la vida|me quiero quitar la vida|voy a quitarme la vida|estoy pensando en quitarme la vida|quiere quitarse la vida|no quiero vivir|quiero morir|quiere morir|me quiero morir|me siento suicida|quiero hacerme daño|pienso hacerme daño|estoy pensando en hacerme daño|me quiero hacer daño|voy a hacerme daño|me voy a hacer daño|intento suicid|me haré daño|estoy en peligro inmediato|no puedo mantenerme a salvo|voy a acabar con todo|pienso acabar con todo|voy a acabar con mi vida)\b/i.test(
     texto,
   );
