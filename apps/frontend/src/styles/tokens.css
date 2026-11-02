@@ -222,6 +222,8 @@
   --alto-encabezado: 4.75rem;
   /* Barra inferior flotante del móvil (0 en escritorio), incluido su margen. */
   --alto-barra-inferior: 5.5rem;
+  /* Burbuja de Cocuyo sobre la barra inferior del móvil (0 en escritorio), incluida su separación. */
+  --alto-burbuja-guia: 4.5rem;
 }
 
 
@@ -238,6 +240,7 @@
 @media (min-width: 64rem) {
   :root {
     --alto-barra-inferior: 0px;
+    --alto-burbuja-guia: 0px;
   }
 }
 

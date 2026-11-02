@@ -81,9 +81,12 @@
 }
 
 .legal {
-  /* En móvil deja sitio a la barra de navegación inferior. */
+  /* En móvil deja sitio a la barra de navegación inferior y a la burbuja de Cocuyo. */
   padding-block: var(--espacio-4)
-    calc(var(--espacio-5) + var(--alto-barra-inferior) + env(safe-area-inset-bottom, 0px));
+    calc(
+      var(--espacio-5) + var(--alto-barra-inferior) + var(--alto-burbuja-guia) +
+        env(safe-area-inset-bottom, 0px)
+    );
   border-top: 1px solid rgb(255 255 255 / 0.1);
   color: rgb(255 255 255 / 0.62);
   font-size: var(--texto-xs);

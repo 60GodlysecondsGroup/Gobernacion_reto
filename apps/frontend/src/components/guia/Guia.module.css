@@ -123,9 +123,11 @@
 }
 
 /*
- * En móvil y tableta la guía se abre desde la barra inferior («Guía») o el menú de la cuenta
- * («Cómo funciona»): el botón flotante taparía contenido y botones. Solo queda el globo de
- * consejo, que aparece una vez por página sobre la barra inferior y se puede cerrar.
+ * Móvil y tableta: el botón es una burbuja redonda en la esquina, sobre la barra inferior, y el
+ * chat se abre como hoja inferior (`.hoja`), no como ventana. El globo de consejo ocupa el ancho
+ * disponible sobre la burbuja. El contenedor deja pasar los toques: solo la burbuja y el globo los
+ * reciben. Cuando la barra inferior se esconde al desplazarse (`useBarrasAlDesplazar`), la burbuja
+ * baja a ocupar su sitio con el mismo movimiento, y vuelve a subir cuando la barra reaparece.
  */
 @media (max-width: 63.99rem) {
   .flotante {
@@ -134,9 +136,219 @@
     pointer-events: none;
   }
 
-  .lanzador,
+  .flotante > * {
+    transition: translate 440ms cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  :global(html[data-desplazamiento='arriba']) .flotante > * {
+    translate: 0 var(--alto-barra-inferior);
+    transition: translate 320ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
   .ventana {
     display: none;
+  }
+
+  .lanzador {
+    position: relative;
+    justify-self: end;
+    justify-content: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    padding: 0;
+    border-radius: 50%;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.18),
+      0 12px 28px -10px rgb(38 20 99 / 0.7);
+    pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      translate 440ms cubic-bezier(0.25, 1, 0.5, 1),
+      scale 160ms var(--curva-resorte);
+  }
+
+  /* Halo ámbar: la luz del cocuyo. Al tocar, la burbuja se hunde un poco y el halo se enciende. */
+  .lanzador::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border: 2px solid var(--atardecer);
+    border-radius: inherit;
+    opacity: 0;
+    scale: 0.9;
+    transition:
+      opacity 200ms ease-out,
+      scale 200ms var(--curva-salida);
+    pointer-events: none;
+  }
+
+  :global(html[data-desplazamiento='arriba']) .lanzador {
+    transition:
+      translate 320ms cubic-bezier(0.4, 0, 0.2, 1),
+      scale 160ms var(--curva-resorte);
+  }
+
+  .lanzador:active {
+    scale: 0.9;
+  }
+
+  .lanzador:active::after {
+    opacity: 0.7;
+    scale: 1;
+  }
+
+  .textoLanzador {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .flotante[data-sin-burbuja-movil] .lanzador {
+    display: none;
+  }
+}
+
+/* ── Hoja inferior de Cocuyo (HojaCocuyo.tsx, solo móvil y tableta) ── */
+
+/* Mientras la hoja está abierta, la página de fondo no se desplaza. */
+.sinScroll {
+  overflow: hidden;
+}
+
+/*
+ * Ocupa casi todo el alto: deja ver una franja de la página arriba (y el área segura de la
+ * muesca). `--hoja-arriba` y `--hoja-alto` los fija HojaCocuyo con la parte visible de la
+ * pantalla, así que con el teclado abierto la hoja se acorta y el campo queda encima de él.
+ */
+.hoja {
+  --separacion-hoja: max(var(--espacio-5), calc(env(safe-area-inset-top, 0px) + var(--espacio-3)));
+  position: fixed;
+  top: calc(var(--hoja-arriba, 0px) + var(--separacion-hoja));
+  right: 0;
+  bottom: auto;
+  left: 0;
+  width: min(100%, 40rem);
+  max-width: none;
+  height: calc(var(--hoja-alto, 100dvh) - var(--separacion-hoja));
+  max-height: none;
+  margin: 0 auto;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radio-xl) var(--radio-xl) 0 0;
+  background: var(--color-superficie-solida);
+  box-shadow: 0 -16px 48px -20px rgb(26 15 69 / 0.5);
+  color: var(--color-texto);
+  overscroll-behavior: contain;
+}
+
+.hoja[open] {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  animation: subirHoja 420ms var(--curva-salida);
+}
+
+.hoja::backdrop {
+  background: rgb(26 15 69 / 0.45);
+}
+
+.hoja[open]::backdrop {
+  animation: aparecerVelo 320ms ease-out;
+}
+
+.hoja[data-cerrando] {
+  animation: bajarHoja 280ms var(--curva-entrada) forwards;
+}
+
+.hoja[data-cerrando]::backdrop {
+  animation: desvanecerVelo 280ms ease-in forwards;
+}
+
+/* Asa visual sobre la cabecera, como en las hojas del sistema. */
+.hoja .cabecera {
+  position: relative;
+  padding-top: var(--espacio-5);
+}
+
+.hoja .cabecera::before {
+  content: '';
+  position: absolute;
+  top: var(--espacio-2);
+  left: 50%;
+  width: 2.5rem;
+  height: 4px;
+  border-radius: var(--radio-total);
+  background: rgb(255 255 255 / 0.28);
+  translate: -50% 0;
+}
+
+.hoja .cerrar {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.hoja .chat {
+  min-height: 0;
+}
+
+/* El campo queda fijo abajo y por encima de la barra de inicio del sistema. */
+.hoja .pie {
+  padding-bottom: max(var(--espacio-3), env(safe-area-inset-bottom, 0px));
+}
+
+/* Con el teclado abierto, el área segura de abajo la tapa el teclado: no hace falta el margen. */
+.hoja[data-teclado] .pie {
+  padding-bottom: var(--espacio-3);
+}
+
+/* Con el teclado abierto se prioriza el espacio para leer la conversación. */
+.hoja[data-teclado] .nota {
+  display: none;
+}
+
+/* 16 px como mínimo: con menos, iOS amplía la página al enfocar el campo. */
+.hoja .compositor textarea {
+  font-size: 1rem;
+  resize: none;
+}
+
+.hoja .enviar {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+@keyframes subirHoja {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes bajarHoja {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes aparecerVelo {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes desvanecerVelo {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Con «reducir movimiento», la hoja aparece sin deslizarse (la regla global acorta el resto). */
+@media (prefers-reduced-motion: reduce) {
+  .hoja[open],
+  .hoja[data-cerrando] {
+    animation: none;
   }
 }
 
