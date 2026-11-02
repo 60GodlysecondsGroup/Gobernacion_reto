@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { crearApp } from '../../src/app.js';
 import { cargarConfig } from '../../src/config/env.js';
 import { crearPool, type PoolDeDatos } from '../../src/db/database.js';
+import { leerReglasDlpSemilla } from '../../src/db/migraciones.js';
 import { crearLogger } from '../../src/lib/logger.js';
 import { MENSAJE_BLOQUEO } from '../../src/modules/dlp/dlp.analizador.js';
 import { cookieDe, configPrueba } from '../apoyo.js';
@@ -560,7 +561,8 @@ describe('Administración', () => {
     const admin = await entrar(app, 'Admin_001');
     const resumen = (await admin.get('/api/admin/resumen')).body;
     expect(resumen).toMatchObject({
-      reglas: { total: 20 },
+      // Todas las reglas del seed: 20 de datos personales y las de lenguaje de la migración 0008.
+      reglas: { total: (await leerReglasDlpSemilla()).length },
       salas: { abiertas: expect.any(Number) },
     });
     const incidencias = (await admin.get('/api/moderacion/incidencias-dlp?dias=7')).body;

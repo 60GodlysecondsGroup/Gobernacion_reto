@@ -78,12 +78,14 @@ describe('Reglas DLP predeterminadas', () => {
     expect(analizar(texto, reglas)).toBeNull();
   });
 
-  it('todas las reglas del seed compilan y cubren las seis categorías', () => {
+  it('todas las reglas del seed compilan y cubren las ocho categorías', () => {
     const categorias = new Set(reglas.map((regla) => regla.categoria));
     expect([...categorias].sort()).toEqual([
       'contacto',
+      'contenido_sexual',
       'edad',
       'identidad',
+      'lenguaje_ofensivo',
       'publicidad_comercio',
       'redes_externas',
       'ubicacion',

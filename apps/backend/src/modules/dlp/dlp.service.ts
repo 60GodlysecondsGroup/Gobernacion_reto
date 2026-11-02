@@ -3,7 +3,7 @@ import type { Logger } from '../../lib/logger.js';
 import {
   analizar,
   masGrave,
-  MENSAJE_BLOQUEO,
+  mensajeBloqueo,
   normalizar,
   type DeteccionDlp,
   type ReglaCompilada,
@@ -42,7 +42,8 @@ const RESULTADO_POR_ACCION = {
 
 /**
  * DLP reutilizable por perfiles, hilos, respuestas y salas: todo texto de usuarios pasa por
- * aquí antes de guardarse o difundirse (RF04).
+ * aquí antes de guardarse o difundirse (RF04). Foros (REST) y chat de salas (WebSocket) usan las
+ * mismas reglas: datos personales y, desde 0008, lenguaje ofensivo y sexual.
  */
 export function crearServicioDlp({
   repositorio,
@@ -90,7 +91,7 @@ export function crearServicioDlp({
     });
 
     return deteccion.accion === 'bloquear'
-      ? { permitido: false, deteccion, mensaje: MENSAJE_BLOQUEO }
+      ? { permitido: false, deteccion, mensaje: mensajeBloqueo(deteccion.categoria) }
       : { permitido: true, deteccion };
   }
 
