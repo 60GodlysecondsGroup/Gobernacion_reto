@@ -1,4 +1,5 @@
 import type { ErrorRequestHandler, RequestHandler } from 'express';
+import { datosError, sanitizarRuta } from '../lib/diagnostico.js';
 import type { Logger } from '../lib/logger.js';
 
 /** Error de aplicación con estado HTTP y un código estable que el frontend puede interpretar. */
@@ -63,6 +64,10 @@ export function esErrorDeConexionBase(error: unknown): boolean {
 export const AYUDA_BASE =
   'Revisa DATABASE_URL en el .env. Para usar la base local sin instalar nada: npm run dev:local (o npm run db:local en otra terminal). Si el esquema no existe: npm run db:reset.';
 
+function rutaParaLog(req: Parameters<ErrorRequestHandler>[1]): string {
+  return sanitizarRuta(req.originalUrl);
+}
+
 export function manejadorDeErrores(logger: Logger): ErrorRequestHandler {
   return (error: unknown, req, res, _next) => {
     let errorApp: ErrorApp;
@@ -81,8 +86,9 @@ export function manejadorDeErrores(logger: Logger): ErrorRequestHandler {
       // La base no responde: no es un fallo del código. Se avisa sin la traza completa.
       logger.warn('Base de datos no disponible', {
         idSolicitud: res.locals.idSolicitud,
-        ruta: `${req.method} ${req.originalUrl.split('?')[0]}`,
-        error: error instanceof Error ? error.message : String(error),
+        idVercel: res.locals.idVercel,
+        ruta: `${req.method} ${rutaParaLog(req)}`,
+        error: datosError(error, true),
         ayuda: AYUDA_BASE,
       });
       errorApp = new ErrorApp(
@@ -94,8 +100,9 @@ export function manejadorDeErrores(logger: Logger): ErrorRequestHandler {
       // Error no previsto: se registra completo en el servidor y se responde genérico al cliente.
       logger.error('Error no controlado', {
         idSolicitud: res.locals.idSolicitud,
-        ruta: `${req.method} ${req.originalUrl.split('?')[0]}`,
-        error: error instanceof Error ? (error.stack ?? error.message) : String(error),
+        idVercel: res.locals.idVercel,
+        ruta: `${req.method} ${rutaParaLog(req)}`,
+        ...datosError(error),
       });
       errorApp = new ErrorApp(500, 'ERROR_INTERNO', 'Ocurrió un error inesperado.');
     }

@@ -72,7 +72,7 @@ export async function redisDisponible(): Promise<boolean> {
     return true;
   } catch {
     console.warn(
-      `Sin Redis en ${URL_REDIS_PRUEBAS}: se omiten las pruebas con varias instancias (npm run redis:local).`,
+      'Sin Redis para pruebas: se omiten las pruebas con varias instancias (npm run redis:local).',
     );
     return false;
   } finally {

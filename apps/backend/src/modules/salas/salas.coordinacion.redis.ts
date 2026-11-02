@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { createClient } from 'redis';
+import { datosError, emitirDiagnostico } from '../../lib/diagnostico.js';
 import type { Logger } from '../../lib/logger.js';
 import {
   conOcupacion,
@@ -184,6 +185,7 @@ export function crearCoordinacionRedis({
     },
   });
   const suscriptor = cliente.duplicate();
+  emitirDiagnostico('info', 'redis.clientes.creados', { conexiones: 2 });
 
   let inicio: Promise<void> | null = null;
   let alOrden: (orden: OrdenControl) => void = () => {};
@@ -199,16 +201,35 @@ export function crearCoordinacionRedis({
     conexion.on('error', (error: Error) => {
       if (caida) return;
       caida = true;
-      logger.warn('Se perdió la conexión con Redis', { conexion: nombre, error: error.message });
+      const datos = datosError(error, true);
+      emitirDiagnostico('error', 'redis.conexion.error', {
+        conexion: nombre,
+        ...datos,
+      });
+      logger.warn('Se perdió la conexión con Redis', { conexion: nombre, error: datos });
+    });
+    conexion.on('connect', () => {
+      emitirDiagnostico('info', 'redis.tcp.conectado', { conexion: nombre });
+    });
+    conexion.on('reconnecting', () => {
+      emitirDiagnostico('warn', 'redis.conexion.reintentando', { conexion: nombre });
     });
     conexion.on('ready', () => {
       const volvio = listo;
       listo = true;
-      if (!caida) return;
+      const recuperada = caida;
+      emitirDiagnostico('info', 'redis.cliente.ready', {
+        conexion: nombre,
+        recuperada,
+      });
+      if (!recuperada) return;
       caida = false;
       logger.info('Conexión con Redis recuperada', { conexion: nombre });
       // Pub/Sub no guarda eventos: tras la caída del suscriptor, quien siga conectado se resincroniza.
       if (volvio && conexion === suscriptor) alReconectar();
+    });
+    conexion.on('end', () => {
+      emitirDiagnostico('warn', 'redis.conexion.terminada', { conexion: nombre });
     });
   }
 
@@ -239,19 +260,64 @@ export function crearCoordinacionRedis({
       alOrden = manejadores.alOrden;
       alReconectar = manejadores.alReconectar;
       inicio ??= (async () => {
-        if (!cliente.isOpen) await cliente.connect();
-        if (!suscriptor.isOpen) await suscriptor.connect();
-        await suscriptor.subscribe(claves.control, (texto) => {
+        for (const [nombre, conexion] of [
+          ['principal', cliente],
+          ['suscripción', suscriptor],
+        ] as const) {
+          if (conexion.isOpen) continue;
+          emitirDiagnostico('info', 'redis.tcp.conexion.inicio', { conexion: nombre });
           try {
-            alOrden(JSON.parse(texto) as OrdenControl);
+            await conexion.connect();
+            emitirDiagnostico('info', 'redis.tcp.conexion.correcta', { conexion: nombre });
           } catch (error) {
-            logger.warn('Orden entre instancias ilegible', { error: String(error) });
+            emitirDiagnostico('error', 'redis.tcp.conexion.fallida', {
+              conexion: nombre,
+              ...datosError(error, true),
+            });
+            throw error;
           }
+        }
+
+        emitirDiagnostico('info', 'redis.pubsub.suscripcion.inicio', {
+          suscriptor: 'control',
         });
+        try {
+          await suscriptor.subscribe(claves.control, (texto) => {
+            try {
+              alOrden(JSON.parse(texto) as OrdenControl);
+            } catch (error) {
+              logger.warn('Orden entre instancias ilegible', { error: String(error) });
+            }
+          });
+          emitirDiagnostico('info', 'redis.pubsub.suscripcion.correcta', {
+            suscriptor: 'control',
+          });
+        } catch (error) {
+          emitirDiagnostico('error', 'redis.pubsub.suscripcion.fallida', {
+            suscriptor: 'control',
+            ...datosError(error, true),
+          });
+          throw error;
+        }
+
         // Precarga de los scripts: el primer movimiento no paga un NOSCRIPT.
+        const scripts = Object.entries(SCRIPTS);
+        emitirDiagnostico('info', 'redis.lua.carga.inicio', { cantidad: scripts.length });
         await Promise.all(
-          Object.values(SCRIPTS).map((script) => cliente.scriptLoad(script.codigo)),
+          scripts.map(async ([nombre, script]) => {
+            try {
+              await cliente.scriptLoad(script.codigo);
+              emitirDiagnostico('info', 'redis.lua.script.cargado', { script: nombre });
+            } catch (error) {
+              emitirDiagnostico('error', 'redis.lua.script.fallido', {
+                script: nombre,
+                ...datosError(error, true),
+              });
+              throw error;
+            }
+          }),
         );
+        emitirDiagnostico('info', 'redis.lua.carga.correcta', { cantidad: scripts.length });
       })();
       inicio.catch(() => {
         inicio = null;

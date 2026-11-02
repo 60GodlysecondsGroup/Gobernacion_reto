@@ -1,4 +1,5 @@
 import type { Logger } from '../../lib/logger.js';
+import { datosError } from '../../lib/diagnostico.js';
 import type { ConteoDatosDemo, RepositorioSistema } from './sistema.repository.js';
 
 export type EstadoSalud = {
@@ -16,8 +17,6 @@ export type EstadoSalud = {
 const CODIGOS_SIN_ESQUEMA = new Set(['42P01', '3F000']);
 
 const codigoDe = (error: unknown) => (error as { code?: string } | null)?.code;
-const mensajeDe = (error: unknown) => (error instanceof Error ? error.message : String(error));
-
 export function crearServicioSistema(repositorio: RepositorioSistema, logger: Logger) {
   return {
     /** Si el proceso responde, el backend está OK; la base de datos se informa aparte. */
@@ -28,7 +27,7 @@ export function crearServicioSistema(repositorio: RepositorioSistema, logger: Lo
       try {
         await repositorio.verificarConexion();
       } catch (error) {
-        logger.warn('Sin conexión a la base de datos', { error: mensajeDe(error) });
+        logger.warn('Sin conexión a la base de datos', { error: datosError(error) });
         return {
           estado: 'degradado',
           backend: 'ok',
