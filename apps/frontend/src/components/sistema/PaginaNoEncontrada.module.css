@@ -1,0 +1,174 @@
+/* Ocupa el alto útil de la vista para que la tarjeta quede centrada y la página no se vea vacía. */
+.pagina {
+  display: grid;
+  place-items: center;
+  min-height: clamp(26rem, 62dvh, 44rem);
+}
+
+.tarjeta {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--espacio-4);
+  width: 100%;
+  max-width: 46rem;
+  padding: var(--espacio-7) clamp(var(--padding-caja), 6vw, var(--espacio-8));
+  overflow: hidden;
+  border: 1px solid var(--cristal-borde);
+  border-radius: var(--radio-xl);
+  background: var(--cristal-lectura);
+  box-shadow: var(--cristal-brillo), var(--sombra-3);
+  text-align: center;
+  animation: asentar 420ms var(--curva-salida);
+}
+
+/* Las cuatro ventanas de la marca, como un filo de luz en la parte superior. */
+.tarjeta::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: var(--degradado-ventanas);
+}
+
+.antetitulo {
+  padding: var(--espacio-1) var(--espacio-3);
+  border-radius: var(--radio-total);
+  background: var(--color-primario-suave);
+  color: var(--color-primario);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.codigo {
+  margin-block: calc(-1 * var(--espacio-2));
+  background: var(--degradado-accion);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  font-family: var(--fuente-titulos);
+  font-size: clamp(5rem, 3.4rem + 7vw, 9rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  animation: impulso 620ms var(--curva-resorte) 80ms backwards;
+}
+
+.titulo {
+  font-size: var(--texto-2xl);
+}
+
+.texto {
+  max-width: 34rem;
+  color: var(--color-texto-suave);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--espacio-3);
+  margin-top: var(--espacio-2);
+}
+
+.sugerencias {
+  display: grid;
+  gap: var(--espacio-3);
+  width: 100%;
+  margin-top: var(--espacio-4);
+  padding-top: var(--espacio-5);
+  border-top: 1px solid var(--color-borde);
+}
+
+.sugerenciasTitulo {
+  color: var(--color-texto-tenue);
+  font-family: var(--fuente-base);
+  font-size: var(--texto-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.listaSugerencias {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: var(--espacio-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sugerencia {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  min-height: 3.25rem;
+  padding: var(--espacio-2) var(--espacio-4) var(--espacio-2) var(--espacio-2);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-solida);
+  color: var(--color-texto);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  text-align: left;
+  text-decoration: none;
+  transition:
+    background var(--transicion),
+    border-color var(--transicion),
+    box-shadow var(--transicion);
+}
+
+.sugerencia:hover {
+  border-color: var(--morado-300);
+  background: var(--morado-50);
+  color: var(--color-texto);
+  text-decoration: none;
+  box-shadow: var(--sombra-2);
+}
+
+.iconoSugerencia {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radio-sm);
+  background: var(--color-primario-suave);
+  color: var(--color-primario);
+}
+
+/* «Necesito ayuda» conserva su color propio en toda la interfaz. */
+.iconoAyuda {
+  background: var(--color-acento-suave);
+  color: var(--color-acento);
+}
+
+/* Móvil: botones a todo el ancho, al alcance del pulgar. */
+@media (max-width: 29.99rem) {
+  .tarjeta {
+    padding-block: var(--espacio-6);
+  }
+
+  .acciones {
+    width: 100%;
+  }
+
+  .acciones > * {
+    flex: 1 1 100%;
+  }
+}
+
+@keyframes asentar {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes impulso {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
