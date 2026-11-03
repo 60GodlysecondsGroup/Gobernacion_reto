@@ -9,7 +9,7 @@
   box-shadow: var(--cristal-brillo), var(--sombra-1);
 }
 
-.compacta {
+.sinMarco {
   gap: var(--espacio-3);
   padding: 0;
   border: 0;
@@ -22,6 +22,10 @@
   align-items: center;
   gap: var(--espacio-2);
   font-size: var(--texto-lg);
+}
+
+.sinMarco .titulo {
+  font-size: var(--texto-md);
 }
 
 .titulo svg {

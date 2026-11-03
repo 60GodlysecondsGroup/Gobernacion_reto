@@ -1,0 +1,269 @@
+/*
+ * Ficha completa dentro del modal de consulta rápida. En móvil, una columna con el contacto
+ * primero; en pantallas amplias, qué ofrece y la fuente a la izquierda y el contacto a la derecha.
+ */
+.estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-3);
+}
+
+.verificado {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-1);
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.verificado svg {
+  color: var(--color-exito);
+}
+
+.distribucion {
+  display: grid;
+  grid-template-areas:
+    'contacto'
+    'ofrece'
+    'fuente';
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-4);
+  align-items: start;
+}
+
+@media (min-width: 52rem) {
+  .distribucion {
+    grid-template-areas:
+      'ofrece contacto'
+      'fuente contacto';
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    gap: var(--espacio-5);
+  }
+}
+
+.seccion,
+.contacto {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-3);
+  min-width: 0;
+}
+
+.ofrece {
+  grid-area: ofrece;
+}
+
+.fuente {
+  grid-area: fuente;
+}
+
+.contacto {
+  grid-area: contacto;
+  padding: var(--espacio-4);
+  border: 1px solid rgb(91 84 230 / 0.16);
+  border-radius: var(--radio-lg);
+  background:
+    radial-gradient(18rem 10rem at 100% 0%, rgb(139 124 246 / 0.14), transparent 70%),
+    var(--morado-50);
+}
+
+.tituloSeccion {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  font-size: var(--texto-md);
+}
+
+.tituloSeccion svg {
+  flex-shrink: 0;
+  color: var(--color-primario);
+}
+
+.rotulo {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.bloque {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.descripcion {
+  max-width: 62ch;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+/* ── Contacto ────────────────────────────────────────── */
+.canal {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2);
+}
+
+.valorCanal {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-1);
+  font-weight: var(--peso-fuerte);
+}
+
+.valorCanal svg {
+  color: var(--color-primario);
+}
+
+.filas {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--espacio-3);
+  min-height: 3.5rem;
+  padding: var(--espacio-2) var(--espacio-3);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-solida);
+  color: var(--color-texto);
+  text-decoration: none;
+}
+
+.filaAccion {
+  transition:
+    border-color var(--transicion),
+    box-shadow var(--transicion),
+    transform 200ms var(--curva-resorte);
+}
+
+.filaAccion:hover {
+  border-color: rgb(91 84 230 / 0.4);
+  color: var(--color-texto);
+  text-decoration: none;
+  box-shadow: var(--sombra-2);
+  transform: translateY(-1px);
+}
+
+.filaAccion:active {
+  transform: scale(0.99);
+}
+
+.filaAccion:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.iconoFila,
+.iconoHorario {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radio-md);
+  background: var(--morado-100);
+  color: var(--morado-800);
+}
+
+.filaAccion .iconoFila {
+  background: linear-gradient(135deg, var(--morado-500), var(--violeta));
+  color: #fff;
+}
+
+.textosFila {
+  display: grid;
+  min-width: 0;
+}
+
+.valorFila {
+  font-weight: var(--peso-fuerte);
+  overflow-wrap: anywhere;
+}
+
+.accionFila {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: var(--espacio-1) var(--espacio-3);
+  border-radius: var(--radio-total);
+  background: var(--color-primario);
+  color: #fff;
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+}
+
+.filaAccion:hover .accionFila {
+  background: var(--color-primario-hover);
+}
+
+.sinEnlace {
+  max-width: 9rem;
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+  text-align: right;
+}
+
+.horario {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--espacio-3);
+  padding-top: var(--espacio-1);
+}
+
+.textoHorario {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+/* ── Nota final ──────────────────────────────────────── */
+.nota {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-2);
+  padding-top: var(--espacio-3);
+  border-top: 1px solid var(--color-borde);
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-sm);
+}
+
+.nota svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--color-primario);
+}
+
+/* En el pie, el enlace a la página queda a la izquierda y «Cerrar» a la derecha. */
+.enlacePagina {
+  margin-right: auto;
+}
+
+@media (max-width: 39.99rem) {
+  .enlacePagina {
+    margin-right: 0;
+  }
+
+  .sinEnlace {
+    grid-column: 2 / -1;
+    max-width: none;
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filaAccion:hover,
+  .filaAccion:active {
+    transform: none;
+  }
+}

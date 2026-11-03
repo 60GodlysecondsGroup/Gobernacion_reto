@@ -3,13 +3,17 @@ import { TIPOS_CANAL } from '@/config/fuentes';
 import type { FichaServicio } from '@/lib/api/orientacion';
 import estilos from './Orientacion.module.css';
 
-const dominio = (enlace: string) => {
+/** Dominio de un enlace, para nombrarlo sin mostrar la URL completa. */
+export const dominio = (enlace: string) => {
   try {
     return new URL(enlace).hostname;
   } catch {
     return enlace;
   }
 };
+
+/** Enlace `tel:` de un teléfono registrado (solo dígitos y +). */
+export const hrefTelefono = (telefono: string) => `tel:${telefono.replace(/[^\d+]/g, '')}`;
 
 const ICONOS_CANAL = {
   telefono: Phone,
@@ -52,10 +56,7 @@ export function ContactoServicio({
             {telefono}
           </span>
         ) : (
-          <a
-            className={`${estilos.dato} ${estilos.datoAccion}`}
-            href={`tel:${telefono.replace(/[^\d+]/g, '')}`}
-          >
+          <a className={`${estilos.dato} ${estilos.datoAccion}`} href={hrefTelefono(telefono)}>
             <Phone aria-hidden="true" size={15} />
             Llamar al {telefono}
           </a>

@@ -8,10 +8,12 @@ import estilos from './UbicacionServicio.module.css';
 
 type Props = {
   servicio: Pick<FichaServicio, 'servicio' | 'institucion' | 'direccion' | 'ubicacion' | 'esDemo'>;
-  /** Nivel del título según dónde se use (en la ficha, h2; dentro de un modal, h3). */
-  nivelTitulo?: 'h2' | 'h3';
+  /** Nivel del título según dónde se use (en la ficha, h2; dentro de una sección del modal, h4). */
+  nivelTitulo?: 'h2' | 'h3' | 'h4';
   /** Sin mapa: solo dirección y acciones (p. ej. dentro de «Cómo contactar»). */
   compacta?: boolean;
+  /** Sin el marco de tarjeta, cuando ya va dentro de una sección enmarcada (modal de la ficha). */
+  sinMarco?: boolean;
 };
 
 const AVISO_PRIVACIDAD =
@@ -27,7 +29,12 @@ const AVISO_PRIVACIDAD =
  * Nunca usa la geolocalización del navegador ni pide permisos de ubicación. Los datos de
  * demostración se muestran sin enlaces activos, como el resto de sus canales.
  */
-export function UbicacionServicio({ servicio, nivelTitulo = 'h2', compacta = false }: Props) {
+export function UbicacionServicio({
+  servicio,
+  nivelTitulo = 'h2',
+  compacta = false,
+  sinMarco = false,
+}: Props) {
   const idTitulo = useId();
   const { ubicacion, direccion, esDemo } = servicio;
   if (!ubicacion && !direccion) return null;
@@ -40,7 +47,9 @@ export function UbicacionServicio({ servicio, nivelTitulo = 'h2', compacta = fal
 
   return (
     <section
-      className={`${estilos.ubicacion} ${compacta ? estilos.compacta : ''}`}
+      className={[estilos.ubicacion, (compacta || sinMarco) && estilos.sinMarco]
+        .filter(Boolean)
+        .join(' ')}
       aria-label={compacta ? 'Dirección' : undefined}
       aria-labelledby={compacta ? undefined : idTitulo}
     >

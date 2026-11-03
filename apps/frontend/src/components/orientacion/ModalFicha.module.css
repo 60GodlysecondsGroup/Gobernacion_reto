@@ -143,6 +143,9 @@
 .cuerpo {
   display: grid;
   align-content: start;
+  /* Cada fila mide lo que su contenido: si el cuerpo desborda, se desplaza en vez de encoger
+     los bloques con `overflow: hidden` (p. ej. los avisos). */
+  grid-auto-rows: max-content;
   gap: var(--espacio-4);
   padding: var(--espacio-5) var(--padding-caja);
   overflow-y: auto;
@@ -171,6 +174,14 @@
   padding: var(--espacio-4) var(--padding-caja);
   border-top: 1px solid var(--color-borde);
   background: var(--morado-50);
+}
+
+/* Ficha completa: más ancho y alto en tableta y escritorio (en móvil sigue siendo hoja). */
+@media (min-width: 40rem) {
+  .dialogo.amplio {
+    width: min(100% - 3rem, 60rem);
+    max-height: min(100dvh - 3rem, 54rem);
+  }
 }
 
 /* ── Móvil: hoja inferior ─────────────────────────────── */

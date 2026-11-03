@@ -11,6 +11,7 @@ const DURACION_SALIDA_MS = 200;
  * deja inerte el resto de la página y, al cerrar, devuelve el foco al botón que lo abrió.
  * Se cierra con el botón «Cerrar», con Escape o con un clic fuera del panel, siempre con la misma
  * animación de salida. En pantallas pequeñas se muestra como una hoja que sube desde abajo.
+ * Con `ancho="amplio"`, en tableta y escritorio aprovecha más espacio (fichas completas).
  */
 export function ModalFicha({
   abierto,
@@ -20,6 +21,7 @@ export function ModalFicha({
   titulo,
   children,
   pie,
+  ancho = 'normal',
 }: {
   abierto: boolean;
   alCerrar: () => void;
@@ -28,6 +30,7 @@ export function ModalFicha({
   titulo: string;
   children: ReactNode;
   pie?: ReactNode;
+  ancho?: 'normal' | 'amplio';
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const idTitulo = useId();
@@ -63,7 +66,7 @@ export function ModalFicha({
   return (
     <dialog
       ref={ref}
-      className={estilos.dialogo}
+      className={ancho === 'amplio' ? `${estilos.dialogo} ${estilos.amplio}` : estilos.dialogo}
       aria-labelledby={idTitulo}
       onCancel={(evento) => {
         evento.preventDefault();
