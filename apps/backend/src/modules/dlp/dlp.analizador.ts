@@ -143,8 +143,49 @@ const HOMOGLIFOS: Record<string, string> = {
   Æ: 'ae',
   œ: 'oe',
   Œ: 'oe',
+  // Versalitas («ᴘᴜᴛᴀ»): NFKC no las convierte.
+  ᴀ: 'a',
+  ʙ: 'b',
+  ᴄ: 'c',
+  ᴅ: 'd',
+  ᴇ: 'e',
+  ꜰ: 'f',
+  ɢ: 'g',
+  ʜ: 'h',
+  ɪ: 'i',
+  ᴊ: 'j',
+  ᴋ: 'k',
+  ʟ: 'l',
+  ᴍ: 'm',
+  ɴ: 'n',
+  ᴏ: 'o',
+  ᴘ: 'p',
+  ʀ: 'r',
+  ꜱ: 's',
+  ᴛ: 't',
+  ᴜ: 'u',
+  ᴠ: 'v',
+  ᴡ: 'w',
+  ʏ: 'y',
+  ᴢ: 'z',
 };
 const RE_HOMOGLIFOS = new RegExp(`[${Object.keys(HOMOGLIFOS).join('')}]`, 'g');
+
+/**
+ * Letras en emoji que NFKC tampoco convierte: indicadores regionales («🇵🇺🇹🇦») y letras en
+ * círculo o cuadrado negro («🅟🅤🅣🅐», «🅿🆄🆃🅰»). Cada bloque tiene las 26 letras en orden.
+ */
+const LETRAS_EMOJI: [inicio: number, fin: number][] = [
+  [0x1f1e6, 0x1f1ff],
+  [0x1f150, 0x1f169],
+  [0x1f170, 0x1f189],
+];
+const RE_LETRAS_EMOJI = /[\u{1f1e6}-\u{1f1ff}\u{1f150}-\u{1f169}\u{1f170}-\u{1f189}]/gu;
+const letraDeEmoji = (emoji: string) => {
+  const codigo = emoji.codePointAt(0)!;
+  const bloque = LETRAS_EMOJI.find(([inicio, fin]) => codigo >= inicio && codigo <= fin);
+  return bloque ? String.fromCharCode(97 + codigo - bloque[0]) : emoji;
+};
 
 /**
  * Caracteres invisibles (ancho cero, guion suave, marcas de dirección) que parten palabras. Las
@@ -155,8 +196,8 @@ const INVISIBLES =
 
 /**
  * Minúsculas, sin tildes ni diéresis (ñ → n) y espacios simples. Antes unifica formas Unicode
- * equivalentes (NFKC: «ｐｕｔａ» de ancho completo → «puta»), cambia homoglifos por su letra latina
- * y quita caracteres invisibles. Las reglas se escriben sobre este texto normalizado. La detección
+ * equivalentes (NFKC: «ｐｕｔａ» de ancho completo → «puta»), cambia homoglifos, versalitas y letras
+ * en emoji por su letra latina y quita caracteres invisibles. Las reglas se escriben sobre este texto normalizado. La detección
  * de evasión (F23) trabaja sobre variantes de este texto: ver `variantesEvasion` y
  * `variantesLenguaje`.
  */
@@ -165,6 +206,7 @@ export function normalizar(texto: string): string {
     .normalize('NFKC')
     .replace(INVISIBLES, '')
     .replace(RE_HOMOGLIFOS, (letra) => HOMOGLIFOS[letra] ?? letra)
+    .replace(RE_LETRAS_EMOJI, letraDeEmoji)
     .normalize('NFD')
     .replace(/\p{M}/gu, '')
     .toLowerCase()
@@ -302,10 +344,39 @@ const sinSignosInternos = (texto: string) =>
 /** Toda letra repetida queda una sola vez: «puuta» → «puta», «mieeerda» → «mierda». */
 const sinRepeticiones = (texto: string) => texto.replace(/([a-z])\1+/g, '$1');
 
-/** Fragmentos cortos separados por espacios: «hi jue pu ta» → «hijueputa». */
+/**
+ * Palabras función cortas que no se pegan a sus vecinas. Sin esto, «la gonorrea es una its»
+ * quedaba «esunaits» y la excepción de salud (que busca «its») dejaba de verse; lo mismo con
+ * «en la», «con la» o «de la» en las demás excepciones de contexto.
+ */
+const PALABRAS_FUNCION = new Set(
+  'a al de del el en es la las le les lo los me mi nos no o por que se si su te tu un una y ya'.split(
+    ' ',
+  ),
+);
+
+/**
+ * Fragmentos cortos separados por espacios: «hi jue pu ta» → «hijueputa», «hi jo de pu ta» →
+ * «hijo de puta». Las palabras función quedan sueltas y parten el grupo.
+ */
 const pegarFragmentos = (texto: string) =>
   texto.replace(/(?<![a-z0-9])[a-z]{1,3}(?: [a-z]{1,3})+(?![a-z0-9])/g, (grupo) =>
-    grupo.replace(/ /g, ''),
+    grupo
+      .split(' ')
+      .reduce<string[]>((partes, fragmento) => {
+        const anterior = partes.at(-1);
+        if (
+          anterior !== undefined &&
+          !PALABRAS_FUNCION.has(fragmento) &&
+          !PALABRAS_FUNCION.has(anterior)
+        ) {
+          partes[partes.length - 1] = anterior + fragmento;
+        } else {
+          partes.push(fragmento);
+        }
+        return partes;
+      }, [])
+      .join(' '),
   );
 
 /**
@@ -341,23 +412,63 @@ function rellenarComodines(texto: string): string[] {
 }
 
 /**
+ * Emoji y signos sueltos entre letras («p 🍆 u t a», «pu 🍑 ta»): se quitan y quedan las letras y
+ * los espacios, que luego se juntan con `juntarSueltas` y `pegarFragmentos`.
+ */
+const soloLetrasYEspacios = (texto: string) =>
+  texto
+    .replace(/[^a-z0-9\s]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+/**
  * Variantes del texto normalizado para las reglas de lenguaje: leetspeak extendido, comodines,
- * signos intercalados, letras repetidas y fragmentos separados por espacios. Se combinan entre sí
- * («h1jue.puuta» → «hijueputa»). NO detecta todas las formas posibles de escribir una grosería.
+ * signos y emoji intercalados, letras repetidas, fragmentos separados por espacios y el texto
+ * entero sin espacios («mi erda» → «mierda»; como las reglas usan \b, esta última solo coincide
+ * si TODO el mensaje forma la palabra, así que no convierte frases legítimas en groserías). Se
+ * combinan entre sí («h1jue.puuta» → «hijueputa»). NO detecta todas las formas posibles de
+ * escribir una grosería.
  */
 export function variantesLenguaje(normalizado: string): string[] {
   const variantes: string[] = [];
-  for (const base of unicas([normalizado, juntarSueltas(normalizado)])) {
+  const conLeet = sinSustitucionesExtendidas(normalizado);
+  const bases = unicas([
+    normalizado,
+    juntarSueltas(normalizado),
+    juntarSueltas(soloLetrasYEspacios(conLeet)),
+  ]);
+  for (const base of bases) {
     const leet = sinSustitucionesExtendidas(base);
     const sinSignos = sinSignosInternos(leet);
     const sinRepetir = sinRepeticiones(sinSignos);
-    variantes.push(leet, sinSignos, sinRepetir, pegarFragmentos(sinRepetir));
+    variantes.push(
+      leet,
+      sinSignos,
+      sinRepetir,
+      pegarFragmentos(sinRepetir),
+      sinRepetir.replace(/ /g, ''),
+    );
     // Con comodines basta quitar signos y repeticiones: los rellenos ya son palabras completas.
     for (const relleno of rellenarComodines(leet)) {
       variantes.push(relleno, sinRepeticiones(sinSignosInternos(relleno)));
     }
   }
   return unicas(variantes).filter((v) => v !== normalizado);
+}
+
+/**
+ * Textos que ven las reglas de lenguaje. Normalizar convierte la «ñ» en «n», y «coño» quedaría
+ * igual a «cono» (de helado); si el texto trae «ñ», se agrega otra versión con «ñ» → «ny» para
+ * que las reglas distingan «cony[oa]» sin bloquear «cono».
+ */
+function textosParaLenguaje(texto: string, normalizado: string, textos: string[]): string[] {
+  const conEnie = texto.normalize('NFC');
+  const variantes = [...textos, ...variantesLenguaje(normalizado)];
+  if (/[ñÑ]/.test(conEnie)) {
+    const conNy = normalizar(conEnie.replace(/ñ/g, 'ny').replace(/Ñ/g, 'NY'));
+    variantes.push(conNy, ...variantesLenguaje(conNy));
+  }
+  return unicas(variantes);
 }
 
 /** La detección más grave entre las reglas que coinciden, o null si ninguna coincide. */
@@ -369,7 +480,7 @@ export function analizar(texto: string, reglas: ReglaCompilada[]): DeteccionDlp 
   let resultado: DeteccionDlp | null = null;
   for (const regla of reglas) {
     const candidatos = esCategoriaLenguaje(regla.categoria)
-      ? (textosLenguaje ??= unicas([...textos, ...variantesLenguaje(normalizado)]))
+      ? (textosLenguaje ??= textosParaLenguaje(texto, normalizado, textos))
       : textos;
     if (!candidatos.some((t) => regla.patron.test(t))) continue;
     resultado = masGrave(resultado, {

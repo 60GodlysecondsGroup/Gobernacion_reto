@@ -382,6 +382,56 @@ describe('F14 · Chat de sala con DLP', () => {
       resultado: 'bloqueado',
     });
   });
+
+  it('amenazas, inglés, emoji entre letras y doble sentido no llegan a nadie (0010)', async () => {
+    const sala = salas['B:Bienestar cotidiano']!;
+    const luna = conectar(sala, await tokenDe('Usuario_001'));
+    await luna.esperar('estado');
+    const sol = conectar(sala, await tokenDe('Usuario_002'));
+    await sol.esperar('estado');
+
+    const bloqueados = [
+      'Te voy a violar',
+      'fuck you',
+      'p \u{1f346} u t a',
+      '\u{1f1f5}\u{1f1fa}\u{1f1f9}\u{1f1e6}',
+      'Eres un hp, juego mejor que tú',
+      '¿La tienes grande?',
+    ];
+    const avisos = () => luna.mensajes.filter((m) => m.tipo === 'mensaje_bloqueado').length;
+    for (const [i, texto] of bloqueados.entries()) {
+      luna.enviar({ tipo: 'mensaje', texto });
+      await luna.esperar('mensaje_bloqueado', () => avisos() > i);
+    }
+    expect(avisos()).toBe(bloqueados.length);
+
+    luna.enviar({ tipo: 'mensaje', texto: 'Mañana te monto en la moto, doña' });
+    await sol.esperar('mensaje', (m) => m.texto === 'Mañana te monto en la moto, doña');
+    // Sol solo recibió el mensaje legítimo: ninguno de los bloqueados se difundió.
+    expect(sol.mensajes.filter((m) => m.tipo === 'mensaje').map((m) => m.texto)).toEqual([
+      'Mañana te monto en la moto, doña',
+    ]);
+  });
+
+  it('con una base sin las reglas de lenguaje (sin migrar), el chat las aplica igual', async () => {
+    await cliente.query(
+      `delete from app.regla_dlp where categoria in ('lenguaje_ofensivo', 'contenido_sexual')`,
+    );
+    const sala = salas['B:Bienestar cotidiano']!;
+    const luna = conectar(sala, await tokenDe('Usuario_001'));
+    await luna.esperar('estado');
+    const sol = conectar(sala, await tokenDe('Usuario_002'));
+    await sol.esperar('estado');
+
+    luna.enviar({ tipo: 'mensaje', texto: 'Cállate, m4lp4r1d0' });
+    expect(await luna.esperar('mensaje_bloqueado')).toEqual({
+      tipo: 'mensaje_bloqueado',
+      mensaje: MENSAJE_BLOQUEO_LENGUAJE,
+    });
+    luna.enviar({ tipo: 'mensaje', texto: 'Hola a todos' });
+    await sol.esperar('mensaje', (m) => m.texto === 'Hola a todos');
+    expect(sol.mensajes.filter((m) => m.tipo === 'mensaje')).toHaveLength(1);
+  });
 });
 
 describe('Conexión perdida', () => {

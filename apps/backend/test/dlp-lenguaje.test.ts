@@ -26,17 +26,30 @@ import {
   type CategoriaDlp,
   type ReglaCompilada,
 } from '../src/modules/dlp/dlp.analizador.js';
-import type { EventoDlp, RepositorioDlp } from '../src/modules/dlp/dlp.repository.js';
+import type { Database } from '../src/db/database.js';
+import {
+  crearRepositorioDlp,
+  type EventoDlp,
+  type RepositorioDlp,
+} from '../src/modules/dlp/dlp.repository.js';
 import { crearServicioDlp } from '../src/modules/dlp/dlp.service.js';
 import type { Sesion } from '../src/modules/seguridad/sesion.service.js';
 import {
+  AMENAZAS,
   COLOQUIALES,
   DOBLE_SENTIDO,
+  DOBLE_SENTIDO_0010,
   EVASIONES,
+  EVASIONES_0010,
   GROSERIAS,
+  GROSERIAS_0010,
+  INGLES,
   INSULTOS,
+  INSULTOS_0010,
   LEGITIMOS,
+  LEGITIMOS_0010,
   SEXUALES,
+  SEXUALES_0010,
   type CasoLenguaje,
 } from './dlp-lenguaje.casos.js';
 
@@ -79,6 +92,13 @@ describe('Batería de lenguaje ofensivo (test/dlp-lenguaje.casos.ts)', () => {
     ['doble sentido sexual', DOBLE_SENTIDO],
     ['evasión (signos, leetspeak, repeticiones, espacios, unicode)', EVASIONES],
     ['expresiones coloquiales colombianas', COLOQUIALES],
+    ['derivados y abreviaturas de groserías (0010)', GROSERIAS_0010],
+    ['insultos dirigidos, aunque traigan palabras de «contexto» (0010)', INSULTOS_0010],
+    ['amenazas de violencia física o sexual (0010)', AMENAZAS],
+    ['groserías y lenguaje sexual en inglés (0010)', INGLES],
+    ['comentarios y propuestas sexuales dirigidos (0010)', SEXUALES_0010],
+    ['doble sentido sexual (0010)', DOBLE_SENTIDO_0010],
+    ['evasión con emoji, versalitas, «ñ» y palabras partidas (0010)', EVASIONES_0010],
   ])('bloquea %s', (_grupo, casos) => {
     it.each(textos(casos))('«%s»', (texto) => {
       expect(analizar(texto, reglas)).toMatchObject({ accion: 'bloquear' });
@@ -86,7 +106,7 @@ describe('Batería de lenguaje ofensivo (test/dlp-lenguaje.casos.ts)', () => {
   });
 
   describe('no bloquea frases legítimas (falsos positivos)', () => {
-    it.each(textos(LEGITIMOS))('«%s»', (texto) => {
+    it.each(textos([...LEGITIMOS, ...LEGITIMOS_0010]))('«%s»', (texto) => {
       expect(analizar(texto, reglas)).toBeNull();
     });
   });
@@ -149,6 +169,44 @@ describe('Normalización contra evasión', () => {
     expect(variantesLenguaje('m*erda')).toContain('mierda');
     expect(variantesLenguaje('hi jue pu ta')).toContain('hijueputa');
     expect(variantesLenguaje('p/u/t/a')).toContain('puta');
+    expect(variantesLenguaje('p \u{1f346} u t a')).toContain('puta');
+    expect(variantesLenguaje('mi erda')).toContain('mierda');
+    expect(variantesLenguaje('hi jo de pu ta')).toContain('hijo de puta');
+  });
+
+  it('convierte versalitas y letras en emoji, que NFKC deja iguales', () => {
+    expect(normalizar('ᴘᴜᴛᴀ')).toBe('puta');
+    expect(normalizar('\u{1f1f5}\u{1f1fa}\u{1f1f9}\u{1f1e6}')).toBe('puta');
+    expect(normalizar('\u{1f15f}\u{1f164}\u{1f163}\u{1f150}')).toBe('puta');
+    expect(normalizar('\u{1f17f}\u{1f184}\u{1f183}\u{1f170}')).toBe('puta');
+    // Los demás emoji no cambian.
+    expect(normalizar('hola \u{1f600}')).toBe('hola \u{1f600}');
+  });
+
+  it('distingue «coño» de «cono» aunque la normalización quite la tilde de la ñ', () => {
+    expect(analizar('¡Coño, qué susto!', reglas)).toMatchObject({ accion: 'bloquear' });
+    expect(analizar('c0ño', reglas)).toMatchObject({ accion: 'bloquear' });
+    expect(analizar('Me compré un cono de helado', reglas)).toBeNull();
+    expect(analizar('Mañana es el cumpleaños de mi papá', reglas)).toBeNull();
+  });
+
+  it('las palabras función no se pegan: las excepciones de contexto siguen viéndose', () => {
+    // Antes «es una its» se pegaba en «esunaits» y la excepción de salud dejaba de verse.
+    expect(variantesLenguaje('la gonorrea es una its')).not.toContain('la gonorrea esunaits');
+    expect(analizar('La gonorrea es una ITS', reglas)).toBeNull();
+    expect(analizar('Te monto en la moto hasta el colegio', reglas)).toBeNull();
+    expect(analizar('Te voy a montar', reglas)).toMatchObject({ accion: 'bloquear' });
+  });
+
+  it('una palabra de «contexto» agregada ya no sirve para pasar un insulto dirigido', () => {
+    expect(analizar('La gonorrea se previene, consulta tu salud', reglas)).toBeNull();
+    expect(analizar('Eres una gonorrea, consulta tu salud', reglas)).toMatchObject({
+      categoria: 'lenguaje_ofensivo',
+    });
+    expect(analizar('Me quedan 10 hp en el juego', reglas)).toBeNull();
+    expect(analizar('Eres un hp, juego mejor que tú', reglas)).toMatchObject({
+      categoria: 'lenguaje_ofensivo',
+    });
   });
 
   it('la normalización también protege los datos de contacto contra trucos Unicode', () => {
@@ -184,21 +242,56 @@ describe('Reglas de lenguaje en datos', () => {
     expect(deLenguaje.every((r) => (r.accion ?? 'bloquear') === 'bloquear')).toBe(true);
   });
 
-  it('la migración 0008 trae exactamente las mismas reglas de lenguaje que el seed', async () => {
+  it('las migraciones 0008 y 0010 dejan exactamente las mismas reglas de lenguaje que el seed', async () => {
+    const leer = (archivo: string) =>
+      readFile(fileURLToPath(new URL(`../db/migraciones/${archivo}`, import.meta.url)), 'utf8');
+    const sql0008 = await leer('0008_dlp_lenguaje_ofensivo.sql');
+    const sql0010 = await leer('0010_dlp_lenguaje_variantes.sql');
+    for (const categoria of CATEGORIAS_LENGUAJE) expect(sql0008).toContain(`('${categoria}',`);
+
+    // Patrón final de cada regla, aplicando en orden los insert y los update de cada migración.
+    const LITERAL = String.raw`'((?:[^']|'')*)'`;
+    const texto = (literal: string) => literal.replaceAll("''", "'");
+    const enMigraciones = new Map<string, { categoria: string; patron: string }>();
+    for (const sql of [sql0008, sql0010]) {
+      const insertados = sql.matchAll(
+        new RegExp(
+          String.raw`^ {2}\('([a-z-]+)', '([a-z_]+)',\n {3}${LITERAL},\n {3}${LITERAL}\)`,
+          'gm',
+        ),
+      );
+      for (const [, codigo, categoria, , patron] of insertados) {
+        enMigraciones.set(codigo!, { categoria: categoria!, patron: texto(patron!) });
+      }
+      const actualizados = sql.matchAll(
+        new RegExp(
+          String.raw`update app\.regla_dlp\nset patron = ${LITERAL},[\s\S]*?where codigo = '([a-z-]+)'`,
+          'g',
+        ),
+      );
+      for (const [, patron, codigo] of actualizados) {
+        enMigraciones.get(codigo!)!.patron = texto(patron!);
+      }
+    }
+
+    const deLenguaje = semilla.filter((r) => esCategoriaLenguaje(r.categoria as CategoriaDlp));
+    expect(Object.fromEntries(enMigraciones)).toEqual(
+      Object.fromEntries(
+        deLenguaje.map(({ codigo, categoria, patron }) => [codigo, { categoria, patron }]),
+      ),
+    );
+  });
+
+  it('0010 solo corrige una regla de 0008 si su patrón no se ha cambiado', async () => {
     const sql = await readFile(
-      fileURLToPath(new URL('../db/migraciones/0008_dlp_lenguaje_ofensivo.sql', import.meta.url)),
+      fileURLToPath(new URL('../db/migraciones/0010_dlp_lenguaje_variantes.sql', import.meta.url)),
       'utf8',
     );
-    const literal = (texto: string) => `'${texto.replaceAll("'", "''")}'`;
-    const deLenguaje = semilla.filter((r) => esCategoriaLenguaje(r.categoria as CategoriaDlp));
-    for (const regla of deLenguaje) {
-      expect(sql).toContain(`(${literal(regla.codigo)}, ${literal(regla.categoria)},`);
-      expect(sql).toContain(literal(regla.patron));
+    expect(sql).toMatch(/on conflict \(codigo\) do nothing;/);
+    for (const update of sql.match(/update app\.regla_dlp[\s\S]*?;/g) ?? []) {
+      expect(update).toMatch(/\n {2}and patron = '/);
+      expect(update).not.toMatch(/estado/);
     }
-    for (const categoria of CATEGORIAS_LENGUAJE) expect(sql).toContain(`('${categoria}',`);
-    // Ninguna regla de la migración falta en el seed.
-    const enMigracion = [...sql.matchAll(/^ {2}\('([a-z-]+)', '([a-z_]+)',$/gm)].map((m) => m[1]);
-    expect(enMigracion.sort()).toEqual(deLenguaje.map((r) => r.codigo).sort());
   });
 
   it('desactivar las reglas de lenguaje vuelve a permitir el texto (F31)', () => {
@@ -312,5 +405,83 @@ describe('Foros: hilos y respuestas pasan por el DLP en el backend', () => {
       contenido: 'Comí huevos al desayuno y me fue bien en el examen',
     });
     expect(repositorio.responder).toHaveBeenCalledOnce();
+  });
+});
+
+describe('Reglas en una base sin migrar: el seed cubre lo que falta', () => {
+  type Fila = { id: string; codigo: string; categoria: string; accion: string; patron: string };
+  const filaDe = (codigo: string, activa = true): Fila & { activa: boolean } => {
+    const regla = semilla.find((r) => r.codigo === codigo)!;
+    return { id: `db-${codigo}`, accion: 'bloquear', activa, ...regla };
+  };
+  const baseCon = (filas: (Fila & { activa: boolean })[]) =>
+    ({ query: vi.fn(async () => ({ rows: filas })) }) as unknown as Database;
+  const loggerEspia = () => ({ debug: vi.fn(), info: vi.fn(), warn: vi.fn(), error: vi.fn() });
+
+  it('sin las reglas de lenguaje en la base (0008 y 0010 sin aplicar) se aplican las del seed', async () => {
+    const deDatos = semilla.filter((r) => !esCategoriaLenguaje(r.categoria as CategoriaDlp));
+    const espia = loggerEspia();
+    const repositorio = crearRepositorioDlp(baseCon(deDatos.map((r) => filaDe(r.codigo))), espia);
+
+    const activas = await repositorio.reglasActivas();
+    expect(activas.map((r) => r.codigo).sort()).toEqual(semilla.map((r) => r.codigo).sort());
+    const respaldo = activas.filter((r) => esCategoriaLenguaje(r.categoria));
+    expect(respaldo.every((r) => r.id === null && r.accion === 'bloquear')).toBe(true);
+    expect(activas.find((r) => r.codigo === 'contacto-telefono')?.id).toBe('db-contacto-telefono');
+    expect(espia.warn).toHaveBeenCalledOnce();
+    expect(espia.warn.mock.calls[0]![1]).toMatchObject({
+      reglas: expect.stringContaining('ofensivo-hijueputa'),
+    });
+
+    // Avisa una sola vez mientras falten las mismas reglas.
+    await repositorio.reglasActivas();
+    expect(espia.warn).toHaveBeenCalledOnce();
+
+    const dlp = crearServicioDlp({ repositorio, logger, ttlReglasMs: 0 });
+    const contexto = { tipoContenido: 'sala', idUsuario: 'u1' } as const;
+    for (const texto of ['Eres un hijueputa', 'Te voy a violar', 'p \u{1f346} u t a']) {
+      // registrarEvento va a la base falsa: el evento sin id de regla también se guarda.
+      expect(await dlp.revisar(texto, contexto)).toMatchObject({ permitido: false });
+    }
+    expect((await dlp.revisar('Hoy hay pico y placa', contexto)).permitido).toBe(true);
+  });
+
+  it('una regla desactivada en el panel sigue desactivada: el seed no la revive', async () => {
+    const filas = semilla.map((r) => filaDe(r.codigo, r.codigo !== 'ofensivo-hijueputa'));
+    const espia = loggerEspia();
+    const activas = await crearRepositorioDlp(baseCon(filas), espia).reglasActivas();
+
+    expect(activas.map((r) => r.codigo)).not.toContain('ofensivo-hijueputa');
+    expect(activas).toHaveLength(semilla.length - 1);
+    expect(activas.every((r) => r.id === `db-${r.codigo}`)).toBe(true);
+    expect(espia.warn).not.toHaveBeenCalled();
+  });
+
+  it('si no se puede guardar el evento, el texto sigue bloqueado (no es un error 500)', async () => {
+    const espia = loggerEspia();
+    const dlp = crearServicioDlp({
+      repositorio: {
+        reglasActivas: async () => reglas,
+        registrarEvento: async () => {
+          throw new Error('violates foreign key constraint "evento_dlp_categoria_fkey"');
+        },
+      },
+      logger: espia,
+    });
+
+    const resultado = await dlp.revisar('Te voy a violar', {
+      tipoContenido: 'sala',
+      idUsuario: 'u1',
+    });
+    expect(resultado).toMatchObject({ permitido: false, mensaje: MENSAJE_BLOQUEO_LENGUAJE });
+    expect(espia.error).toHaveBeenCalledWith('No se pudo registrar el evento DLP', {
+      codigo: 'ofensivo-amenazas',
+      error: expect.stringContaining('foreign key'),
+    });
+
+    const error = await dlp
+      .exigirPermitido({ contenido: 'Qué cagada' }, { tipoContenido: 'hilo', idUsuario: 'u1' })
+      .catch((e: unknown) => e);
+    expect(error).toMatchObject({ estado: 422, codigo: 'CONTENIDO_BLOQUEADO' });
   });
 });

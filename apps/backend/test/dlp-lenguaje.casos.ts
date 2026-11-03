@@ -9,7 +9,15 @@
  */
 
 export type GrupoCaso =
-  'groseria' | 'insulto' | 'sexual' | 'doble_sentido' | 'evasion' | 'coloquial' | 'legitimo';
+  | 'groseria'
+  | 'insulto'
+  | 'sexual'
+  | 'doble_sentido'
+  | 'evasion'
+  | 'coloquial'
+  | 'amenaza'
+  | 'ingles'
+  | 'legitimo';
 
 export type CasoLenguaje = { grupo: GrupoCaso; texto: string; bloquear: boolean };
 
@@ -281,6 +289,196 @@ export const LEGITIMOS = [
   'Vimos micos en el parque Los Fundadores',
 ].map(caso('legitimo', false));
 
+// ─── Auditoría de foros, hilos y salas (migración 0010) ─────────────────────────
+// Textos que las reglas de 0008 dejaban pasar y frases legítimas que no deben bloquearse con
+// las reglas nuevas.
+
+/** Derivados y abreviaturas de groserías. */
+export const GROSERIAS_0010 = [
+  'Esa putica no sabe nada',
+  'Ese man es un putón',
+  'q mrd',
+  'No sea pndj',
+  'Vete alv',
+  '¡Coño, qué susto!',
+  'Qué cagada lo del examen',
+  'Me cago en esa clase',
+  'Estoy jodido con la tarea',
+  'Qué güevada',
+  'Qué huevada tan grande',
+  'Vergación, qué calor',
+  'Me rompí el qlo',
+  'Comemierda',
+  'Ese hijueputica',
+  'jeputa',
+  'Ese marikón',
+  'Chupapija',
+  'Chucha de tu madre',
+  'Pajero',
+  'Que te jodan',
+].map(caso('groseria', true));
+
+/** Insultos dirigidos, incluidos los que agregaban una palabra de «contexto» para pasar. */
+export const INSULTOS_0010 = [
+  'Eres una gonorrea, ve al médico',
+  'Gonorrea, mejor cuida tu salud',
+  'Eres un hp, juego mejor que tú',
+  'Sapo hp, en el juego eres malo',
+  'Negro hp',
+  'Idiota',
+  'Imbécil.',
+  'Zorra',
+  'Eres demasiado idiota',
+  'Ere un idiota',
+  '¿Qué tan idiota eres?',
+  'Retrasado mental',
+  'Gorda asquerosa',
+  'Sapa perra',
+  'Me das asco',
+  'Nadie te quiere',
+].map(caso('insulto', true));
+
+/** Amenazas de violencia física o sexual. */
+export const AMENAZAS = [
+  'Te voy a violar',
+  'Te violo',
+  'Te voy a matar',
+  'Voy a matarte a la salida',
+  'Te parto la cara',
+  'Te voy a romper la jeta',
+  'Te voy a chuzar',
+].map(caso('amenaza', true));
+
+/** Groserías y lenguaje sexual en inglés. */
+export const INGLES = [
+  'fuck you',
+  'f*ck',
+  'fck this',
+  'wtf',
+  'stfu',
+  'This is bullshit',
+  'bitch',
+  'son of a bitch',
+  'motherfucker',
+  'asshole',
+  'suck my dick',
+  'pornhub',
+  'xvideos',
+  'Estoy horny',
+  'send nudes',
+  'nice boobs',
+  'hentai',
+].map(caso('ingles', true));
+
+/** Comentarios y propuestas sexuales dirigidos. */
+export const SEXUALES_0010 = [
+  'Estás sexy',
+  '¡Qué rica estás!',
+  'Te ves deliciosa',
+  'Me pones caliente',
+  'Me excitas',
+  'Estoy caliente pensando en ti',
+  'Quiero sexo',
+  'Tengamos relaciones',
+  'Hagamos el delicioso',
+  'Quiero hacerte cositas',
+  'Te voy a hacer el amor',
+  'Quiero besarte todo el cuerpo',
+  'Déjame tocarte',
+  'Te quiero tocar las nalgas',
+  'Quiero chuparte',
+  'Quiero que me la chupes',
+  'Muéstrame tu pene, soy doctor',
+  'Qué buenas nalgas',
+  'Nalgona',
+  'Mamahuevo',
+  'mama huevo',
+].map(caso('sexual', true));
+
+/** Doble sentido sexual que se escapaba. */
+export const DOBLE_SENTIDO_0010 = [
+  '¿La tienes grande?',
+  'Qué grande la tienes',
+  'La tengo grande',
+  'Métemela',
+  'Siéntate en mi cara',
+  'Siéntate en mis piernas',
+  'Cabálgame',
+  'Te quiero comer',
+  'Quiero comerte',
+  'Te comería',
+  'Dámelo duro',
+  'Te doy duro',
+  'Me vine en ti',
+  'Cómete este pico',
+  'Abre las piernas para mí, es yoga',
+].map(caso('doble_sentido', true));
+
+/** Evasión con emoji, versalitas, letras en emoji, «ñ», palabras partidas y leetspeak. */
+export const EVASIONES_0010 = [
+  'p \u{1f346} u t a',
+  'p\u{1f351}ta',
+  'pu\u{1f346}ta',
+  'mi erda',
+  'mie rda',
+  'ᴘᴜᴛᴀ', // versalitas
+  '\u{1f1f5}\u{1f1fa}\u{1f1f9}\u{1f1e6}', // indicadores regionales
+  '\u{1f17f}\u{1f184}\u{1f183}\u{1f170}', // letras en cuadrado negro
+  'c0ño',
+  'f u c k',
+  'h1jueput1c4',
+  'v e r g a',
+  'hi jo de pu ta',
+].map(caso('evasion', true));
+
+/** Frases legítimas parecidas a lo que bloquean las reglas nuevas. */
+export const LEGITIMOS_0010 = [
+  'Te mato a besos, abuela',
+  'Me muero de la risa con ese video',
+  'Se graduó summa cum laude',
+  'Me encanta la sopa de shiitake',
+  'Leímos Moby Dick en la clase de inglés',
+  'Mi papá tiene una Pajero vieja',
+  'Quiero tocarte una canción en la guitarra',
+  'Te quiero comer a besos, hermanito',
+  'Siéntate en mi silla si quieres',
+  'Ayer cabalgué en la finca de mi tío',
+  'Te monto en la moto hasta el colegio',
+  'Estoy caliente, creo que tengo fiebre',
+  'Qué bueno, estás mejor',
+  'Qué bueno que estás mejor',
+  'Peras',
+  'Mañana es el cumpleaños de mi papá',
+  'Me compré un cono de helado',
+  'Doña Rosa vende empanadas',
+  '¿Me prendes la luz, por favor?',
+  'Me mojas con la manguera y me enojo',
+  'Estoy excitado por el viaje a Bogotá',
+  'Dame duro en el entrenamiento, profe',
+  'Hice unas cositas ricas de comer',
+  'Nadie te quiere hacer daño aquí',
+  'Tengamos relaciones sanas con los compañeros',
+  'La camiseta la tengo grande',
+  'La profe me tiene duro con las tareas',
+  'Tienes unas piernas fuertes, juegas muy bien',
+  'Enséñame tus partes favoritas del libro',
+  'Ojalá te vaya muy bien',
+  'La violación es un delito y se denuncia',
+  '¿Cómo se usa el condón?',
+  'Qué perras tan lindas tiene mi tía',
+  'Eres una gran amiga',
+  'No eres tonta, solo estás cansada',
+  'Te ves muy bien con ese corte',
+  'Muéstrame tus fotos del paseo',
+  'Te la mando por aquí cuando la termine',
+  'Hagámoslo bien esta vez',
+  'Hagámoslo juntos en el descanso',
+  'Me vine en bus desde el centro',
+  'Cómete la sopa',
+  'La gonorrea es una ITS',
+  'Hoy jugamos con la HP del salón',
+].map(caso('legitimo', false));
+
 export const CASOS_LENGUAJE: CasoLenguaje[] = [
   ...GROSERIAS,
   ...INSULTOS,
@@ -289,4 +487,12 @@ export const CASOS_LENGUAJE: CasoLenguaje[] = [
   ...EVASIONES,
   ...COLOQUIALES,
   ...LEGITIMOS,
+  ...GROSERIAS_0010,
+  ...INSULTOS_0010,
+  ...AMENAZAS,
+  ...INGLES,
+  ...SEXUALES_0010,
+  ...DOBLE_SENTIDO_0010,
+  ...EVASIONES_0010,
+  ...LEGITIMOS_0010,
 ];
