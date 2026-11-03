@@ -397,6 +397,7 @@ describe('F14 · Chat de sala con DLP', () => {
       '\u{1f1f5}\u{1f1fa}\u{1f1f9}\u{1f1e6}',
       'Eres un hp, juego mejor que tú',
       '¿La tienes grande?',
+      'Mira mi p1to',
     ];
     const avisos = () => luna.mensajes.filter((m) => m.tipo === 'mensaje_bloqueado').length;
     for (const [i, texto] of bloqueados.entries()) {

@@ -48,6 +48,8 @@ import {
   INSULTOS_0010,
   LEGITIMOS,
   LEGITIMOS_0010,
+  LEGITIMOS_ORGANOS,
+  ORGANOS,
   SEXUALES,
   SEXUALES_0010,
   type CasoLenguaje,
@@ -99,6 +101,7 @@ describe('Batería de lenguaje ofensivo (test/dlp-lenguaje.casos.ts)', () => {
     ['comentarios y propuestas sexuales dirigidos (0010)', SEXUALES_0010],
     ['doble sentido sexual (0010)', DOBLE_SENTIDO_0010],
     ['evasión con emoji, versalitas, «ñ» y palabras partidas (0010)', EVASIONES_0010],
+    ['nombres de órganos sexuales externos (0011)', ORGANOS],
   ])('bloquea %s', (_grupo, casos) => {
     it.each(textos(casos))('«%s»', (texto) => {
       expect(analizar(texto, reglas)).toMatchObject({ accion: 'bloquear' });
@@ -106,7 +109,7 @@ describe('Batería de lenguaje ofensivo (test/dlp-lenguaje.casos.ts)', () => {
   });
 
   describe('no bloquea frases legítimas (falsos positivos)', () => {
-    it.each(textos([...LEGITIMOS, ...LEGITIMOS_0010]))('«%s»', (texto) => {
+    it.each(textos([...LEGITIMOS, ...LEGITIMOS_0010, ...LEGITIMOS_ORGANOS]))('«%s»', (texto) => {
       expect(analizar(texto, reglas)).toBeNull();
     });
   });
@@ -242,18 +245,19 @@ describe('Reglas de lenguaje en datos', () => {
     expect(deLenguaje.every((r) => (r.accion ?? 'bloquear') === 'bloquear')).toBe(true);
   });
 
-  it('las migraciones 0008 y 0010 dejan exactamente las mismas reglas de lenguaje que el seed', async () => {
+  it('las migraciones 0008, 0010 y 0011 dejan exactamente las mismas reglas de lenguaje que el seed', async () => {
     const leer = (archivo: string) =>
       readFile(fileURLToPath(new URL(`../db/migraciones/${archivo}`, import.meta.url)), 'utf8');
     const sql0008 = await leer('0008_dlp_lenguaje_ofensivo.sql');
     const sql0010 = await leer('0010_dlp_lenguaje_variantes.sql');
+    const sql0011 = await leer('0011_dlp_organos_genitales.sql');
     for (const categoria of CATEGORIAS_LENGUAJE) expect(sql0008).toContain(`('${categoria}',`);
 
     // Patrón final de cada regla, aplicando en orden los insert y los update de cada migración.
     const LITERAL = String.raw`'((?:[^']|'')*)'`;
     const texto = (literal: string) => literal.replaceAll("''", "'");
     const enMigraciones = new Map<string, { categoria: string; patron: string }>();
-    for (const sql of [sql0008, sql0010]) {
+    for (const sql of [sql0008, sql0010, sql0011]) {
       const insertados = sql.matchAll(
         new RegExp(
           String.raw`^ {2}\('([a-z-]+)', '([a-z_]+)',\n {3}${LITERAL},\n {3}${LITERAL}\)`,

@@ -129,6 +129,17 @@ Límites que siguen: un mensaje partido en varios envíos («pu» y luego «ta»
 
 **En producción:** ejecutar `npm run db:migrate` (0008 y 0010) para que las reglas queden en el panel y los eventos guarden su regla. Sin eso el DLP ya bloquea con las reglas del seed, pero el registro avisa en cada cambio de la lista de faltantes.
 
+## 8. Órganos sexuales externos (migración 0011)
+
+Decisión de producto: en la comunidad no se nombran los genitales, ni con términos clínicos ni coloquiales. Antes pasaban los 41 términos de la sonda («pene», «vagina», «mi pito», «p3n3»…); la regla `sexual-organos-genitales` (categoría `contenido_sexual`, en `reglas_dlp.json` y `0011_dlp_organos_genitales.sql`) los bloquea todos:
+
+- **Clínicos:** pene, vagina, vulva, clítoris, testículos, escroto, glande, prepucio, genitales. **Coloquiales:** pito, nepe, pichula, poronga, chocha, panocha, totona, crica, pirula. **Inglés:** penis, testicles (además de los de 0010).
+- **Excepciones de contexto:** «pito» se permite si el mensaje habla de un silbato o una bocina (árbitro, silbato, carro, bus, partido, educación física…) y «pene» si habla de pasta («penne» queda «pene» al quitar letras repetidas). Las excepciones se escriben a prueba de esas variantes: `car+os?`, porque «carro» se compara también como «caro».
+- **Quedan permitidos a propósito:** «falo» no se incluye («falló» → «fallo» → «falo»); «ano» tampoco (la normalización convierte «año» en «ano»); los órganos internos (útero, ovarios), para no bloquear preguntas de salud menstrual; «partes íntimas», porque es como un menor contaría que lo tocaron; y palabras con un uso cotidiano frecuente («cuca», «polla», «huevos», «bolas», «concha», «chimba»). Los adjetivos («infección vaginal») tampoco se bloquean.
+- **Cambia una decisión anterior:** «El pene y la vagina son órganos del cuerpo» estaba entre las frases legítimas y ahora se bloquea. Una pregunta de salud que nombre un genital («me duele el pene») también se bloquea; debe ir por «Necesito ayuda».
+
+Pruebas: 26 casos a bloquear y 18 legítimos en la batería, sincronía seed ↔ 0008 + 0010 + 0011, y en integración la API de hilos y respuestas y el chat de salas. En producción hay que aplicar `npm run db:migrate` (0011); mientras tanto la regla se aplica desde el seed.
+
 ## Anexo: resultado por caso
 
 «Antes» indica la regla que bloqueó en la versión anterior; «Después», el resultado actual (✗ marcaría un error). `[ZWSP]` es un espacio de ancho cero y `[cir. x]` una letra cirílica.
@@ -325,7 +336,7 @@ Límites que siguen: un mensaje partido en varios envíos («pu» y luego «ta»
 | Hice un análisis del canal de televisión                               | pasa  | pasa    | —               |
 | La gonorrea es una infección de transmisión sexual, ¿cómo se previene? | pasa  | pasa    | —               |
 | ¿Qué es la masturbación? Me da pena preguntar                          | pasa  | pasa    | —               |
-| El pene y la vagina son órganos del cuerpo                             | pasa  | pasa    | —               |
+| El pene y la vagina son órganos del cuerpo (desde 0011 se bloquea)     | pasa  | pasa    | —               |
 | Me siento como un idiota por haber reprobado                           | pasa  | pasa    | —               |
 | Me sentí estúpido en la exposición                                     | pasa  | pasa    | —               |
 | A mi tío le encanta mamar gallo                                        | pasa  | pasa    | —               |
