@@ -7,8 +7,16 @@ import { erroresPorCampo, mensajeDeError } from '@/lib/api/cliente';
 import type { DatosFuente, DatosNuevaFuente, FuenteGestion } from '@/lib/api/fuentes';
 import { obtenerNecesidades, type Necesidad } from '@/lib/api/orientacion';
 import { hoyEnColombia } from '@/lib/fechas';
+import {
+  borradorDesde,
+  borradorVacio,
+  horarioDesde,
+  validarHorario,
+  type BorradorHorario,
+} from '@/lib/horarios';
 import comun from '../comun.module.css';
 import estilos from './Fuentes.module.css';
+import { SelectorHorario } from './SelectorHorario';
 
 type Props =
   | { modo: 'crear'; alGuardar: (datos: DatosNuevaFuente) => Promise<void> }
@@ -34,6 +42,7 @@ function inicial(props: Props): DatosNuevaFuente {
       telefono: f.telefono ?? '',
       enlace: f.enlace ?? '',
       horario: f.horario ?? '',
+      horarioSemanal: f.horarioSemanal,
       fuenteOriginal: f.fuenteOriginal,
       necesidades: f.necesidades.map((n) => n.codigo),
       observaciones: f.observaciones ?? '',
@@ -50,6 +59,7 @@ function inicial(props: Props): DatosNuevaFuente {
     telefono: '',
     enlace: '',
     horario: '',
+    horarioSemanal: null,
     fuenteOriginal: '',
     necesidades: [],
     observaciones: '',
@@ -68,15 +78,29 @@ const aEdicion = (datos: DatosNuevaFuente): DatosFuente => ({
   telefono: datos.telefono,
   enlace: datos.enlace,
   horario: datos.horario,
+  horarioSemanal: datos.horarioSemanal,
   fuenteOriginal: datos.fuenteOriginal,
   necesidades: datos.necesidades,
   observaciones: datos.observaciones,
   esDemo: datos.esDemo,
 });
 
+/**
+ * Horario que se edita. Las fuentes con horario solo en texto (anteriores al horario semanal)
+ * empiezan en null: conservan su texto hasta que alguien configure el horario semanal.
+ */
+function horarioInicial(props: Props): BorradorHorario | null {
+  if (props.modo === 'crear') return borradorVacio();
+  const { horario, horarioSemanal } = props.fuente;
+  if (horarioSemanal) return borradorDesde(horarioSemanal);
+  return horario ? null : borradorVacio();
+}
+
 /** Datos de una fuente (F32). Ninguna fuente nueva se registra sin fecha de verificación (B.6). */
 export function FormularioFuente(props: Props) {
   const [datos, setDatos] = useState<DatosNuevaFuente>(() => inicial(props));
+  const [horario, setHorario] = useState<BorradorHorario | null>(() => horarioInicial(props));
+  const [revisarHorario, setRevisarHorario] = useState(false);
   const [necesidades, setNecesidades] = useState<Necesidad[]>([]);
   const [errores, setErrores] = useState<Record<string, string>>({});
   const [mensaje, setMensaje] = useState<{ tono: 'exito' | 'peligro'; texto: string } | null>(null);
@@ -106,16 +130,38 @@ export function FormularioFuente(props: Props) {
         : [...datos.necesidades, codigo],
     );
 
+  const cambiarHorario = (borrador: BorradorHorario | null) => {
+    setHorario(borrador);
+    setErrores((actual) => ({ ...actual, horarioSemanal: '' }));
+    setMensaje(null);
+  };
+
+  const erroresHorario = horario
+    ? validarHorario(horario, { exigirCompletos: revisarHorario })
+    : {};
+
   async function alEnviar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
+    if (horario && Object.keys(validarHorario(horario, { exigirCompletos: true })).length > 0) {
+      setRevisarHorario(true);
+      setMensaje({
+        tono: 'peligro',
+        texto: 'Revisa el horario: hay intervalos incompletos, al revés o que se cruzan.',
+      });
+      return;
+    }
+    // Con horario semanal, el backend escribe el texto; sin él, se conserva el texto anterior.
+    const conHorario: DatosNuevaFuente = horario
+      ? { ...datos, horario: '', horarioSemanal: horarioDesde(horario) }
+      : { ...datos, horarioSemanal: null };
     setGuardando(true);
     setErrores({});
     setMensaje(null);
     try {
       if (props.modo === 'crear') {
-        await props.alGuardar(datos);
+        await props.alGuardar(conHorario);
       } else {
-        await props.alGuardar(aEdicion(datos));
+        await props.alGuardar(aEdicion(conHorario));
         setMensaje({ tono: 'exito', texto: 'Cambios guardados y registrados en la bitácora.' });
       }
     } catch (e) {
@@ -126,9 +172,7 @@ export function FormularioFuente(props: Props) {
     }
   }
 
-  const texto = (
-    campo: 'institucion' | 'servicio' | 'telefono' | 'enlace' | 'horario' | 'fuenteOriginal',
-  ) => ({
+  const texto = (campo: 'institucion' | 'servicio' | 'telefono' | 'enlace' | 'fuenteOriginal') => ({
     value: datos[campo],
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => cambiar(campo, e.target.value),
     error: errores[campo] || undefined,
@@ -185,8 +229,17 @@ export function FormularioFuente(props: Props) {
           inputMode="url"
           {...texto('enlace')}
         />
-        <CampoTexto etiqueta="Horario (opcional)" maxLength={200} {...texto('horario')} />
       </div>
+
+      <SelectorHorario
+        borrador={horario}
+        alCambiar={cambiarHorario}
+        errores={erroresHorario}
+        textoAnterior={
+          props.modo === 'editar' && !props.fuente.horarioSemanal ? datos.horario : null
+        }
+        errorServidor={errores.horarioSemanal || errores.horario || undefined}
+      />
 
       <CampoTexto
         etiqueta="Fuente original"

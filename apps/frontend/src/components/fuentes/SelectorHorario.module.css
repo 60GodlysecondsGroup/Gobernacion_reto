@@ -1,0 +1,443 @@
+/* Horario de atención: una fila por día, con interruptor, intervalos y resumen. */
+.horario {
+  display: grid;
+  gap: var(--espacio-3);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.leyenda {
+  margin-bottom: var(--espacio-1);
+  padding: 0;
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+}
+
+.nota {
+  margin-left: var(--espacio-1);
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-normal);
+}
+
+.ayuda {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.error {
+  color: var(--color-peligro);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+}
+
+/* Horario que venía en texto */
+.anterior {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--espacio-3);
+  padding: var(--espacio-3) var(--espacio-4);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-info-suave);
+  color: var(--color-texto);
+}
+
+.anterior > svg {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: var(--color-info);
+}
+
+.anterior > div {
+  display: grid;
+  flex: 1 1 14rem;
+  gap: var(--espacio-1);
+  min-width: 0;
+}
+
+.anteriorTitulo {
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  overflow-wrap: anywhere;
+}
+
+.anteriorTexto {
+  overflow-wrap: anywhere;
+}
+
+/* Atajos */
+.atajos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.atajo,
+.destino {
+  min-height: 2.25rem;
+  padding: var(--espacio-1) var(--espacio-3);
+  border: 1px solid var(--color-borde-fuerte);
+  border-radius: var(--radio-total);
+  background: var(--color-superficie-solida);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: var(--texto-sm);
+  cursor: pointer;
+  transition:
+    background var(--transicion),
+    border-color var(--transicion),
+    color var(--transicion);
+}
+
+.atajo:hover,
+.destino:hover {
+  border-color: var(--color-primario);
+  background: var(--color-primario-suave);
+}
+
+.atajoQuitar:hover {
+  border-color: var(--color-peligro);
+  background: var(--color-peligro-suave);
+  color: var(--color-peligro);
+}
+
+.atajo:focus-visible,
+.destino:focus-visible,
+.accion:focus-visible,
+.quitar:focus-visible,
+.agregar:focus-visible,
+.enlace:focus-visible {
+  outline: none;
+  box-shadow: var(--sombra-foco);
+}
+
+/* Días */
+.dias {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie-solida);
+  list-style: none;
+  overflow: hidden;
+}
+
+.dia {
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--espacio-3) var(--espacio-4);
+  transition: background var(--transicion);
+}
+
+.dia + .dia {
+  border-top: 1px solid var(--color-borde);
+}
+
+.diaInactivo {
+  background: var(--color-superficie-suave);
+}
+
+.cabeceraDia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-3);
+}
+
+.interruptor {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  min-width: 9.5rem;
+  min-height: 2.25rem;
+  cursor: pointer;
+}
+
+/* El casillero real queda encima de la pista: clic, teclado y lector de pantalla funcionan igual. */
+.interruptor input {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 2.75rem;
+  height: 1.5rem;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.pista {
+  position: relative;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 1.5rem;
+  border-radius: var(--radio-total);
+  background: var(--color-borde-fuerte);
+  transition: background var(--transicion);
+}
+
+.pista::after {
+  content: '';
+  position: absolute;
+  top: 0.1875rem;
+  left: 0.1875rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--sombra-1);
+  transition: transform 220ms var(--curva-resorte);
+}
+
+.interruptor input:checked + .pista {
+  background: var(--color-primario);
+}
+
+.interruptor input:checked + .pista::after {
+  transform: translateX(1.25rem);
+}
+
+.interruptor input:focus-visible + .pista {
+  box-shadow: var(--sombra-foco);
+}
+
+.nombreDia {
+  font-weight: var(--peso-fuerte);
+}
+
+.estadoDia {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.accionesDia {
+  display: flex;
+  gap: var(--espacio-1);
+  margin-left: auto;
+}
+
+.accion,
+.agregar,
+.enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-1);
+  min-height: 2.25rem;
+  padding: var(--espacio-1) var(--espacio-2);
+  border: 0;
+  border-radius: var(--radio-md);
+  background: transparent;
+  color: var(--color-primario);
+  font: inherit;
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  cursor: pointer;
+  transition: background var(--transicion);
+}
+
+.accion:hover,
+.agregar:not(:disabled):hover,
+.enlace:hover {
+  background: var(--color-primario-suave);
+}
+
+.agregar:disabled {
+  color: var(--color-texto-tenue);
+  cursor: not-allowed;
+}
+
+/* Intervalos */
+.intervalos {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.intervalo {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+.horas {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--espacio-2);
+}
+
+.hora {
+  display: grid;
+  flex: 0 1 10rem;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.etiquetaHora {
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+}
+
+.control {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: var(--espacio-1) var(--espacio-3);
+  border: 1px solid var(--color-borde-fuerte);
+  border-radius: var(--radio-md);
+  background: #fff;
+  color: var(--color-texto);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  transition:
+    border-color var(--transicion),
+    box-shadow var(--transicion);
+}
+
+.control:focus-visible {
+  border-color: var(--color-primario);
+  outline: none;
+  box-shadow: var(--sombra-foco);
+}
+
+.control[aria-invalid='true'] {
+  border-color: var(--color-peligro);
+  background: var(--color-peligro-suave);
+}
+
+.separador {
+  padding-bottom: 0.7rem;
+  color: var(--color-texto-tenue);
+}
+
+.quitar {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: var(--radio-md);
+  background: transparent;
+  color: var(--color-texto-suave);
+  cursor: pointer;
+  transition:
+    background var(--transicion),
+    color var(--transicion);
+}
+
+.quitar:hover {
+  background: var(--color-peligro-suave);
+  color: var(--color-peligro);
+}
+
+/* Copiar un día a otros */
+.copia {
+  display: grid;
+  gap: var(--espacio-2);
+  padding: var(--espacio-3);
+  border: 1px dashed var(--color-borde-fuerte);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+}
+
+.copiaTitulo {
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+}
+
+.destinos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.destino[aria-pressed='true'] {
+  border-color: var(--color-primario);
+  background: var(--color-primario);
+  color: var(--color-sobre-primario);
+}
+
+.filaCopia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2);
+}
+
+.espaciador {
+  flex: 1;
+}
+
+/* Resumen */
+.resumen {
+  display: grid;
+  gap: var(--espacio-2);
+  padding: var(--espacio-3) var(--espacio-4);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-suave);
+}
+
+.resumenTitulo {
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.resumenLista {
+  display: grid;
+  gap: var(--espacio-1);
+  margin: 0;
+  transition: opacity var(--transicion);
+}
+
+.resumenConErrores {
+  opacity: 0.55;
+}
+
+.resumenFila {
+  display: grid;
+  grid-template-columns: minmax(8rem, max-content) 1fr;
+  gap: var(--espacio-3);
+  font-size: var(--texto-sm);
+}
+
+.resumenFila dt {
+  font-weight: var(--peso-fuerte);
+}
+
+.resumenFila dd {
+  margin: 0;
+}
+
+.sinAtencion {
+  color: var(--color-texto-tenue);
+}
+
+@media (max-width: 30rem) {
+  .dia {
+    padding: var(--espacio-3);
+  }
+
+  .interruptor {
+    min-width: 0;
+  }
+
+  .accionesDia {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .hora {
+    flex: 1 1 0;
+  }
+
+  .resumenFila {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
