@@ -233,6 +233,11 @@
   transform: translateY(-2px);
 }
 
+/* Con modal de consulta rápida, toda la tarjeta responde al clic. */
+.tarjetaConModal {
+  cursor: pointer;
+}
+
 .cabeceraTarjeta {
   display: flex;
   flex-wrap: wrap;

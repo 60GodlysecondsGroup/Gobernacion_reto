@@ -12,7 +12,6 @@ import {
   Layers,
   ShieldCheck,
 } from 'lucide-react';
-import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Aviso, Boton, BotonEnlace, EnlaceVolver, ErrorDePagina, Insignia } from '@/components/ui';
@@ -24,6 +23,7 @@ import comun from '../comun.module.css';
 import { ContactoServicio, IconoCanal } from './ContactoServicio';
 import estilos from './FichaCompleta.module.css';
 import { ModalFicha } from './ModalFicha';
+import { AVISO_PLATAFORMA, DatosVerificacion, TemasRelacionados } from './PiezasFicha';
 
 type Estado =
   | { tipo: 'cargando' }
@@ -32,9 +32,6 @@ type Estado =
   | { tipo: 'error'; mensaje: string };
 
 type Seccion = 'contacto' | 'informacion' | 'fuente' | 'sobre';
-
-const AVISO_PLATAFORMA =
-  'La plataforma organiza información de instituciones: no presta este servicio ni habla en su nombre.';
 
 /**
  * Ficha de servicio (F05, F06, B.6). Un resumen arriba y cada bloque de la ficha en su propio
@@ -268,15 +265,7 @@ export function FichaCompleta() {
               <Layers aria-hidden="true" size={16} />
               Temas relacionados
             </p>
-            <ul className={estilos.temas}>
-              {servicio.necesidades.map((necesidad) => (
-                <li key={necesidad.codigo}>
-                  <Link href={`/orientacion/${necesidad.codigo}`} className={estilos.tema}>
-                    {necesidad.nombre}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <TemasRelacionados necesidades={servicio.necesidades} />
           </div>
         )}
       </ModalFicha>
@@ -293,26 +282,7 @@ export function FichaCompleta() {
           </Boton>
         }
       >
-        <dl className={estilos.datos}>
-          <div>
-            <dt>Institución</dt>
-            <dd>{servicio.institucion}</dd>
-          </div>
-          <div>
-            <dt>Fuente</dt>
-            <dd>{servicio.fuenteOriginal}</dd>
-          </div>
-          <div>
-            <dt>Verificado</dt>
-            <dd>{verificado}</dd>
-          </div>
-          <div>
-            <dt>Estado</dt>
-            <dd>
-              <Insignia tono={insigniaEstado.tono}>{insigniaEstado.etiqueta}</Insignia>
-            </dd>
-          </div>
-        </dl>
+        <DatosVerificacion servicio={servicio} />
         {servicio.estado === 'requiere_revision' && (
           <Aviso tono="advertencia" titulo="Información en revisión">
             Estamos volviendo a comprobar este canal y algunos datos podrían haber cambiado.

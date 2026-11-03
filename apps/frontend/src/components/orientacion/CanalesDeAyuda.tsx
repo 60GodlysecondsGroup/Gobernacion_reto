@@ -1,6 +1,5 @@
 'use client';
 
-import { ElementoEscalonado, ListaEscalonada } from '@/components/movimiento/Escalonado';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
 import { Aviso, BotonEnlace, CargandoLista } from '@/components/ui';
@@ -8,8 +7,7 @@ import { AVISO_LIMITES } from '@/config/textos';
 import { mensajeDeError } from '@/lib/api/cliente';
 import { obtenerCanalesDeAyuda, type FichaServicio } from '@/lib/api/orientacion';
 import comun from '../comun.module.css';
-import estilos from './Orientacion.module.css';
-import { TarjetaServicio } from './TarjetaServicio';
+import { RejillaServicios } from './RejillaServicios';
 
 /**
  * «Necesito ayuda» (F18): un solo paso hasta los canales institucionales, con su contacto
@@ -37,7 +35,7 @@ export function CanalesDeAyuda() {
         tono="ayuda"
       >
         Estos son canales que ofrecen instituciones. Cada uno indica de dónde viene la información y
-        cuándo se verificó. Abre la ficha para ver todos los detalles.
+        cuándo se verificó. Elige un canal para ver todos sus detalles sin salir de aquí.
       </EncabezadoPagina>
 
       <Aviso tono="info" titulo="Esta plataforma no presta servicios de salud">
@@ -52,13 +50,7 @@ export function CanalesDeAyuda() {
         </Aviso>
       )}
       {canales && canales.length > 0 && (
-        <ListaEscalonada className={estilos.rejillaServicios} aria-label="Canales institucionales">
-          {canales.map((canal) => (
-            <ElementoEscalonado key={canal.id}>
-              <TarjetaServicio servicio={canal} />
-            </ElementoEscalonado>
-          ))}
-        </ListaEscalonada>
+        <RejillaServicios servicios={canales} etiqueta="Canales institucionales" />
       )}
 
       <div className={comun.fila}>
