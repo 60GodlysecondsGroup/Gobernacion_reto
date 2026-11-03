@@ -1,5 +1,5 @@
 export { Aviso } from './Aviso';
-export { Boton, BotonEnlace } from './Boton';
+export { Boton, BotonEnlace, BotonEnlaceExterno } from './Boton';
 export { CampoSeleccion } from './CampoSeleccion';
 export { CampoTexto } from './CampoTexto';
 export { ConfirmarAccion, Dialogo } from './Dialogo';

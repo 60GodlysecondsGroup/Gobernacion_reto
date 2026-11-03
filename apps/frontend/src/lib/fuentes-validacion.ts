@@ -12,6 +12,10 @@ export const MENSAJES_FUENTE = {
   enlace: 'Debe ser un enlace que empiece por http:// o https://.',
   enlaceObligatorio: 'Un canal web o de chat necesita un enlace.',
   fuenteOriginal: 'Indica de dónde sale la información (al menos 3 caracteres).',
+  direccion: 'La dirección necesita al menos 5 caracteres.',
+  coordenadas:
+    'Escribe latitud y longitud separadas por una coma, como las copia Google Maps (p. ej. 4.14201, -73.62660).',
+  direccionUbicacion: 'Indica la dirección de la ubicación (al menos 5 caracteres).',
   necesidades: 'Elige al menos un tema.',
   fechaVerificacion: 'Indica la fecha de verificación.',
   fechaFutura: 'La fecha de verificación no puede ser futura.',
@@ -28,6 +32,8 @@ export type DatosValidables = {
   fuenteOriginal: string;
   necesidades: string[];
   observaciones: string;
+  /** Dirección escrita (opcional). */
+  direccion?: string;
   fechaVerificacion?: string;
 };
 
@@ -78,6 +84,10 @@ export function validarFuente(datos: DatosValidables, hoy?: string): ErroresFuen
     errores.enlace = MENSAJES_FUENTE.enlaceObligatorio;
   }
 
+  const direccion = (datos.direccion ?? '').trim();
+  if (direccion && direccion.length < 5) errores.direccion = MENSAJES_FUENTE.direccion;
+  else if (direccion.length > 200) errores.direccion = MENSAJES_FUENTE.maximo(200);
+
   if (datos.necesidades.length === 0) errores.necesidades = MENSAJES_FUENTE.necesidades;
   if (datos.observaciones.trim().length > 500) {
     errores.observaciones = MENSAJES_FUENTE.maximo(500);
@@ -90,5 +100,20 @@ export function validarFuente(datos: DatosValidables, hoy?: string): ErroresFuen
       errores.fechaVerificacion = MENSAJES_FUENTE.fechaFutura;
     }
   }
+  return errores;
+}
+
+/** Ubicación escrita a mano (cuando no hay búsqueda de Google o se prefiere pegar el punto). */
+export type BorradorUbicacion = { coordenadas: string; direccion: string };
+
+export function validarUbicacionManual(
+  borrador: BorradorUbicacion,
+  leer: (texto: string) => { latitud: number; longitud: number } | null,
+): Partial<Record<keyof BorradorUbicacion, string>> {
+  const errores: Partial<Record<keyof BorradorUbicacion, string>> = {};
+  if (!leer(borrador.coordenadas)) errores.coordenadas = MENSAJES_FUENTE.coordenadas;
+  const direccion = borrador.direccion.trim();
+  if (direccion.length < 5) errores.direccion = MENSAJES_FUENTE.direccionUbicacion;
+  else if (direccion.length > 300) errores.direccion = MENSAJES_FUENTE.maximo(300);
   return errores;
 }

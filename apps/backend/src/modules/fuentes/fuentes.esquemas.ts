@@ -32,6 +32,46 @@ const maximo = (n: number) => `Usa como máximo ${n} caracteres.`;
 const texto = (min: number, max: number, mensaje: string) =>
   z.string().trim().min(min, mensaje).max(max, maximo(max));
 
+/** 6 decimales ≈ 0,1 m: precisión de sobra para un establecimiento, sin ruido de coma flotante. */
+const redondearCoordenada = (valor: number) => Math.round(valor * 1e6) / 1e6;
+
+const coordenada = (minimo: number, maximo: number, nombre: string) =>
+  // En zod 4, `z.number()` ya rechaza NaN e Infinity.
+  z
+    .number({ error: `Indica la ${nombre} como un número.` })
+    .min(minimo, `La ${nombre} debe estar entre ${minimo} y ${maximo}.`)
+    .max(maximo, `La ${nombre} debe estar entre ${minimo} y ${maximo}.`)
+    .transform(redondearCoordenada);
+
+/**
+ * Punto del establecimiento en el mapa. Latitud y longitud llegan siempre juntas (un objeto, no
+ * campos sueltos), con la dirección que corresponde a ese punto: la que se muestra junto al mapa.
+ * El `placeId` de Google es opcional (una ubicación escrita a mano no lo tiene).
+ */
+export const esquemaUbicacion = z
+  .object({
+    latitud: coordenada(-90, 90, 'latitud'),
+    longitud: coordenada(-180, 180, 'longitud'),
+    placeId: z.preprocess(
+      vacioANull,
+      z
+        .string()
+        .trim()
+        .regex(/^[A-Za-z0-9_-]{10,300}$/, 'El identificador del lugar no es válido.')
+        .nullable()
+        .default(null),
+    ),
+    direccion: texto(5, 300, 'Indica la dirección de la ubicación (al menos 5 caracteres).'),
+  })
+  .strict()
+  // 0,0 está en el océano: casi siempre es una coordenada que faltó, no un establecimiento.
+  .refine((u) => u.latitud !== 0 || u.longitud !== 0, {
+    path: ['latitud'],
+    message: 'Las coordenadas 0, 0 no corresponden a un establecimiento: revisa la ubicación.',
+  });
+
+export type Ubicacion = z.output<typeof esquemaUbicacion>;
+
 const camposFuente = {
   institucion: texto(2, 120, 'Escribe el nombre de la institución (al menos 2 caracteres).'),
   servicio: texto(2, 120, 'Escribe el nombre del servicio o canal (al menos 2 caracteres).'),
@@ -67,6 +107,19 @@ const camposFuente = {
   horario: z.preprocess(vacioANull, z.string().trim().max(2000).nullable().default(null)),
   /** Horario estructurado. Opcional: sin él, `horario` se guarda como texto, igual que antes. */
   horarioSemanal: esquemaHorarioSemanal.nullable().default(null),
+  /** Dirección escrita (opcional): se muestra aunque no haya ubicación en el mapa. */
+  direccion: z.preprocess(
+    vacioANull,
+    z
+      .string()
+      .trim()
+      .min(5, 'La dirección necesita al menos 5 caracteres.')
+      .max(200, maximo(200))
+      .nullable()
+      .default(null),
+  ),
+  /** Ubicación en el mapa (opcional, para atención presencial o híbrida). null la quita. */
+  ubicacion: esquemaUbicacion.nullable().default(null),
   fuenteOriginal: texto(3, 300, 'Indica de dónde sale la información (al menos 3 caracteres).'),
   necesidades: z
     .array(z.enum(CODIGOS_NECESIDAD))

@@ -11,6 +11,7 @@ import { cargarConfig } from '../../src/config/env.js';
 import { crearPool, type PoolDeDatos } from '../../src/db/database.js';
 import { crearLogger } from '../../src/lib/logger.js';
 import { cargarFuentes, leerFuentes } from '../../src/modules/fuentes/fuentes.carga.js';
+import type { ClienteLugares } from '../../src/modules/fuentes/fuentes.lugares.js';
 import { hoyEnColombia } from '../../src/modules/fuentes/fuentes.esquemas.js';
 import { cookieDe, configPrueba } from '../apoyo.js';
 
@@ -89,6 +90,9 @@ describe('TRL-09 · Orientación institucional', () => {
       telefono: '000 000 0000',
       enlace: null,
       horario: 'Horario de demostración',
+      // Fuente registrada antes de la ubicación: sin dirección ni mapa, y sigue funcionando.
+      direccion: null,
+      ubicacion: null,
       fuenteOriginal: expect.any(String),
       fechaVerificacion: '2026-10-20',
       estado: 'activo',
@@ -440,6 +444,208 @@ describe('Archivo de carga', () => {
         accion: 'desactivar',
         observacion: 'No figura en el archivo de carga de fuentes.',
       });
+    });
+  });
+});
+
+describe('Ubicación de fuentes presenciales', () => {
+  const gobernacion = {
+    latitud: 4.151235,
+    longitud: -73.639877,
+    placeId: 'ChIJ_lugar_000000001',
+    direccion: 'Cl. 38 #30-25, Villavicencio, Meta, Colombia',
+  };
+  const otraSede = {
+    latitud: 4.128,
+    longitud: -73.6001,
+    placeId: null,
+    direccion: 'Carrera 33 # 15-20, Villavicencio, Meta',
+  };
+  const nueva = {
+    institucion: 'InstituciónDemo',
+    servicio: 'Sede presencial de prueba',
+    descripcion: 'Registro ficticio con atención presencial, creado por una prueba.',
+    tipoCanal: 'presencial',
+    fuenteOriginal: 'Prueba automatizada',
+    necesidades: ['informacion_institucional'],
+    esDemo: false,
+    estado: 'activo',
+    fechaVerificacion: hoyEnColombia(),
+  };
+  /** Lo editable de una fuente tal como la devuelve el panel. */
+  const editable = (f: Record<string, unknown> & { necesidades: { codigo: string }[] }) => ({
+    institucion: f.institucion,
+    servicio: f.servicio,
+    descripcion: f.descripcion,
+    tipoCanal: f.tipoCanal,
+    telefono: f.telefono,
+    enlace: f.enlace,
+    horario: f.horario,
+    horarioSemanal: f.horarioSemanal,
+    direccion: f.direccion,
+    ubicacion: f.ubicacion,
+    fuenteOriginal: f.fuenteOriginal,
+    necesidades: f.necesidades.map((n) => n.codigo),
+    observaciones: f.observaciones,
+    esDemo: f.esDemo,
+  });
+
+  it('crear, editar, cambiar y quitar la ubicación sin perder la fuente', async () => {
+    await enTransaccionRevertida(async (enTx, cliente) => {
+      const gestor = await entrar(enTx, 'Gestor_001');
+
+      const creada = await gestor.post('/api/gestion/fuentes', {
+        ...nueva,
+        direccion: 'Calle 38 # 30-25, piso 2',
+        ubicacion: gobernacion,
+      });
+      expect(creada.status).toBe(201);
+      expect(creada.body.fuente).toMatchObject({
+        direccion: 'Calle 38 # 30-25, piso 2',
+        ubicacion: gobernacion,
+      });
+      const id = creada.body.fuente.id as string;
+      const ruta = `/api/gestion/fuentes/${id}`;
+
+      // Los usuarios finales la ven en la ficha pública y en las listas, sin sesión.
+      const ficha = await request(enTx).get(`/api/orientacion/servicios/${id}`);
+      expect(ficha.body.servicio).toMatchObject({
+        direccion: 'Calle 38 # 30-25, piso 2',
+        ubicacion: gobernacion,
+      });
+      const lista = await request(enTx).get(
+        '/api/orientacion/necesidades/informacion_institucional',
+      );
+      expect(lista.body.servicios.find((s: { id: string }) => s.id === id).ubicacion).toEqual(
+        gobernacion,
+      );
+
+      // Guardar sin cambios no agrega entradas (la base devuelve el mismo punto).
+      const datos = editable((await gestor.get(ruta)).body.fuente);
+      const igual = await gestor.put(ruta, datos);
+      expect(igual.body.bitacora).toHaveLength(1);
+
+      // Cambiar por otra ubicación (ingresada a mano, sin place_id).
+      const cambiada = await gestor.put(ruta, { ...datos, ubicacion: otraSede });
+      expect(cambiada.status).toBe(200);
+      expect(cambiada.body.fuente.ubicacion).toEqual(otraSede);
+      expect(cambiada.body.bitacora[0].cambios.ubicacion).toEqual({
+        antes: gobernacion,
+        despues: otraSede,
+      });
+
+      // Quitar la ubicación: la fuente sigue, con su dirección escrita.
+      const sinUbicacion = await gestor.put(ruta, { ...datos, ubicacion: null });
+      expect(sinUbicacion.status).toBe(200);
+      expect(sinUbicacion.body.fuente).toMatchObject({
+        estado: 'activo',
+        direccion: 'Calle 38 # 30-25, piso 2',
+        ubicacion: null,
+      });
+      const fichaSinMapa = await request(enTx).get(`/api/orientacion/servicios/${id}`);
+      expect(fichaSinMapa.status).toBe(200);
+      expect(fichaSinMapa.body.servicio).toMatchObject({
+        direccion: 'Calle 38 # 30-25, piso 2',
+        ubicacion: null,
+      });
+
+      // Coordenadas incompletas o inválidas no se guardan.
+      const { longitud: _longitud, ...incompleta } = gobernacion;
+      for (const ubicacion of [incompleta, { ...gobernacion, latitud: 95 }]) {
+        const invalida = await gestor.put(ruta, { ...datos, ubicacion });
+        expect(invalida.status).toBe(400);
+      }
+      expect((await gestor.get(ruta)).body.fuente.ubicacion).toBeNull();
+
+      // La base también exige la pareja completa, aunque alguien escriba sin pasar por la API.
+      await expect(
+        cliente.query('update app.fuente_institucional set latitud = 4.1 where id_fuente = $1', [
+          id,
+        ]),
+      ).rejects.toThrow(/fuente_ubicacion_completa/);
+    });
+  });
+
+  it('una fuente virtual se crea y se edita sin dirección ni ubicación', async () => {
+    await enTransaccionRevertida(async (enTx) => {
+      const gestor = await entrar(enTx, 'Gestor_001');
+      const creada = await gestor.post('/api/gestion/fuentes', {
+        ...nueva,
+        servicio: 'Portal virtual de prueba',
+        tipoCanal: 'web',
+        enlace: 'https://portal.example.test',
+      });
+      expect(creada.status).toBe(201);
+      expect(creada.body.fuente).toMatchObject({ direccion: null, ubicacion: null });
+
+      const ruta = `/api/gestion/fuentes/${creada.body.fuente.id}`;
+      const editada = await gestor.put(ruta, {
+        ...editable(creada.body.fuente),
+        descripcion: 'Portal ficticio, descripción editada por una prueba.',
+      });
+      expect(editada.status).toBe(200);
+      expect(Object.keys(editada.body.bitacora[0].cambios)).toEqual(['descripcion']);
+    });
+  });
+
+  it('las fuentes históricas siguen sin ubicación y se editan igual que antes', async () => {
+    await enTransaccionRevertida(async (enTx) => {
+      const gestor = await entrar(enTx, 'Gestor_001');
+      const ruta = `/api/gestion/fuentes/${ids['demo-canal-demo']}`;
+      const { fuente } = (await gestor.get(ruta)).body;
+      expect(fuente).toMatchObject({ direccion: null, ubicacion: null });
+
+      // Un cliente anterior que no envía los campos nuevos sigue pudiendo editar.
+      const { direccion: _direccion, ubicacion: _ubicacion, ...anterior } = editable(fuente);
+      const editada = await gestor.put(ruta, { ...anterior, observaciones: 'Nota de prueba' });
+      expect(editada.status).toBe(200);
+      expect(Object.keys(editada.body.bitacora[0].cambios)).toEqual(['observaciones']);
+    });
+  });
+
+  describe('Búsqueda de lugares del panel', () => {
+    const lugarFalso: ClienteLugares = {
+      disponible: true,
+      sugerencias: async () => [
+        { placeId: 'ChIJ_lugar_000000001', principal: 'Gobernación', secundario: 'Meta' },
+      ],
+      lugar: async (placeId) => ({ ...gobernacion, placeId, nombre: 'Gobernación' }),
+    };
+
+    it('solo la gestión de fuentes puede buscar lugares', async () => {
+      const conLugares = crearApp({
+        db: pool,
+        logger,
+        config: configPrueba,
+        clienteLugares: lugarFalso,
+      });
+      expect((await request(conLugares).get('/api/gestion/fuentes/lugares')).status).toBe(401);
+      const luna = await entrar(conLugares, 'Usuario_001');
+      expect((await luna.get('/api/gestion/fuentes/lugares/sugerencias?texto=gober')).status).toBe(
+        403,
+      );
+
+      const gestor = await entrar(conLugares, 'Gestor_001');
+      expect((await gestor.get('/api/gestion/fuentes/lugares')).body).toEqual({ disponible: true });
+      const sugerencias = await gestor.get(
+        '/api/gestion/fuentes/lugares/sugerencias?texto=gober&sesion=sesion-0001',
+      );
+      expect(sugerencias.body.sugerencias).toHaveLength(1);
+      const lugar = await gestor.get('/api/gestion/fuentes/lugares/ChIJ_lugar_000000001');
+      expect(lugar.body.lugar).toMatchObject({ latitud: 4.151235, longitud: -73.639877 });
+
+      const corta = await gestor.get('/api/gestion/fuentes/lugares/sugerencias?texto=g');
+      expect(corta.status).toBe(400);
+    });
+
+    it('sin clave configurada el panel lo sabe y la búsqueda responde 503', async () => {
+      const gestor = await entrar(app, 'Gestor_001');
+      expect((await gestor.get('/api/gestion/fuentes/lugares')).body).toEqual({
+        disponible: false,
+      });
+      const busqueda = await gestor.get('/api/gestion/fuentes/lugares/sugerencias?texto=gober');
+      expect(busqueda.status).toBe(503);
+      expect(busqueda.body.error.codigo).toBe('LUGARES_NO_CONFIGURADO');
     });
   });
 });

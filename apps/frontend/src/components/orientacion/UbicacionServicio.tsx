@@ -1,0 +1,121 @@
+import { MapPin, Navigation, Search } from 'lucide-react';
+import { useId } from 'react';
+import { MapaUbicacion } from '@/components/mapas/MapaUbicacion';
+import { BotonEnlaceExterno } from '@/components/ui';
+import type { FichaServicio } from '@/lib/api/orientacion';
+import { urlBuscarDireccion, urlComoLlegar, urlVerEnMapa } from '@/lib/mapas';
+import estilos from './UbicacionServicio.module.css';
+
+type Props = {
+  servicio: Pick<FichaServicio, 'servicio' | 'institucion' | 'direccion' | 'ubicacion' | 'esDemo'>;
+  /** Nivel del título según dónde se use (en la ficha, h2; dentro de un modal, h3). */
+  nivelTitulo?: 'h2' | 'h3';
+  /** Sin mapa: solo dirección y acciones (p. ej. dentro de «Cómo contactar»). */
+  compacta?: boolean;
+};
+
+const AVISO_PRIVACIDAD =
+  'Google Maps te muestra la ruta desde donde tú decidas. Esta plataforma no conoce ni guarda tu ubicación.';
+
+/**
+ * «Dónde queda» de una fuente con atención presencial (o híbrida):
+ * - Con ubicación: mapa pequeño con su marcador, la dirección de ese mismo punto, «Cómo llegar»
+ *   (indicaciones en Google Maps, sin origen) y «Ver en Google Maps».
+ * - Solo con dirección escrita: la dirección y «Buscar en Google Maps» (no se inventa un punto).
+ * - Sin dirección ni ubicación: no se muestra nada (nunca un mapa vacío).
+ *
+ * Nunca usa la geolocalización del navegador ni pide permisos de ubicación. Los datos de
+ * demostración se muestran sin enlaces activos, como el resto de sus canales.
+ */
+export function UbicacionServicio({ servicio, nivelTitulo = 'h2', compacta = false }: Props) {
+  const idTitulo = useId();
+  const { ubicacion, direccion, esDemo } = servicio;
+  if (!ubicacion && !direccion) return null;
+
+  const Titulo = nivelTitulo;
+  const lugar = `${servicio.servicio} (${servicio.institucion})`;
+  // La dirección escrita complementa la del mapa (piso, oficina…) solo si dice algo distinto.
+  const indicaciones =
+    ubicacion && direccion && direccion.trim() !== ubicacion.direccion.trim() ? direccion : null;
+
+  return (
+    <section
+      className={`${estilos.ubicacion} ${compacta ? estilos.compacta : ''}`}
+      aria-label={compacta ? 'Dirección' : undefined}
+      aria-labelledby={compacta ? undefined : idTitulo}
+    >
+      {!compacta && (
+        <Titulo id={idTitulo} className={estilos.titulo}>
+          <MapPin aria-hidden="true" size={20} />
+          Dónde queda
+        </Titulo>
+      )}
+
+      {ubicacion && !compacta && (
+        <MapaUbicacion
+          ubicacion={ubicacion}
+          lugar={lugar}
+          enlace={esDemo ? null : urlVerEnMapa(ubicacion)}
+        />
+      )}
+
+      <div className={estilos.datos}>
+        <address className={estilos.direccion}>
+          {compacta && <MapPin aria-hidden="true" size={16} className={estilos.icono} />}
+          <span>{ubicacion ? ubicacion.direccion : direccion}</span>
+        </address>
+        {indicaciones && (
+          <p className={estilos.indicaciones}>
+            <span className={estilos.rotulo}>Indicaciones:</span> {indicaciones}
+          </p>
+        )}
+        {!ubicacion && !compacta && (
+          <p className={estilos.nota}>Esta sede aún no tiene su ubicación marcada en el mapa.</p>
+        )}
+      </div>
+
+      {esDemo ? (
+        <p className={estilos.nota}>
+          Ubicación de demostración: no corresponde a una sede real y no tiene indicaciones activas.
+        </p>
+      ) : (
+        <>
+          <div className={estilos.acciones}>
+            {ubicacion ? (
+              <>
+                <BotonEnlaceExterno
+                  href={urlComoLlegar(ubicacion)}
+                  tamano={compacta ? 'sm' : 'md'}
+                  aria-label={`Cómo llegar a ${lugar}: abre las indicaciones en Google Maps, en otra pestaña`}
+                >
+                  <Navigation aria-hidden="true" size={18} />
+                  Cómo llegar
+                </BotonEnlaceExterno>
+                {!compacta && (
+                  <BotonEnlaceExterno
+                    href={urlVerEnMapa(ubicacion)}
+                    variante="secundario"
+                    aria-label={`Ver ${lugar} en Google Maps, en otra pestaña`}
+                  >
+                    Ver en Google Maps
+                  </BotonEnlaceExterno>
+                )}
+              </>
+            ) : (
+              <BotonEnlaceExterno
+                href={urlBuscarDireccion(direccion!)}
+                variante="secundario"
+                tamano={compacta ? 'sm' : 'md'}
+                aria-label={`Buscar la dirección de ${lugar} en Google Maps, en otra pestaña`}
+              >
+                <Search aria-hidden="true" size={18} />
+                Buscar en Google Maps
+              </BotonEnlaceExterno>
+            )}
+          </div>
+          {ubicacion && !compacta && <p className={estilos.nota}>{AVISO_PRIVACIDAD}</p>}
+        </>
+      )}
+    </section>
+  );
+}

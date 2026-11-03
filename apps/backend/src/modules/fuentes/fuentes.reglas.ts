@@ -40,6 +40,8 @@ export const CAMPOS_FUENTE = [
   'enlace',
   'horario',
   'horarioSemanal',
+  'direccion',
+  'ubicacion',
   'fuenteOriginal',
   'necesidades',
   'observaciones',

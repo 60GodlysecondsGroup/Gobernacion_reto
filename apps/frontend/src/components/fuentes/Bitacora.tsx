@@ -3,6 +3,7 @@ import { ESTADOS_FUENTE, TIPOS_CANAL, type EstadoFuente, type TipoCanal } from '
 import type { AccionBitacora, EntradaBitacora } from '@/lib/api/fuentes';
 import { formatearFecha, formatearFechaHora } from '@/lib/fechas';
 import { formatearHorario, type HorarioSemanal } from '@/lib/horarios';
+import { formatearCoordenadas, type UbicacionFuente } from '@/lib/mapas';
 import comun from '../comun.module.css';
 import estilos from './Fuentes.module.css';
 
@@ -23,6 +24,8 @@ const CAMPOS: Record<string, string> = {
   enlace: 'Enlace',
   horario: 'Horario',
   horarioSemanal: 'Horario semanal',
+  direccion: 'Dirección',
+  ubicacion: 'Ubicación en el mapa',
   fuenteOriginal: 'Fuente original',
   necesidades: 'Temas',
   observaciones: 'Observaciones',
@@ -37,6 +40,10 @@ function valor(campo: string, dato: unknown): string {
   if (campo === 'tipoCanal') return TIPOS_CANAL[dato as TipoCanal] ?? String(dato);
   if (campo === 'fechaVerificacion') return formatearFecha(String(dato));
   if (campo === 'horarioSemanal') return formatearHorario(dato as HorarioSemanal);
+  if (campo === 'ubicacion') {
+    const ubicacion = dato as UbicacionFuente;
+    return `${ubicacion.direccion} (${formatearCoordenadas(ubicacion)})`;
+  }
   if (typeof dato === 'boolean') return dato ? 'Sí' : 'No';
   if (Array.isArray(dato)) return dato.join(', ');
   return String(dato);

@@ -352,7 +352,7 @@ Pruebas: `npm test` incluye el contrato de la coordinación y los casos con dos 
 
 1. Proyecto de Vercel con **Root Directory** en la raíz del repositorio (ahí están `package-lock.json` y `node_modules`; con `apps/` el build de Next no encuentra `next`). Fluid compute activo (lo está por defecto en proyectos nuevos).
 2. Un Redis administrado con TLS (`rediss://`), por ejemplo Upstash desde el Marketplace de Vercel, que inyecta `REDIS_URL`.
-3. Variables del proyecto (privadas, sin `NEXT_PUBLIC_`): `DATABASE_URL`, `DATABASE_SSL`, `SESSION_SECRET`, `REDIS_URL`, `REDIS_PREFIJO` (uno distinto para Preview y Production si comparten Redis), `OPENAI_API_KEY` y, si hace falta, `FRONTEND_ORIGIN` con un dominio propio. `NEXT_PUBLIC_API_URL` no se usa en Vercel.
+3. Variables del proyecto (privadas, sin `NEXT_PUBLIC_`): `DATABASE_URL`, `DATABASE_SSL`, `SESSION_SECRET`, `REDIS_URL`, `REDIS_PREFIJO` (uno distinto para Preview y Production si comparten Redis), `OPENAI_API_KEY`, `GOOGLE_MAPS_SERVER_API_KEY` (opcional) y, si hace falta, `FRONTEND_ORIGIN` con un dominio propio. Pública y opcional: `NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY` (restringida por dominio; ver [docs/UBICACION_FUENTES.md](docs/UBICACION_FUENTES.md)). `NEXT_PUBLIC_API_URL` no se usa en Vercel.
 4. Una conexión WebSocket dura como mucho lo que permita la función (300 s por defecto); el cliente se reconecta solo. En planes Pro puede subirse con `functions.maxDuration` en el servicio `backend`.
 
 ## Avatar (Fase 6)

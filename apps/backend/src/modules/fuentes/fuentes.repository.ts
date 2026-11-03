@@ -43,9 +43,16 @@ export type FiltroFuentes = {
 const SELECT_FUENTE = `
   select f.id_fuente as id, f.codigo, f.institucion, f.nombre_servicio as servicio, f.descripcion,
          f.tipo_canal as "tipoCanal", f.telefono, f.enlace, f.horario,
-         -- Por nombre dentro de la fila: si la base aún no tiene la migración 0012, da null y la
-         -- consulta (fichas públicas, «Necesito ayuda») sigue funcionando. Guardar sí la exige.
-         to_jsonb(f) -> 'horario_semanal' as "horarioSemanal",
+         -- Por nombre dentro de la fila: si la base aún no tiene las migraciones 0012 o 0013, da
+         -- null y la consulta (fichas públicas, «Necesito ayuda») sigue funcionando. Guardar sí
+         -- las exige.
+         fila.j -> 'horario_semanal' as "horarioSemanal",
+         fila.j ->> 'direccion' as direccion,
+         case when fila.j ->> 'latitud' is not null then json_build_object(
+           'latitud', (fila.j ->> 'latitud')::float8,
+           'longitud', (fila.j ->> 'longitud')::float8,
+           'placeId', fila.j ->> 'place_id',
+           'direccion', fila.j ->> 'direccion_ubicacion') end as ubicacion,
          f.fuente_original as "fuenteOriginal",
          to_char(f.fecha_verificacion, 'YYYY-MM-DD') as "fechaVerificacion",
          ((now() at time zone '${ZONA_HORARIA}')::date - f.fecha_verificacion) as "diasDesdeVerificacion",
@@ -58,6 +65,7 @@ const SELECT_FUENTE = `
            where fn.id_fuente = f.id_fuente
          ), '[]'::json) as necesidades
   from app.fuente_institucional f
+  cross join lateral (select to_jsonb(f) as j) fila
   left join app.usuario u on u.id_usuario = f.id_responsable`;
 
 const columnasFuente = (fuente: FuenteCompleta) => [
@@ -74,6 +82,11 @@ const columnasFuente = (fuente: FuenteCompleta) => [
   fuente.estado,
   fuente.observaciones,
   fuente.esDemo,
+  fuente.direccion,
+  fuente.ubicacion?.latitud ?? null,
+  fuente.ubicacion?.longitud ?? null,
+  fuente.ubicacion?.placeId ?? null,
+  fuente.ubicacion?.direccion ?? null,
 ];
 
 export function crearRepositorioFuentes(db: Database) {
@@ -144,15 +157,16 @@ export function crearRepositorioFuentes(db: Database) {
            insert into app.fuente_institucional (
              institucion, nombre_servicio, descripcion, tipo_canal, telefono, enlace, horario,
              horario_semanal, fuente_original, fecha_verificacion, estado, observaciones, es_demo,
-             codigo, id_responsable)
-           values ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $12, $13, $14, $15)
+             direccion, latitud, longitud, place_id, direccion_ubicacion, codigo, id_responsable)
+           values ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $12, $13,
+                   $14, $15::float8, $16::float8, $17, $18, $19, $20)
            returning id_fuente, estado
          ), necesidades as (
            insert into app.fuente_necesidad (id_fuente, codigo_necesidad)
-           select id_fuente, unnest($16::text[]) from nueva
+           select id_fuente, unnest($21::text[]) from nueva
          ), registro as (
            insert into app.bitacora_fuente (id_fuente, id_usuario_responsable, accion, estado_nuevo, observacion)
-           select id_fuente, $15, 'crear', estado, $17 from nueva
+           select id_fuente, $20, 'crear', estado, $22 from nueva
          )
          select id_fuente as id from nueva`,
         [
@@ -184,28 +198,30 @@ export function crearRepositorioFuentes(db: Database) {
       const { rows } = await db.query<{ filas: number }>(
         `with actual as (
            select id_fuente, estado from app.fuente_institucional
-           where id_fuente = $14 and estado = $15
+           where id_fuente = $19 and estado = $20
            for update
          ), editada as (
            update app.fuente_institucional f
            set institucion = $1, nombre_servicio = $2, descripcion = $3, tipo_canal = $4,
                telefono = $5, enlace = $6, horario = $7, horario_semanal = $8::jsonb,
                fuente_original = $9, fecha_verificacion = $10, estado = $11, observaciones = $12,
-               es_demo = $13, id_responsable = coalesce($16, f.id_responsable)
+               es_demo = $13, direccion = $14, latitud = $15::float8, longitud = $16::float8,
+               place_id = $17, direccion_ubicacion = $18,
+               id_responsable = coalesce($21, f.id_responsable)
            from actual
            where f.id_fuente = actual.id_fuente
            returning f.id_fuente, actual.estado as estado_anterior, f.estado as estado_nuevo
          ), quitar as (
            delete from app.fuente_necesidad n using editada
-           where n.id_fuente = editada.id_fuente and n.codigo_necesidad <> all($17::text[])
+           where n.id_fuente = editada.id_fuente and n.codigo_necesidad <> all($22::text[])
          ), agregar as (
            insert into app.fuente_necesidad (id_fuente, codigo_necesidad)
-           select id_fuente, unnest($17::text[]) from editada
+           select id_fuente, unnest($22::text[]) from editada
            on conflict do nothing
          ), registro as (
            insert into app.bitacora_fuente
              (id_fuente, id_usuario_responsable, accion, estado_anterior, estado_nuevo, observacion, cambios)
-           select id_fuente, $16, $18, estado_anterior, estado_nuevo, $19, $20::jsonb from editada
+           select id_fuente, $21, $23, estado_anterior, estado_nuevo, $24, $25::jsonb from editada
          )
          select count(*)::int as filas from editada`,
         [
@@ -236,6 +252,8 @@ export const aCompleta = (fuente: FuenteRegistrada): FuenteCompleta => ({
   enlace: fuente.enlace,
   horario: fuente.horario,
   horarioSemanal: fuente.horarioSemanal,
+  direccion: fuente.direccion,
+  ubicacion: fuente.ubicacion,
   fuenteOriginal: fuente.fuenteOriginal,
   necesidades: fuente.necesidades.map(
     (necesidad) => necesidad.codigo,

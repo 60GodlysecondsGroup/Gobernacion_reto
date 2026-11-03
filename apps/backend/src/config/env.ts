@@ -48,6 +48,13 @@ const esquemaEntorno = z.object({
   OPENAI_API_KEY: z.string().optional(),
   openai: z.string().optional(),
   OPENAI_MODEL: z.string().trim().min(1).default('gpt-5.4-mini'),
+  // Clave PRIVADA de Google Maps Platform para buscar lugares (Places API (New)) desde el panel de
+  // fuentes. Vacía: el panel permite ingresar la ubicación a mano. Nunca con prefijo NEXT_PUBLIC_.
+  GOOGLE_MAPS_SERVER_API_KEY: z
+    .string()
+    .trim()
+    .optional()
+    .transform((valor) => valor || undefined),
   // Variables de sistema de Vercel (vercel.json): allí no se abre puerto y el frontend se
   // sirve en el mismo dominio que el backend.
   VERCEL: z.string().optional(),
@@ -83,6 +90,8 @@ export type Config = {
   /** Sin `url`, las salas viven en la memoria del proceso (un solo backend local). */
   redis: { url?: string; prefijo: string };
   openai: { apiKey?: string; model: string };
+  /** Búsqueda de lugares del panel de fuentes. Sin clave, la ubicación se ingresa a mano. */
+  googleMaps: { claveServidor?: string };
 };
 
 /**
@@ -160,5 +169,6 @@ export function cargarConfig(entorno: NodeJS.ProcessEnv = process.env): Config {
     },
     redis: { url: v.REDIS_URL, prefijo: v.REDIS_PREFIJO },
     openai: { apiKey: v.OPENAI_API_KEY || v.openai || undefined, model: v.OPENAI_MODEL },
+    googleMaps: { claveServidor: v.GOOGLE_MAPS_SERVER_API_KEY },
   };
 }

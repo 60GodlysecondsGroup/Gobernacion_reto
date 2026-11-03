@@ -1,4 +1,5 @@
 import type { EstadoFuente, TipoCanal } from '@/config/fuentes';
+import type { UbicacionFuente } from '@/lib/mapas';
 import { api } from './cliente';
 
 export type Necesidad = { codigo: string; nombre: string; descripcion: string; servicios: number };
@@ -13,6 +14,10 @@ export type FichaServicio = {
   telefono: string | null;
   enlace: string | null;
   horario: string | null;
+  /** Dirección escrita por la fuente (puede existir sin ubicación en el mapa). */
+  direccion: string | null;
+  /** Punto en el mapa, para atención presencial o híbrida. null si no se registró. */
+  ubicacion: UbicacionFuente | null;
   fuenteOriginal: string;
   fechaVerificacion: string;
   estado: Exclude<EstadoFuente, 'inactivo'>;

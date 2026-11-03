@@ -1,0 +1,75 @@
+/* «Dónde queda»: mapa pequeño, dirección y acciones hacia Google Maps. */
+.ubicacion {
+  display: grid;
+  gap: var(--espacio-4);
+  padding: var(--padding-caja);
+  border: 1px solid var(--cristal-borde);
+  border-radius: var(--radio-xl);
+  background: var(--cristal-lectura);
+  box-shadow: var(--cristal-brillo), var(--sombra-1);
+}
+
+.compacta {
+  gap: var(--espacio-3);
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  font-size: var(--texto-lg);
+}
+
+.titulo svg {
+  color: var(--color-primario);
+}
+
+.datos {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+.direccion {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-2);
+  font-style: normal;
+  font-weight: var(--peso-fuerte);
+  overflow-wrap: anywhere;
+}
+
+.icono {
+  flex: none;
+  margin-top: 0.2em;
+  color: var(--color-primario);
+}
+
+.indicaciones {
+  color: var(--color-texto-suave);
+  overflow-wrap: anywhere;
+}
+
+.rotulo {
+  font-weight: var(--peso-fuerte);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-3);
+}
+
+.nota {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+@media (max-width: 39.99rem) {
+  .acciones > * {
+    flex: 1 1 100%;
+  }
+}

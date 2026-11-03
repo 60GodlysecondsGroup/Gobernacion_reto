@@ -50,3 +50,19 @@ export function BotonEnlace({
     .join(' ');
   return <Link className={clases} {...resto} />;
 }
+
+/**
+ * Enlace a un sitio externo (p. ej. Google Maps) con la apariencia de un botón. Se abre en otra
+ * pestaña sin enviar la página de origen (`noreferrer`); el texto debe avisar que sale del sitio.
+ */
+export function BotonEnlaceExterno({
+  variante = 'primario',
+  tamano = 'md',
+  className,
+  ...resto
+}: Omit<ComponentProps<'a'>, 'target' | 'rel'> & Pick<PropsBoton, 'variante' | 'tamano'>) {
+  const clases = [estilos.boton, estilos[variante], estilos[tamano], estilos.enlace, className]
+    .filter(Boolean)
+    .join(' ');
+  return <a className={clases} target="_blank" rel="noopener noreferrer" {...resto} />;
+}
