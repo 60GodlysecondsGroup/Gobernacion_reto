@@ -86,10 +86,11 @@ export function EditorAvatar() {
       <nav aria-label="Ruta">
         <EnlaceVolver href="/perfil">Volver a mi perfil</EnlaceVolver>
       </nav>
-      <EncabezadoPagina antetitulo="Identidad protegida" titulo="Mi avatar">
+      <EncabezadoPagina antetitulo="Identidad protegida" titulo="Mi avatar" />
+      <p className={estilos.introduccion}>
         Te representa junto a tu nametag en tu perfil, los hilos y las salas. Todo es gratis y se
         arma solo con estas opciones: no se pueden subir fotos ni escribir texto.
-      </EncabezadoPagina>
+      </p>
 
       {!puedePersonalizar && (
         <Aviso tono="info">Tu rol puede ver su avatar, pero no personalizarlo.</Aviso>
@@ -104,7 +105,7 @@ export function EditorAvatar() {
             alSorprender={puedePersonalizar ? () => cambiar(avatarAlAzar(catalogo)) : undefined}
             deshabilitado={guardando}
           />
-          <p className={estilos.estado} aria-live="polite">
+          <p className={estilos.estado} data-cambios={hayCambios || undefined} aria-live="polite">
             {hayCambios
               ? 'Tienes cambios sin guardar.'
               : 'Si estás en una sala, el cambio se verá la próxima vez que entres.'}

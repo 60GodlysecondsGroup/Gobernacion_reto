@@ -10,6 +10,14 @@
   max-width: 68rem;
 }
 
+/* Igual que la descripción de `EncabezadoPagina`, pero movible: en móvil va bajo el creador. */
+.introduccion {
+  max-width: var(--ancho-lectura);
+  margin-top: calc(-1 * var(--espacio-3));
+  color: var(--color-texto-suave);
+  font-size: var(--texto-md);
+}
+
 .creador {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -93,8 +101,20 @@
   }
 }
 
-/* En móvil el título de la página ya dice qué se hace aquí: el del panel queda para lectores. */
 @media (max-width: 51.99rem) {
+  /* El personaje y sus controles primero, a la vista sin scroll; la explicación, después. */
+  .introduccion {
+    order: 1;
+    margin-top: 0;
+    font-size: var(--texto-sm);
+  }
+
+  /* Sin cambios pendientes, el aviso de las salas no merece el espacio del móvil. */
+  .estado:not([data-cambios]) {
+    display: none;
+  }
+
+  /* El título de la página ya dice qué se hace aquí: el del panel queda para lectores. */
   .encabezado {
     position: absolute;
     width: 1px;
