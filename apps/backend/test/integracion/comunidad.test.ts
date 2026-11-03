@@ -256,6 +256,128 @@ describe('DLP en hilos y respuestas', () => {
   });
 });
 
+/**
+ * Auditoría de moderación (migración 0010): las peticiones van directo a la API, sin el
+ * frontend, con el texto ya manipulado. Ninguna se guarda.
+ */
+describe('Moderación de convivencia directo contra la API de foros', () => {
+  const ESCAPADOS = [
+    ['amenaza sexual', 'Te voy a violar'],
+    ['grosería en inglés', 'fuck you'],
+    ['emoji entre letras', 'p \u{1f346} u t a'],
+    ['versalitas', 'ᴘᴜᴛᴀ'],
+    ['«coño» con ñ', '¡Coño, qué susto!'],
+    ['insulto con palabra de «contexto»', 'Eres una gonorrea, consulta tu salud'],
+    ['doble sentido', 'Hagamos el delicioso'],
+    ['insulto como mensaje completo', 'Idiota'],
+  ] as const;
+
+  const contar = async (cliente: pg.PoolClient) =>
+    (
+      await cliente.query(
+        `select (select count(*) from app.hilo)::int as hilos,
+                (select count(*) from app.respuesta)::int as respuestas`,
+      )
+    ).rows[0];
+
+  it.each(ESCAPADOS)(
+    'rechaza %s en el título, el contenido y las respuestas',
+    async (_caso, texto) => {
+      await enTransaccionRevertida(async (enTx, cliente) => {
+        const antes = await contar(cliente);
+        const luna = await entrar(enTx, 'Usuario_001');
+        const solicitudes = [
+          [
+            luna.post('/api/comunidad/hilos', {
+              categoria: 'bienestar-cotidiano',
+              titulo: texto,
+              contenido: 'Contenido de prueba.',
+            }),
+            'titulo',
+          ],
+          [
+            luna.post('/api/comunidad/hilos', {
+              categoria: 'bienestar-cotidiano',
+              titulo: 'Un hilo de prueba',
+              contenido: texto,
+            }),
+            'contenido',
+          ],
+          [
+            luna.post(`/api/comunidad/hilos/${ids[HILO_B]}/respuestas`, { contenido: texto }),
+            'contenido',
+          ],
+        ] as const;
+
+        for (const [solicitud, campo] of solicitudes) {
+          const res = await solicitud;
+          expect(res.status).toBe(422);
+          expect(res.body.error).toEqual({
+            codigo: 'CONTENIDO_BLOQUEADO',
+            mensaje: MENSAJE_BLOQUEO_LENGUAJE,
+            detalles: { campo },
+          });
+        }
+        expect(await contar(cliente)).toEqual(antes);
+      });
+    },
+  );
+
+  it('publica frases legítimas con palabras parecidas, «ñ» y emoji', async () => {
+    await enTransaccionRevertida(async (enTx) => {
+      const luna = await entrar(enTx, 'Usuario_001');
+      const creado = await luna.post('/api/comunidad/hilos', {
+        categoria: 'bienestar-cotidiano',
+        titulo: 'Doña Rosa y el cono de helado \u{1f366}',
+        contenido: 'Mañana te monto en la moto y te mato a besos. La gonorrea es una ITS.',
+      });
+      expect(creado.status).toBe(201);
+      const respuesta = await luna.post(`/api/comunidad/hilos/${ids[HILO_B]}/respuestas`, {
+        contenido: 'Hagámoslo juntos en el descanso, qué bueno que estás mejor.',
+      });
+      expect(respuesta.status).toBe(201);
+    });
+  });
+
+  it('con una base sin las migraciones 0008 y 0010, las reglas del seed bloquean igual', async () => {
+    await enTransaccionRevertida(async (enTx, cliente) => {
+      await cliente.query(
+        `delete from app.regla_dlp where categoria in ('lenguaje_ofensivo', 'contenido_sexual')`,
+      );
+      const luna = await entrar(enTx, 'Usuario_001');
+      const res = await luna.post(`/api/comunidad/hilos/${ids[HILO_B]}/respuestas`, {
+        contenido: 'Eres un h1jueput4',
+      });
+      expect(res.status).toBe(422);
+      expect(res.body.error.mensaje).toBe(MENSAJE_BLOQUEO_LENGUAJE);
+
+      const evento = await cliente.query(
+        `select tipo_contenido, categoria, id_regla, resultado from app.evento_dlp
+         order by fecha desc limit 1`,
+      );
+      expect(evento.rows[0]).toEqual({
+        tipo_contenido: 'respuesta',
+        categoria: 'lenguaje_ofensivo',
+        id_regla: null,
+        resultado: 'bloqueado',
+      });
+    });
+  });
+
+  it('una regla desactivada desde la administración no la revive el seed (F31)', async () => {
+    await enTransaccionRevertida(async (enTx, cliente) => {
+      await cliente.query(
+        `update app.regla_dlp set estado = 'inactiva' where codigo = 'ofensivo-ingles'`,
+      );
+      const luna = await entrar(enTx, 'Usuario_001');
+      const res = await luna.post(`/api/comunidad/hilos/${ids[HILO_B]}/respuestas`, {
+        contenido: 'wtf',
+      });
+      expect(res.status).toBe(201);
+    });
+  });
+});
+
 describe('Aislamiento: otro rango no ve, no responde, no lista ni busca el hilo', () => {
   it.each(['Usuario_003', 'Usuario_004', 'Usuario_005'])('%s (otro rango)', async (codigo) => {
     const otro = await entrar(app, codigo);

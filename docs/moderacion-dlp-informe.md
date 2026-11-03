@@ -105,6 +105,30 @@ npm run test:db                            # integración con PostgreSQL local d
 npm run db:migrate                         # en una base existente: aplica 0008 (categorías y reglas)
 ```
 
+## 7. Segunda auditoría (migración 0010): por qué seguían pasando
+
+Se rastreó cada mensaje desde que se envía hasta que se guarda o se difunde: `POST /api/comunidad/hilos` y `POST /api/comunidad/hilos/:id/respuestas` llaman a `dlp.exigirPermitido` antes de insertar; el chat de salas (`/ws/salas/:id` → `salas.gestor.ts → hablar`) llama a `dlp.revisar` antes de `coordinacion.publicar`, y Redis solo reparte lo que ya pasó por el DLP. El frontend no filtra nada ni muestra un mensaje antes de que el servidor lo difunda. No hay otra ruta que escriba hilos, respuestas o mensajes de sala. **El cableado estaba bien**; las causas eran otras:
+
+1. **Las reglas de lenguaje solo existían en la base** (migración 0008) y las migraciones no corren al desplegar (`server.ts`: «Las migraciones no corren aquí»). En una base sin `npm run db:migrate`, el DLP solo tenía las reglas de datos personales y dejaba pasar todas las groserías. Las pruebas no lo veían porque siempre reconstruyen la base con el seed.
+2. **Huecos de cobertura** (sonda de 376 textos): inglés (`fuck`, `wtf`, `bitch`, `pornhub`), abreviaturas (`mrd`, `pndj`, `alv`), «coño» (la normalización lo convertía en «cono»), derivados (`putica`, `hijueputica`, `cagada`, `güevada`), amenazas («te voy a violar», «te voy a matar»), insultos como mensaje completo («Idiota»), acoso y doble sentido dirigidos («estás sexy», «me pones caliente», «la tienes grande», «siéntate en mi cara»).
+3. **Excepciones de contexto que se podían usar para pasar:** «Eres una gonorrea, consulta tu salud» o «Eres un hp, juego mejor que tú» pasaban porque la palabra «salud» o «juego» desactivaba toda la regla.
+4. **Evasión:** emoji entre letras («p 🍆 u t a»), versalitas («ᴘᴜᴛᴀ»), letras en emoji («🇵🇺🇹🇦»), palabras partidas («mi erda»).
+5. **Falsos positivos por la variante que pega fragmentos cortos:** «es una its» → «esunaits» anulaba la excepción de salud, y «La gonorrea es una ITS» se bloqueaba. Lo mismo con «en la», «con la» en otras excepciones. Además, «Hagámoslo bien esta vez» se bloqueaba (regla `sexual-explicito`).
+
+Qué cambió, reutilizando el mismo módulo DLP (sin listas ni servicios nuevos):
+
+- `dlp.repository.ts → reglasActivas`: las reglas de `db/seed/reglas_dlp.json` que **no existen** en la base se aplican igual (sin id, con aviso en el registro: «ejecuta npm run db:migrate»). Las que existen mandan con su estado: una regla desactivada en el panel sigue desactivada. Cocuyo usa el mismo repositorio y recibe lo mismo.
+- `dlp.service.ts → revisar`: si no se puede guardar el `evento_dlp`, el texto sigue bloqueado y se registra el error (antes se convertía en un 500 o en «DLP no disponible»).
+- `dlp.analizador.ts`: versalitas y letras en emoji en `normalizar`; variante sin emoji ni signos sueltos; variante del mensaje completo sin espacios (las reglas usan `\b`, así que solo coincide si **todo** el mensaje forma la palabra); versión con «ñ» → «ny» para distinguir «coño» de «cono»; las palabras función cortas (`a`, `de`, `en`, `es`, `la`, `una`…) ya no se pegan a sus vecinas.
+- Migración `0010_dlp_lenguaje_variantes.sql` (igual a `reglas_dlp.json`): 6 reglas nuevas (`ofensivo-groserias-variantes`, `ofensivo-dirigido-variantes`, `ofensivo-amenazas`, `ofensivo-ingles`, `sexual-ingles`, `sexual-dirigido-variantes`) con `on conflict do nothing`, y `sexual-explicito` solo bloquea «hagámoslo» con contexto sexual; el `update` se aplica solo si el patrón sigue siendo el de 0008.
+- Decisión que cambia respecto a la sección 5: «jodido» ahora se bloquea.
+
+Pruebas nuevas: 154 casos más en la batería (110 que deben bloquearse y 44 legítimos; 386 en total), normalización, respaldo con una base sin migrar y con una regla desactivada, fallo al guardar el evento, sincronía seed ↔ 0008 + 0010; en integración, peticiones directas a la API de hilos y respuestas (título, contenido y respuesta) y mensajes por WebSocket real, también con las reglas de lenguaje borradas de la base.
+
+Límites que siguen: un mensaje partido en varios envíos («pu» y luego «ta»), palabras partidas dentro de una frase («eres una mi erda»), ironía y groserías nuevas. Por diseño se siguen permitiendo términos de educación sexual («condón», «semen», «violación») y palabras ambiguas sueltas («chimba», «sexy», «mamacita», «excitado»). «Me dijeron puta en el colegio» se bloquea: quien cuenta un insulto recibido debe escribirlo de otra forma o usar «Necesito ayuda».
+
+**En producción:** ejecutar `npm run db:migrate` (0008 y 0010) para que las reglas queden en el panel y los eventos guarden su regla. Sin eso el DLP ya bloquea con las reglas del seed, pero el registro avisa en cada cambio de la lista de faltantes.
+
 ## Anexo: resultado por caso
 
 «Antes» indica la regla que bloqueó en la versión anterior; «Después», el resultado actual (✗ marcaría un error). `[ZWSP]` es un espacio de ancho cero y `[cir. x]` una letra cirílica.

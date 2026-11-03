@@ -81,14 +81,23 @@ export function crearServicioDlp({
     }
     if (!deteccion) return { permitido: true, deteccion: null };
 
-    await repositorio.registrarEvento({
-      idUsuario: contexto.idUsuario,
-      tipoContenido: contexto.tipoContenido,
-      categoria: deteccion.categoria,
-      idRegla: deteccion.regla.id,
-      accion: deteccion.accion,
-      resultado: RESULTADO_POR_ACCION[deteccion.accion],
-    });
+    // El evento es para el panel de moderación; si no se puede guardar, la decisión no cambia:
+    // un texto bloqueado sigue bloqueado y no se convierte en un error 500.
+    try {
+      await repositorio.registrarEvento({
+        idUsuario: contexto.idUsuario,
+        tipoContenido: contexto.tipoContenido,
+        categoria: deteccion.categoria,
+        idRegla: deteccion.regla.id,
+        accion: deteccion.accion,
+        resultado: RESULTADO_POR_ACCION[deteccion.accion],
+      });
+    } catch (error) {
+      logger.error('No se pudo registrar el evento DLP', {
+        codigo: deteccion.regla.codigo,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
 
     return deteccion.accion === 'bloquear'
       ? { permitido: false, deteccion, mensaje: mensajeBloqueo(deteccion.categoria) }
