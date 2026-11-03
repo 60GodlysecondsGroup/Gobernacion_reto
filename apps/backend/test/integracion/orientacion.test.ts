@@ -258,6 +258,87 @@ describe('TRL-12 · Actualización de fuente trazable', () => {
     });
   });
 
+  it('el horario semanal se guarda, se recupera al editar y conserva el texto anterior', async () => {
+    await enTransaccionRevertida(async (enTx) => {
+      const gestor = await entrar(enTx, 'Gestor_001');
+      const ruta = `/api/gestion/fuentes/${ids['demo-canal-demo']}`;
+      const { fuente } = (await gestor.get(ruta)).body;
+      // Fuente registrada antes del horario semanal: solo tiene el texto.
+      expect(fuente).toMatchObject({ horario: 'Horario de demostración', horarioSemanal: null });
+
+      const datos = {
+        institucion: fuente.institucion,
+        servicio: fuente.servicio,
+        descripcion: fuente.descripcion,
+        tipoCanal: fuente.tipoCanal,
+        telefono: fuente.telefono,
+        enlace: fuente.enlace,
+        horario: fuente.horario,
+        fuenteOriginal: fuente.fuenteOriginal,
+        necesidades: fuente.necesidades.map((n: { codigo: string }) => n.codigo),
+        observaciones: 'Nota interna nueva',
+        esDemo: fuente.esDemo,
+      };
+      // Editar otro campo sin horario semanal no toca el texto.
+      const sinHorario = await gestor.put(ruta, datos);
+      expect(sinHorario.body.fuente.horario).toBe('Horario de demostración');
+      expect(Object.keys(sinHorario.body.bitacora[0].cambios)).toEqual(['observaciones']);
+
+      const oficina = [{ apertura: '08:00', cierre: '17:00' }];
+      const horarioSemanal = {
+        lunes: [
+          { apertura: '14:00', cierre: '17:00' },
+          { apertura: '08:00', cierre: '12:00' },
+        ],
+        martes: oficina,
+        miercoles: [],
+        jueves: oficina,
+        viernes: oficina,
+        sabado: [{ apertura: '08:00', cierre: '12:00' }],
+        domingo: [],
+      };
+      const texto =
+        'Lunes: 8:00 a. m. – 12:00 p. m. y 2:00 p. m. – 5:00 p. m.; Martes: 8:00 a. m. – 5:00 p. m.; ' +
+        'Miércoles: sin atención; Jueves y viernes: 8:00 a. m. – 5:00 p. m.; ' +
+        'Sábado: 8:00 a. m. – 12:00 p. m.; Domingo: sin atención';
+
+      const editada = await gestor.put(ruta, { ...datos, horarioSemanal });
+      expect(editada.status).toBe(200);
+      expect(editada.body.bitacora[0].cambios.horario).toEqual({
+        antes: 'Horario de demostración',
+        despues: texto,
+      });
+
+      const recuperada = (await gestor.get(ruta)).body.fuente;
+      expect(recuperada.horario).toBe(texto);
+      expect(recuperada.horarioSemanal.lunes).toEqual([
+        { apertura: '08:00', cierre: '12:00' },
+        { apertura: '14:00', cierre: '17:00' },
+      ]);
+      expect(recuperada.horarioSemanal.miercoles).toEqual([]);
+
+      // La ficha pública sigue recibiendo el texto, sin la estructura.
+      const ficha = await gestor.get(`/api/orientacion/servicios/${fuente.id}`);
+      expect(ficha.body.servicio.horario).toBe(texto);
+      expect(ficha.body.servicio).not.toHaveProperty('horarioSemanal');
+
+      // Guardar lo mismo que devolvió la base (jsonb reordena claves) no agrega entradas.
+      const repetida = await gestor.put(ruta, {
+        ...datos,
+        horario: recuperada.horario,
+        horarioSemanal: recuperada.horarioSemanal,
+      });
+      expect(repetida.body.bitacora).toHaveLength(editada.body.bitacora.length);
+
+      const cruzado = await gestor.put(ruta, {
+        ...datos,
+        horarioSemanal: { ...horarioSemanal, martes: [{ apertura: '17:00', cierre: '08:00' }] },
+      });
+      expect(cruzado.status).toBe(400);
+      expect((await gestor.get(ruta)).body.fuente.horario).toBe(texto);
+    });
+  });
+
   it('crea una fuente con su bitácora y valida el canal', async () => {
     await enTransaccionRevertida(async (enTx) => {
       const gestor = await entrar(enTx, 'Gestor_001');

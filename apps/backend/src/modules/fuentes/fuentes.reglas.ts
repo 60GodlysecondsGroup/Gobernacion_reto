@@ -39,6 +39,7 @@ export const CAMPOS_FUENTE = [
   'telefono',
   'enlace',
   'horario',
+  'horarioSemanal',
   'fuenteOriginal',
   'necesidades',
   'observaciones',
@@ -51,8 +52,22 @@ export type Cambios = Partial<
   Record<(typeof CAMPOS_FUENTE)[number], { antes: unknown; despues: unknown }>
 >;
 
+/** Objetos con las claves ordenadas: jsonb no conserva el orden en que se escribieron. */
+const ordenado = (valor: unknown): unknown =>
+  valor && typeof valor === 'object' && !Array.isArray(valor)
+    ? Object.fromEntries(
+        Object.keys(valor)
+          .sort()
+          .map((clave) => [clave, ordenado((valor as Record<string, unknown>)[clave])]),
+      )
+    : Array.isArray(valor)
+      ? valor.map(ordenado)
+      : valor;
+
 const comparable = (valor: unknown) =>
-  Array.isArray(valor) ? JSON.stringify([...valor].sort()) : JSON.stringify(valor ?? null);
+  Array.isArray(valor)
+    ? JSON.stringify([...valor].sort())
+    : JSON.stringify(ordenado(valor ?? null));
 
 /** Campos que cambian entre dos versiones de una fuente, con su valor anterior y nuevo (F33). */
 export function calcularCambios(antes: FuenteCompleta, despues: FuenteCompleta): Cambios {
