@@ -150,7 +150,7 @@
 
 .dosColumnas {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
   gap: var(--espacio-4);
 }
 
@@ -212,5 +212,79 @@
   from {
     opacity: 0;
     transform: translateX(-8px);
+  }
+}
+
+/* Formulario de fuentes en secciones numeradas (registrar y editar) */
+.formularioFuente {
+  display: grid;
+  gap: var(--espacio-5);
+}
+
+.seccion {
+  display: grid;
+  gap: var(--espacio-4);
+  min-width: 0;
+}
+
+.seccion + .seccion {
+  padding-top: var(--espacio-5);
+  border-top: 1px solid var(--color-borde);
+}
+
+.cabeceraSeccion {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-3);
+}
+
+.numeroSeccion {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: var(--color-primario-suave);
+  color: var(--color-primario);
+  font-size: var(--texto-sm);
+  font-weight: var(--peso-fuerte);
+  font-variant-numeric: tabular-nums;
+}
+
+.tituloSeccion {
+  font-size: var(--texto-md);
+  font-weight: var(--peso-fuerte);
+  line-height: 1.75rem;
+}
+
+.descripcionSeccion {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.cuerpoSeccion {
+  display: grid;
+  gap: var(--espacio-4);
+  min-width: 0;
+}
+
+.tresColumnas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: var(--espacio-4);
+}
+
+/* Acciones al final: errores junto al botón que los provoca. */
+.pieFormulario {
+  display: grid;
+  gap: var(--espacio-3);
+  padding-top: var(--espacio-5);
+  border-top: 1px solid var(--color-borde);
+}
+
+@media (min-width: 48rem) {
+  .cuerpoSeccion {
+    padding-left: calc(1.75rem + var(--espacio-3));
   }
 }

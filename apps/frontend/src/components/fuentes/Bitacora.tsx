@@ -2,6 +2,7 @@ import { Insignia } from '@/components/ui';
 import { ESTADOS_FUENTE, TIPOS_CANAL, type EstadoFuente, type TipoCanal } from '@/config/fuentes';
 import type { AccionBitacora, EntradaBitacora } from '@/lib/api/fuentes';
 import { formatearFecha, formatearFechaHora } from '@/lib/fechas';
+import { formatearHorario, type HorarioSemanal } from '@/lib/horarios';
 import comun from '../comun.module.css';
 import estilos from './Fuentes.module.css';
 
@@ -21,6 +22,7 @@ const CAMPOS: Record<string, string> = {
   telefono: 'Teléfono',
   enlace: 'Enlace',
   horario: 'Horario',
+  horarioSemanal: 'Horario semanal',
   fuenteOriginal: 'Fuente original',
   necesidades: 'Temas',
   observaciones: 'Observaciones',
@@ -34,6 +36,7 @@ function valor(campo: string, dato: unknown): string {
   if (campo === 'estado') return ESTADOS_FUENTE[dato as EstadoFuente]?.etiqueta ?? String(dato);
   if (campo === 'tipoCanal') return TIPOS_CANAL[dato as TipoCanal] ?? String(dato);
   if (campo === 'fechaVerificacion') return formatearFecha(String(dato));
+  if (campo === 'horarioSemanal') return formatearHorario(dato as HorarioSemanal);
   if (typeof dato === 'boolean') return dato ? 'Sí' : 'No';
   if (Array.isArray(dato)) return dato.join(', ');
   return String(dato);
@@ -68,11 +71,14 @@ export function Bitacora({ entradas }: { entradas: EntradaBitacora[] }) {
           {entrada.observacion && <p>{entrada.observacion}</p>}
           {Object.keys(entrada.cambios).length > 0 && (
             <ul className={estilos.cambios}>
-              {Object.entries(entrada.cambios).map(([campo, { antes, despues }]) => (
-                <li key={campo}>
-                  {CAMPOS[campo] ?? campo}: {valor(campo, antes)} → {valor(campo, despues)}
-                </li>
-              ))}
+              {Object.entries(entrada.cambios)
+                // El texto del horario ya cuenta el cambio del horario semanal, del que se deriva.
+                .filter(([campo]) => campo !== 'horarioSemanal' || !entrada.cambios.horario)
+                .map(([campo, { antes, despues }]) => (
+                  <li key={campo}>
+                    {CAMPOS[campo] ?? campo}: {valor(campo, antes)} → {valor(campo, despues)}
+                  </li>
+                ))}
             </ul>
           )}
         </li>

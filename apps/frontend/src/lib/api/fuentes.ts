@@ -1,4 +1,5 @@
 import type { EstadoFuente, TipoCanal } from '@/config/fuentes';
+import type { HorarioSemanal } from '@/lib/horarios';
 import { api } from './cliente';
 
 export type AccionEstado = 'marcar_revision' | 'verificar' | 'desactivar';
@@ -13,7 +14,10 @@ export type FuenteGestion = {
   tipoCanal: TipoCanal;
   telefono: string | null;
   enlace: string | null;
+  /** Texto legible; con horario semanal, el backend lo deriva de él. */
   horario: string | null;
+  /** null en las fuentes registradas antes del horario semanal: conservan su texto. */
+  horarioSemanal: HorarioSemanal | null;
   fuenteOriginal: string;
   fechaVerificacion: string;
   diasDesdeVerificacion: number;
@@ -50,7 +54,9 @@ export type DatosFuente = {
   tipoCanal: TipoCanal;
   telefono: string;
   enlace: string;
+  /** Solo cuenta si `horarioSemanal` es null (texto anterior que se conserva). */
   horario: string;
+  horarioSemanal: HorarioSemanal | null;
   fuenteOriginal: string;
   necesidades: string[];
   observaciones: string;

@@ -26,7 +26,8 @@ export function NuevaFuente() {
           modo="crear"
           alGuardar={async (datos) => {
             const { fuente } = await crearFuente(datos);
-            router.push(`/gestion/fuentes/${fuente.id}`);
+            // La ficha nueva confirma el registro; «Atrás» vuelve al listado, no al formulario.
+            router.replace(`/gestion/fuentes/${fuente.id}?registrada=1`);
           }}
         />
       </Tarjeta>

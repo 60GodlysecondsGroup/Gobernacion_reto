@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { vacioANull } from '../../http/validacion.js';
+import { esquemaHorarioSemanal, formatearHorario, type HorarioSemanal } from './fuentes.horario.js';
 
 export const ESTADOS_FUENTE = ['activo', 'requiere_revision', 'inactivo'] as const;
 export type EstadoFuente = (typeof ESTADOS_FUENTE)[number];
@@ -23,20 +24,28 @@ export const hoyEnColombia = (ahora = new Date()) =>
   new Intl.DateTimeFormat('en-CA', { timeZone: ZONA_HORARIA }).format(ahora);
 
 const fechaVerificacion = z.iso
-  .date('Usa el formato AAAA-MM-DD.')
+  .date('Indica la fecha de verificación.')
   .refine((fecha) => fecha <= hoyEnColombia(), 'La fecha de verificación no puede ser futura.');
 
+/** Mensajes claros por campo; el frontend usa los mismos (`lib/fuentes-validacion.ts`). */
+const maximo = (n: number) => `Usa como máximo ${n} caracteres.`;
+const texto = (min: number, max: number, mensaje: string) =>
+  z.string().trim().min(min, mensaje).max(max, maximo(max));
+
 const camposFuente = {
-  institucion: z.string().trim().min(2).max(120),
-  servicio: z.string().trim().min(2).max(120),
-  descripcion: z.string().trim().min(10).max(1000),
+  institucion: texto(2, 120, 'Escribe el nombre de la institución (al menos 2 caracteres).'),
+  servicio: texto(2, 120, 'Escribe el nombre del servicio o canal (al menos 2 caracteres).'),
+  descripcion: texto(10, 1000, 'La descripción necesita al menos 10 caracteres.'),
   tipoCanal: z.enum(TIPOS_CANAL),
   telefono: z.preprocess(
     vacioANull,
     z
       .string()
       .trim()
-      .regex(/^[0-9 +()-]{3,20}$/, 'Usa solo números, espacios, +, paréntesis o guiones.')
+      .regex(
+        /^[0-9 +()-]{3,20}$/,
+        'Usa de 3 a 20 caracteres: números, espacios, +, paréntesis o guiones.',
+      )
       .nullable()
       .default(null),
   ),
@@ -47,17 +56,26 @@ const camposFuente = {
         protocol: /^https?$/,
         error: 'Debe ser un enlace que empiece por http:// o https://.',
       })
-      .max(300)
+      .max(300, maximo(300))
       .nullable()
       .default(null),
   ),
-  horario: z.preprocess(vacioANull, z.string().trim().max(200).nullable().default(null)),
-  fuenteOriginal: z.string().trim().min(3).max(300),
+  /**
+   * Texto del horario. Si llega `horarioSemanal`, se reemplaza por su versión legible (que puede
+   * pasar de 200 caracteres); si no, es texto libre de hasta 200 (ver `textoHorarioLibre`).
+   */
+  horario: z.preprocess(vacioANull, z.string().trim().max(2000).nullable().default(null)),
+  /** Horario estructurado. Opcional: sin él, `horario` se guarda como texto, igual que antes. */
+  horarioSemanal: esquemaHorarioSemanal.nullable().default(null),
+  fuenteOriginal: texto(3, 300, 'Indica de dónde sale la información (al menos 3 caracteres).'),
   necesidades: z
     .array(z.enum(CODIGOS_NECESIDAD))
-    .min(1, 'Elige al menos una necesidad.')
+    .min(1, 'Elige al menos un tema.')
     .transform((codigos) => [...new Set(codigos)]),
-  observaciones: z.preprocess(vacioANull, z.string().trim().max(500).nullable().default(null)),
+  observaciones: z.preprocess(
+    vacioANull,
+    z.string().trim().max(500, maximo(500)).nullable().default(null),
+  ),
   esDemo: z.boolean(),
 };
 
@@ -82,8 +100,38 @@ function canalCoherente(
   }
 }
 
+/** El límite de 200 caracteres es del texto libre; el derivado del horario semanal no lo tiene. */
+function textoHorarioLibre(
+  datos: { horario: string | null; horarioSemanal: HorarioSemanal | null },
+  ctx: z.RefinementCtx,
+) {
+  if (!datos.horarioSemanal && datos.horario && datos.horario.length > 200) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['horario'],
+      message: 'El horario en texto admite como máximo 200 caracteres.',
+    });
+  }
+}
+
+/**
+ * Con horario estructurado, el texto `horario` se deriva de él: la ficha pública, el asistente y
+ * la bitácora siguen leyendo un texto, ahora siempre con el mismo formato.
+ */
+const conHorarioDerivado = <
+  T extends { horario: string | null; horarioSemanal: HorarioSemanal | null },
+>(
+  datos: T,
+): T =>
+  datos.horarioSemanal ? { ...datos, horario: formatearHorario(datos.horarioSemanal) } : datos;
+
 /** Editar datos de una fuente. El estado y la verificación cambian con sus propias acciones. */
-export const esquemaEdicion = z.object(camposFuente).strict().superRefine(canalCoherente);
+export const esquemaEdicion = z
+  .object(camposFuente)
+  .strict()
+  .superRefine(canalCoherente)
+  .superRefine(textoHorarioLibre)
+  .transform(conHorarioDerivado);
 
 /** Crear una fuente: ninguna se publica sin fecha de verificación (B.6). */
 export const esquemaCreacion = z
@@ -93,7 +141,9 @@ export const esquemaCreacion = z
     fechaVerificacion,
   })
   .strict()
-  .superRefine(canalCoherente);
+  .superRefine(canalCoherente)
+  .superRefine(textoHorarioLibre)
+  .transform(conHorarioDerivado);
 
 /** Cada registro del archivo de carga `fuentes_institucionales.json`. */
 export const esquemaEntradaCarga = z
@@ -104,7 +154,9 @@ export const esquemaEntradaCarga = z
     fechaVerificacion,
   })
   .strict()
-  .superRefine(canalCoherente);
+  .superRefine(canalCoherente)
+  .superRefine(textoHorarioLibre)
+  .transform(conHorarioDerivado);
 
 const motivo = z.string().trim().min(5, 'Explica el motivo en al menos 5 caracteres.').max(500);
 
