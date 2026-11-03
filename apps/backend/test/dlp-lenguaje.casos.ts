@@ -213,7 +213,6 @@ export const LEGITIMOS = [
   'Hice un análisis del canal de televisión',
   'La gonorrea es una infección de transmisión sexual, ¿cómo se previene?',
   '¿Qué es la masturbación? Me da pena preguntar',
-  'El pene y la vagina son órganos del cuerpo',
   'Me siento como un idiota por haber reprobado',
   'Me sentí estúpido en la exposición',
   'A mi tío le encanta mamar gallo',
@@ -479,6 +478,61 @@ export const LEGITIMOS_0010 = [
   'Hoy jugamos con la HP del salón',
 ].map(caso('legitimo', false));
 
+// ─── Órganos sexuales externos (migración 0011) ────────────────────────────────
+// Decisión de producto: no se nombran los genitales, ni con términos clínicos ni coloquiales.
+
+/** Nombres de los órganos sexuales externos, también con evasión. */
+export const ORGANOS = [
+  'El pene y la vagina son órganos del cuerpo',
+  'Mi pene',
+  'Me duele el pene',
+  'p3n3',
+  'p e n e',
+  'La vagina',
+  'v@gina',
+  'Vulva',
+  'El clítoris',
+  'Los testículos',
+  'Escroto',
+  'Glande',
+  'Prepucio',
+  'Órganos genitales',
+  'Mi pito',
+  'Pitico',
+  'p1to',
+  'Nepe',
+  'Pichula',
+  'Poronga',
+  'Chocha',
+  'Panocha',
+  'Totona',
+  'Crica',
+  'penis',
+  'testicles',
+].map(caso('sexual', true));
+
+/** Usos legítimos de palabras parecidas, órganos internos y relatos de abuso. */
+export const LEGITIMOS_ORGANOS = [
+  'El árbitro sonó el pito',
+  'El carro me pitó en la esquina',
+  'El árbitro pitó penal',
+  'Los carros pitan mucho en el centro',
+  'El pito del bus no funciona',
+  'En educación física el profe usa un pito',
+  'Tomé jugo con pitillo',
+  'Me gusta la pasta penne con salsa',
+  'Qué pena con ustedes',
+  'El penal del partido',
+  'Penélope es mi prima',
+  'El sistema falló otra vez',
+  'Fallé el examen',
+  'Me duelen los ovarios cuando tengo el periodo',
+  'El útero crece en el embarazo',
+  'Me tocó mis partes íntimas y tengo miedo',
+  'Feliz año nuevo',
+  'Pepe es mi vecino',
+].map(caso('legitimo', false));
+
 export const CASOS_LENGUAJE: CasoLenguaje[] = [
   ...GROSERIAS,
   ...INSULTOS,
@@ -495,4 +549,6 @@ export const CASOS_LENGUAJE: CasoLenguaje[] = [
   ...DOBLE_SENTIDO_0010,
   ...EVASIONES_0010,
   ...LEGITIMOS_0010,
+  ...ORGANOS,
+  ...LEGITIMOS_ORGANOS,
 ];

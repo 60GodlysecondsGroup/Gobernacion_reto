@@ -270,6 +270,8 @@ describe('Moderación de convivencia directo contra la API de foros', () => {
     ['insulto con palabra de «contexto»', 'Eres una gonorrea, consulta tu salud'],
     ['doble sentido', 'Hagamos el delicioso'],
     ['insulto como mensaje completo', 'Idiota'],
+    ['nombre de un órgano sexual', 'Hablemos del pene'],
+    ['órgano sexual con leetspeak', 'v@gina'],
   ] as const;
 
   const contar = async (cliente: pg.PoolClient) =>
