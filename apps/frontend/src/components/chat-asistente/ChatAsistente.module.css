@@ -493,6 +493,13 @@
   white-space: pre;
   overflow-wrap: normal;
 }
+/* Sin el fondo de `code` en línea (globals.css): el bloque ya tiene el suyo. */
+.bloqueCodigo pre code {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  font-size: inherit;
+}
 .tabla {
   max-width: 100%;
   overflow-x: auto;
@@ -702,6 +709,17 @@
   .atajos {
     display: none;
   }
+  /* Sin la ayuda de teclado, el botón va junto al campo: una fila menos. */
+  .compositor {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+  .campo {
+    padding-bottom: 0.6rem;
+  }
+  .controlesCompositor {
+    padding-left: 0;
+  }
 }
 
 @media (max-width: 47.99rem) {
@@ -709,7 +727,8 @@
     height: clamp(
       26rem,
       calc(
-        100dvh - var(--alto-encabezado) - var(--alto-barra-inferior) - var(--alto-burbuja-guia) - 1rem
+        100dvh - var(--alto-encabezado) - var(--alto-barra-inferior) - var(--alto-burbuja-guia) -
+          1rem
       ),
       48rem
     );

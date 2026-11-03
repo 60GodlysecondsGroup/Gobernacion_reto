@@ -52,9 +52,10 @@ export function Compositor({
   useImperativeHandle(ref, () => ({
     escribir(nuevo) {
       setTexto(nuevo.slice(0, maximo));
-      requestAnimationFrame(() => {
+      campo.current?.focus();
+      // Cursor al final una vez que React haya puesto el texto.
+      window.setTimeout(() => {
         const el = campo.current;
-        el?.focus();
         el?.setSelectionRange(el.value.length, el.value.length);
       });
     },

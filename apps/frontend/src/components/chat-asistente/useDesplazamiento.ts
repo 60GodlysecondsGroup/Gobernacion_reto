@@ -26,12 +26,32 @@ export function useDesplazamiento(turnos: { id: string; estado: EstadoTurno }[])
   const [alejado, setAlejado] = useState(false);
   const [novedad, setNovedad] = useState(false);
 
-  const desplazar = useCallback((top: number, suave = true) => {
+  const revision = useRef<number | undefined>(undefined);
+
+  /** Actualiza si la persona sigue el final de la conversación según la posición actual. */
+  const evaluar = useCallback(() => {
     const el = contenedor.current;
     if (!el) return;
-    automaticoHasta.current = performance.now() + VENTANA_AUTOMATICA;
-    el.scrollTo({ top, behavior: suave && !movimientoReducido() ? 'smooth' : 'auto' });
+    const cerca = el.scrollHeight - el.scrollTop - el.clientHeight < UMBRAL_FINAL;
+    pegado.current = cerca;
+    setAlejado(!cerca);
+    if (cerca) setNovedad(false);
   }, []);
+
+  const desplazar = useCallback(
+    (top: number, suave = true) => {
+      const el = contenedor.current;
+      if (!el) return;
+      automaticoHasta.current = performance.now() + VENTANA_AUTOMATICA;
+      el.scrollTo({ top, behavior: suave && !movimientoReducido() ? 'smooth' : 'auto' });
+      // Al terminar, se revisa dónde quedó (p. ej. al inicio de una respuesta larga).
+      window.clearTimeout(revision.current);
+      revision.current = window.setTimeout(evaluar, VENTANA_AUTOMATICA + 50);
+    },
+    [evaluar],
+  );
+
+  useEffect(() => () => window.clearTimeout(revision.current), []);
 
   const irAlFinal = useCallback(() => {
     const el = contenedor.current;
@@ -47,10 +67,8 @@ export function useDesplazamiento(turnos: { id: string; estado: EstadoTurno }[])
     const cerca = el.scrollHeight - el.scrollTop - el.clientHeight < UMBRAL_FINAL;
     // Mientras dura un desplazamiento automático, las posiciones intermedias no cuentan.
     if (!cerca && performance.now() < automaticoHasta.current) return;
-    pegado.current = cerca;
-    setAlejado(!cerca);
-    if (cerca) setNovedad(false);
-  }, []);
+    evaluar();
+  }, [evaluar]);
 
   // Antes de pintar, para que nada salte: el contenido nuevo aparece ya en su sitio.
   useLayoutEffect(() => {
