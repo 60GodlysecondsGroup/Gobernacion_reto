@@ -1,6 +1,5 @@
 'use client';
 
-import { ElementoEscalonado, ListaEscalonada } from '@/components/movimiento/Escalonado';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
@@ -16,7 +15,7 @@ import { obtenerServiciosDe, type FichaServicio, type Necesidad } from '@/lib/ap
 import comun from '../comun.module.css';
 import { recordarTema } from './ExploradorTemas';
 import estilos from './Orientacion.module.css';
-import { TarjetaServicio } from './TarjetaServicio';
+import { RejillaServicios } from './RejillaServicios';
 
 type Estado =
   | { tipo: 'cargando' }
@@ -78,13 +77,10 @@ export function ServiciosPorNecesidad() {
               Mientras tanto, «Necesito ayuda» muestra los canales institucionales disponibles.
             </EstadoVacio>
           ) : (
-            <ListaEscalonada className={estilos.rejillaServicios}>
-              {estado.servicios.map((servicio) => (
-                <ElementoEscalonado key={servicio.id}>
-                  <TarjetaServicio servicio={servicio} />
-                </ElementoEscalonado>
-              ))}
-            </ListaEscalonada>
+            <RejillaServicios
+              servicios={estado.servicios}
+              etiqueta={`Servicios de ${estado.necesidad.nombre}`}
+            />
           )}
         </>
       )}

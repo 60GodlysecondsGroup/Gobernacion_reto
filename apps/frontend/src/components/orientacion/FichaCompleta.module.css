@@ -235,63 +235,6 @@
   overflow-wrap: anywhere;
 }
 
-.temas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--espacio-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.tema {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.25rem;
-  padding: 0 var(--espacio-4);
-  border: 1px solid rgb(91 84 230 / 0.25);
-  border-radius: var(--radio-total);
-  background: linear-gradient(135deg, var(--morado-50), rgb(139 124 246 / 0.12));
-  color: var(--morado-800);
-  font-size: var(--texto-sm);
-  font-weight: var(--peso-fuerte);
-  text-decoration: none;
-  transition:
-    transform 200ms var(--curva-resorte),
-    background var(--transicion);
-}
-
-.tema:hover {
-  background: var(--morado-100);
-  color: var(--morado-900);
-  transform: translateY(-1px);
-}
-
-.datos {
-  display: grid;
-  gap: var(--espacio-3);
-  margin: 0;
-}
-
-.datos > div {
-  display: grid;
-  grid-template-columns: 8rem minmax(0, 1fr);
-  gap: var(--espacio-3);
-  padding: var(--espacio-3) var(--espacio-4);
-  border-radius: var(--radio-md);
-  background: var(--morado-50);
-}
-
-.datos dt {
-  color: var(--color-texto-suave);
-  font-weight: var(--peso-fuerte);
-}
-
-.datos dd {
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-
 /* ── Carga ───────────────────────────────────────────── */
 .esqueletoVolver {
   width: 12rem;
@@ -329,11 +272,6 @@
   .botones > * {
     flex: 1 1 100%;
   }
-
-  .datos > div {
-    grid-template-columns: minmax(0, 1fr);
-    gap: var(--espacio-1);
-  }
 }
 
 @keyframes asentar {
@@ -351,8 +289,7 @@
 
   .accion:hover,
   .accion:hover .iconoAccion,
-  .accion:hover .flecha,
-  .tema:hover {
+  .accion:hover .flecha {
     transform: none;
   }
 }
