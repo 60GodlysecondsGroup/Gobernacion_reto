@@ -121,10 +121,11 @@
 
 /* ─── Formularios ─────────────────────────────────────────────────────────── */
 
+/* Sin `width` propio: lo da la columna del acceso (`.pagina > *`) o el panel que lo contiene. Un
+   `width: 100%` aquí ganaría a esa regla y lo estiraría a todo el ancho en /acceso/personal. */
 .formularioCorto {
   display: grid;
   gap: var(--espacio-4);
-  width: 100%;
   padding: var(--padding-caja);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-lg);
