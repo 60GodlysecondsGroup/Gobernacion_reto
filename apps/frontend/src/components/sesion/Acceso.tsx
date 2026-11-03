@@ -1,7 +1,6 @@
 'use client';
 
 import { ArrowRight } from 'lucide-react';
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useId, useState, type FormEvent } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
@@ -24,7 +23,8 @@ type Modo = 'entrar' | 'registro';
 /**
  * «Iniciar con mi Avatar»: una sola pantalla para entrar con una cuenta existente o crear una
  * nueva. Abre siempre en «Iniciar sesión» (salvo un enlace con `?modo=registro`); crear la cuenta
- * es la alternativa a un toque. Con sesión activa, ofrece continuar sin pedir nada.
+ * es la alternativa a un toque. Con sesión activa, ofrece continuar sin pedir nada. El acceso
+ * del equipo (/acceso/personal) no se anuncia aquí: quien lo usa conoce su ruta.
  */
 export function Acceso() {
   const { cargando, usuario, salir } = useSesion();
@@ -127,16 +127,6 @@ export function Acceso() {
           <FormularioRegistro alEntrar={alEntrar} alTenerCuenta={() => cambiarModo('entrar')} />
         )}
       </div>
-
-      <p className={estilos.nota}>
-        ¿Eres del equipo de moderación, gestión de fuentes o administración?{' '}
-        <Link
-          className={estilos.enlaceTexto}
-          href={`/acceso/personal${siguiente ? `?siguiente=${encodeURIComponent(siguiente)}` : ''}`}
-        >
-          Entra con tu correo
-        </Link>
-      </p>
     </div>
   );
 }
