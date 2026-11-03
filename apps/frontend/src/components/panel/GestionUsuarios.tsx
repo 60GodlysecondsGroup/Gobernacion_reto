@@ -14,7 +14,7 @@ import {
   type UsuarioAdministrado,
 } from '@/lib/api/administracion';
 import { mensajeDeError } from '@/lib/api/cliente';
-import { NOMBRES_ROL } from '@/lib/api/sesion';
+import { esRolAdministracion, NOMBRES_ROL } from '@/lib/api/sesion';
 import estilos from './Panel.module.css';
 
 const TONO: Record<EstadoUsuario, 'exito' | 'advertencia' | 'peligro'> = {
@@ -28,7 +28,7 @@ const TONO: Record<EstadoUsuario, 'exito' | 'advertencia' | 'peligro'> = {
  * solo aplica medidas a cuentas de jóvenes; la administración, a cualquiera menos la propia.
  */
 export function GestionUsuarios() {
-  const { usuario: yo } = useSesion();
+  const { usuario: yo, puede } = useSesion();
   const [buscar, setBuscar] = useState('');
   const [filtro, setFiltro] = useState({ buscar: '', estado: '', rol: '' });
   const [usuarios, setUsuarios] = useState<UsuarioAdministrado[] | null>(null);
@@ -63,8 +63,12 @@ export function GestionUsuarios() {
     setFiltro(cambio);
   };
 
+  // Mismas reglas que el backend: nunca la propia cuenta ni una de administración (esas van en
+  // Superadmin); la moderación, solo jóvenes.
   const puedeActuar = (u: UsuarioAdministrado) =>
-    u.id !== yo?.id && (yo?.rol === 'admin_plataforma' || u.rol === 'usuario');
+    u.id !== yo?.id &&
+    !esRolAdministracion(u.rol) &&
+    (puede('gestionar_personal') || u.rol === 'usuario');
 
   async function cambiar(u: UsuarioAdministrado, estado: EstadoUsuario) {
     setOcupado(u.id);
@@ -210,7 +214,11 @@ export function GestionUsuarios() {
                       )
                     ) : (
                       <span className={estilos.detalleIndicador}>
-                        {u.id === yo?.id ? 'Tu cuenta' : 'Solo administración'}
+                        {u.id === yo?.id
+                          ? 'Tu cuenta'
+                          : esRolAdministracion(u.rol)
+                            ? 'Se gestiona en Superadmin'
+                            : 'Solo administración'}
                       </span>
                     )}
                   </td>

@@ -174,6 +174,12 @@
   }
 }
 
+/* Título de una sección dentro de una página del panel (p. ej. el registro en Superadmin). */
+.tituloSeccion {
+  margin-top: var(--espacio-4);
+  font-size: var(--texto-lg);
+}
+
 /* ── Indicadores ── */
 
 .indicadores {

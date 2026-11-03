@@ -129,7 +129,7 @@ export function Acceso() {
       </div>
 
       <p className={estilos.nota}>
-        ¿Eres del equipo de moderación o de gestión de fuentes?{' '}
+        ¿Eres del equipo de moderación, gestión de fuentes o administración?{' '}
         <Link
           className={estilos.enlaceTexto}
           href={`/acceso/personal${siguiente ? `?siguiente=${encodeURIComponent(siguiente)}` : ''}`}

@@ -1,0 +1,36 @@
+/* Superadmin (/panel/superadmin): cuentas de administración. El formulario y los roles reutilizan
+   GestionPersonal.module.css. */
+
+.cuenta {
+  display: grid;
+  gap: var(--espacio-1);
+  min-width: 12rem;
+}
+
+.cuenta > span:last-child {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.tu {
+  margin-left: var(--espacio-2);
+}
+
+.acceso {
+  display: grid;
+  gap: var(--espacio-1);
+  font-size: var(--texto-sm);
+  white-space: nowrap;
+}
+
+.acceso span {
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+}
+
+.accionesFila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+  min-width: 11rem;
+}

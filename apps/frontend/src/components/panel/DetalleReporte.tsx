@@ -6,6 +6,7 @@ import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
 import { useSesion } from '@/components/sesion/ProveedorSesion';
 import { Aviso, Boton, EnlaceVolver, Insignia, Tarjeta, useNotificar } from '@/components/ui';
 import { mensajeDeError } from '@/lib/api/cliente';
+import { esRolAdministracion } from '@/lib/api/sesion';
 import { formatearFechaHora } from '@/lib/fechas';
 import {
   aplicarAccionReporte,
@@ -118,7 +119,8 @@ export function DetalleReporte({ id }: { id: string }) {
     autor &&
     puede('gestionar_usuarios') &&
     autor.id !== usuario?.id &&
-    (usuario?.rol === 'admin_plataforma' || autor.rol === 'usuario');
+    !esRolAdministracion(autor.rol) &&
+    (puede('gestionar_personal') || autor.rol === 'usuario');
 
   const acciones: { accion: AccionReporte; etiqueta: string; icono: typeof Eye }[] = [];
   if (ocultable) {

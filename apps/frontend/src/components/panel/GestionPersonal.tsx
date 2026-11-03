@@ -28,6 +28,12 @@ import {
 import { campoDelError, erroresPorCampo, mensajeDeError } from '@/lib/api/cliente';
 import { NOMBRES_ROL } from '@/lib/api/sesion';
 import propios from './GestionPersonal.module.css';
+import {
+  enfocarPrimerError,
+  problemaCorreo,
+  problemaNombre,
+  problemasContrasena,
+} from './validacionCuentas';
 import estilos from './Panel.module.css';
 
 const TONO: Record<EstadoUsuario, 'exito' | 'advertencia' | 'peligro'> = {
@@ -50,9 +56,6 @@ const ROLES: { rol: RolPersonal; descripcion: string }[] = [
   },
 ];
 
-const PATRON_NOMBRE = /^[\p{L}\p{N}._-]+( [\p{L}\p{N}._-]+)*$/u;
-const PATRON_CORREO = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-
 type Formulario = Omit<DatosCuentaPersonal, 'rol'> & { rol: RolPersonal | null };
 type ErroresCuenta = Partial<Record<keyof DatosCuentaPersonal, string>>;
 
@@ -60,30 +63,15 @@ const VACIO: Formulario = { nombre: '', correo: '', contrasena: '', confirmacion
 
 /** Las mismas reglas que el backend, para avisar antes de enviar. El backend vuelve a validar. */
 function validarCuenta(datos: Formulario): ErroresCuenta {
-  const errores: ErroresCuenta = {};
-  const nombre = datos.nombre.trim();
-  if (nombre.length < 3) errores.nombre = 'Usa al menos 3 caracteres.';
-  else if (nombre.length > 30) errores.nombre = 'Usa máximo 30 caracteres.';
-  else if (!PATRON_NOMBRE.test(nombre)) {
-    errores.nombre =
-      'Usa letras, números, punto, guion o guion bajo, con un solo espacio entre palabras.';
-  }
-  const correo = datos.correo.trim();
-  if (!correo) errores.correo = 'Escribe el correo.';
-  else if (correo.length > 254 || !PATRON_CORREO.test(correo)) {
-    errores.correo = 'Escribe un correo válido (nombre@dominio.co).';
-  }
-  if (datos.contrasena.length < 8) errores.contrasena = 'Usa al menos 8 caracteres.';
-  else if (datos.contrasena.length > 128) errores.contrasena = 'Usa máximo 128 caracteres.';
-  else if (nombre && datos.contrasena.toLowerCase().includes(nombre.toLowerCase())) {
-    errores.contrasena = 'La contraseña no puede contener el nombre de la cuenta.';
-  }
-  if (!datos.confirmacion) errores.confirmacion = 'Repite la contraseña.';
-  else if (datos.confirmacion !== datos.contrasena) {
-    errores.confirmacion = 'Las contraseñas no coinciden.';
-  }
-  if (!datos.rol) errores.rol = 'Elige el rol: moderación o gestión de fuentes.';
-  return errores;
+  const errores: ErroresCuenta = {
+    nombre: problemaNombre(datos.nombre),
+    correo: problemaCorreo(datos.correo),
+    ...problemasContrasena(datos.contrasena, datos.confirmacion, datos.nombre),
+    rol: datos.rol ? undefined : 'Elige el rol: moderación o gestión de fuentes.',
+  };
+  return Object.fromEntries(
+    Object.entries(errores).filter(([, mensaje]) => mensaje),
+  ) as ErroresCuenta;
 }
 
 type Confirmacion =
@@ -332,14 +320,8 @@ function FormularioCuentaNueva({
     setErrores(locales);
     if (Object.keys(locales).length > 0 || !datos.rol) {
       setError('Revisa los campos marcados y vuelve a intentarlo.');
-      // Lleva el foco al primer campo con error (tras pintarse), como el registro de jóvenes.
-      requestAnimationFrame(() =>
-        formulario.current
-          ?.querySelector<HTMLElement>(
-            'input[aria-invalid="true"], fieldset[aria-invalid="true"] input',
-          )
-          ?.focus(),
-      );
+      // Lleva el foco al primer campo con error, como el registro de jóvenes.
+      enfocarPrimerError(formulario.current);
       return;
     }
 

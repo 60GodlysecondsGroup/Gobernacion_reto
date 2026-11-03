@@ -1,7 +1,11 @@
 import type { ConfiguracionAvatar, ElementoAvatar } from './avatar';
 import { api } from './cliente';
 
-export type Rol = 'usuario' | 'moderador' | 'admin_plataforma' | 'gestor_fuentes';
+export type Rol = 'usuario' | 'moderador' | 'admin_plataforma' | 'gestor_fuentes' | 'superadmin';
+
+/** Roles de administración: sus cuentas solo se gestionan en la sección Superadmin. */
+export const esRolAdministracion = (rol: string) =>
+  rol === 'admin_plataforma' || rol === 'superadmin';
 
 /** Permisos de la matriz A.2 (apps/backend/src/modules/seguridad/permisos.ts). */
 export type Permiso =
@@ -24,6 +28,7 @@ export type Permiso =
   | 'configurar_comunidades'
   | 'consultar_registros_administrativos'
   | 'usar_asistente_admin'
+  | 'gestionar_administradores'
   | 'usar_asistente_usuario';
 
 export type SesionPublica = {
@@ -40,7 +45,7 @@ export type RangoEdad = { codigo: CodigoRango; etiqueta: string };
 /** «Iniciar con mi Avatar» — cuenta existente: nametag (alias) y contraseña. */
 export type DatosInicio = { alias: string; contrasena: string; recordar: boolean };
 
-/** Acceso del personal (moderación, gestión de fuentes): correo y contraseña. */
+/** Acceso del equipo (personal y administración con correo): correo y contraseña. */
 export type DatosInicioPersonal = { correo: string; contrasena: string; recordar: boolean };
 
 /** «Iniciar con mi Avatar» — cuenta nueva. La cuenta siempre nace como joven (rol `usuario`). */
@@ -55,6 +60,7 @@ export const NOMBRES_ROL: Record<Rol, string> = {
   moderador: 'Moderación',
   admin_plataforma: 'Administración',
   gestor_fuentes: 'Gestión de fuentes',
+  superadmin: 'Superadministración',
 };
 
 export const obtenerSesion = () => api.get<{ usuario: SesionPublica | null }>('/api/sesion');

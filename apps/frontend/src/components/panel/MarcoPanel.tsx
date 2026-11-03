@@ -10,6 +10,7 @@ import {
   Layers,
   Library,
   ShieldCheck,
+  ShieldUser,
   UserCog,
   Users,
 } from 'lucide-react';
@@ -26,10 +27,10 @@ type Seccion = {
   etiqueta: string;
   icono: LucideIcon;
   permiso: Permiso;
-  grupo: 'Moderación' | 'Administración' | 'Información';
+  grupo: (typeof GRUPOS)[number];
 };
 
-const GRUPOS = ['Moderación', 'Administración', 'Información'] as const;
+const GRUPOS = ['Moderación', 'Administración', 'Superadmin', 'Información'] as const;
 
 /** Secciones del panel (Fase 7). Cada una aparece solo si el rol tiene su permiso. */
 const SECCIONES: Seccion[] = [
@@ -102,6 +103,13 @@ const SECCIONES: Seccion[] = [
     icono: Bot,
     permiso: 'usar_asistente_admin',
     grupo: 'Administración',
+  },
+  {
+    href: '/panel/superadmin',
+    etiqueta: 'Administradores',
+    icono: ShieldUser,
+    permiso: 'gestionar_administradores',
+    grupo: 'Superadmin',
   },
   {
     href: '/gestion/fuentes',

@@ -18,8 +18,8 @@ import { useSesion } from './ProveedorSesion';
 import estilos from './Acceso.module.css';
 
 /**
- * Acceso del personal (/acceso/personal): correo y contraseña de una cuenta de moderación o de
- * gestión de fuentes creada por la administración. Abre la misma sesión que «Iniciar con mi
+ * Acceso del equipo (/acceso/personal): correo y contraseña de una cuenta de moderación, de
+ * gestión de fuentes o de administración. Abre la misma sesión que «Iniciar con mi
  * Avatar», pero sin nametag ni avatar.
  */
 export function AccesoPersonal() {
@@ -71,7 +71,7 @@ export function AccesoPersonal() {
   return (
     <div className={estilos.pagina}>
       <EncabezadoPagina antetitulo="Acceso del equipo" titulo="Entra con tu correo">
-        Para las cuentas de moderación y de gestión de fuentes que crea la administración.
+        Para las cuentas de moderación, gestión de fuentes y administración de la plataforma.
       </EncabezadoPagina>
 
       <form className={estilos.formularioCorto} onSubmit={enviar} noValidate>
