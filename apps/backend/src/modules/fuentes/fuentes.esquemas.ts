@@ -24,20 +24,28 @@ export const hoyEnColombia = (ahora = new Date()) =>
   new Intl.DateTimeFormat('en-CA', { timeZone: ZONA_HORARIA }).format(ahora);
 
 const fechaVerificacion = z.iso
-  .date('Usa el formato AAAA-MM-DD.')
+  .date('Indica la fecha de verificación.')
   .refine((fecha) => fecha <= hoyEnColombia(), 'La fecha de verificación no puede ser futura.');
 
+/** Mensajes claros por campo; el frontend usa los mismos (`lib/fuentes-validacion.ts`). */
+const maximo = (n: number) => `Usa como máximo ${n} caracteres.`;
+const texto = (min: number, max: number, mensaje: string) =>
+  z.string().trim().min(min, mensaje).max(max, maximo(max));
+
 const camposFuente = {
-  institucion: z.string().trim().min(2).max(120),
-  servicio: z.string().trim().min(2).max(120),
-  descripcion: z.string().trim().min(10).max(1000),
+  institucion: texto(2, 120, 'Escribe el nombre de la institución (al menos 2 caracteres).'),
+  servicio: texto(2, 120, 'Escribe el nombre del servicio o canal (al menos 2 caracteres).'),
+  descripcion: texto(10, 1000, 'La descripción necesita al menos 10 caracteres.'),
   tipoCanal: z.enum(TIPOS_CANAL),
   telefono: z.preprocess(
     vacioANull,
     z
       .string()
       .trim()
-      .regex(/^[0-9 +()-]{3,20}$/, 'Usa solo números, espacios, +, paréntesis o guiones.')
+      .regex(
+        /^[0-9 +()-]{3,20}$/,
+        'Usa de 3 a 20 caracteres: números, espacios, +, paréntesis o guiones.',
+      )
       .nullable()
       .default(null),
   ),
@@ -48,7 +56,7 @@ const camposFuente = {
         protocol: /^https?$/,
         error: 'Debe ser un enlace que empiece por http:// o https://.',
       })
-      .max(300)
+      .max(300, maximo(300))
       .nullable()
       .default(null),
   ),
@@ -59,12 +67,15 @@ const camposFuente = {
   horario: z.preprocess(vacioANull, z.string().trim().max(2000).nullable().default(null)),
   /** Horario estructurado. Opcional: sin él, `horario` se guarda como texto, igual que antes. */
   horarioSemanal: esquemaHorarioSemanal.nullable().default(null),
-  fuenteOriginal: z.string().trim().min(3).max(300),
+  fuenteOriginal: texto(3, 300, 'Indica de dónde sale la información (al menos 3 caracteres).'),
   necesidades: z
     .array(z.enum(CODIGOS_NECESIDAD))
-    .min(1, 'Elige al menos una necesidad.')
+    .min(1, 'Elige al menos un tema.')
     .transform((codigos) => [...new Set(codigos)]),
-  observaciones: z.preprocess(vacioANull, z.string().trim().max(500).nullable().default(null)),
+  observaciones: z.preprocess(
+    vacioANull,
+    z.string().trim().max(500, maximo(500)).nullable().default(null),
+  ),
   esDemo: z.boolean(),
 };
 

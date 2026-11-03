@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState, type FormEvent } from 'react';
-import { Aviso, Boton, CampoSeleccion, CampoTexto } from '@/components/ui';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { Aviso, Boton, BotonEnlace, CampoSeleccion, CampoTexto } from '@/components/ui';
 import { TIPOS_CANAL, type TipoCanal } from '@/config/fuentes';
 import { erroresPorCampo, mensajeDeError } from '@/lib/api/cliente';
 import type { DatosFuente, DatosNuevaFuente, FuenteGestion } from '@/lib/api/fuentes';
 import { obtenerNecesidades, type Necesidad } from '@/lib/api/orientacion';
 import { hoyEnColombia } from '@/lib/fechas';
+import { pideEnlace, pideTelefono, validarFuente } from '@/lib/fuentes-validacion';
 import {
   borradorDesde,
   borradorVacio,
@@ -16,11 +17,18 @@ import {
 } from '@/lib/horarios';
 import comun from '../comun.module.css';
 import estilos from './Fuentes.module.css';
+import { SeccionFormulario } from './SeccionFormulario';
 import { SelectorHorario } from './SelectorHorario';
 
 type Props =
   | { modo: 'crear'; alGuardar: (datos: DatosNuevaFuente) => Promise<void> }
-  | { modo: 'editar'; fuente: FuenteGestion; alGuardar: (datos: DatosFuente) => Promise<void> };
+  | {
+      modo: 'editar';
+      fuente: FuenteGestion;
+      alGuardar: (datos: DatosFuente) => Promise<void>;
+      /** Confirmación del último guardado (el formulario se reinicia con los datos nuevos). */
+      confirmacion?: string;
+    };
 
 const OPCIONES_CANAL = Object.entries(TIPOS_CANAL).map(([valor, etiqueta]) => ({
   valor,
@@ -30,6 +38,15 @@ const OPCIONES_ESTADO = [
   { valor: 'activo', etiqueta: 'Activo: verificada y vigente' },
   { valor: 'requiere_revision', etiqueta: 'Requiere revisión: falta comprobarla' },
 ];
+
+/** Qué pide cada tipo de canal, dicho junto al selector. */
+const AYUDA_CANAL: Record<TipoCanal, string> = {
+  telefono: 'Pide un teléfono; el enlace es opcional.',
+  web: 'Pide un enlace oficial; el teléfono es opcional.',
+  chat: 'Pide un enlace oficial; el teléfono es opcional.',
+  presencial: 'Teléfono y enlace son opcionales.',
+  otro: 'Teléfono y enlace son opcionales.',
+};
 
 function inicial(props: Props): DatosNuevaFuente {
   if (props.modo === 'editar') {
@@ -96,228 +113,387 @@ function horarioInicial(props: Props): BorradorHorario | null {
   return horario ? null : borradorVacio();
 }
 
-/** Datos de una fuente (F32). Ninguna fuente nueva se registra sin fecha de verificación (B.6). */
+type CampoTextoFuente =
+  | 'institucion'
+  | 'servicio'
+  | 'descripcion'
+  | 'telefono'
+  | 'enlace'
+  | 'fuenteOriginal'
+  | 'observaciones'
+  | 'fechaVerificacion';
+
+/**
+ * Datos de una fuente (F32), el mismo formulario para registrar y para editar. Los campos van
+ * en secciones según su propósito y se validan mientras se escriben con las reglas del backend.
+ * Ninguna fuente nueva se registra sin fecha de verificación (B.6).
+ */
 export function FormularioFuente(props: Props) {
-  const [datos, setDatos] = useState<DatosNuevaFuente>(() => inicial(props));
-  const [horario, setHorario] = useState<BorradorHorario | null>(() => horarioInicial(props));
-  const [revisarHorario, setRevisarHorario] = useState(false);
-  const [necesidades, setNecesidades] = useState<Necesidad[]>([]);
-  const [errores, setErrores] = useState<Record<string, string>>({});
-  const [mensaje, setMensaje] = useState<{ tono: 'exito' | 'peligro'; texto: string } | null>(null);
+  const [original] = useState(() => ({ datos: inicial(props), horario: horarioInicial(props) }));
+  const [datos, setDatos] = useState<DatosNuevaFuente>(original.datos);
+  const [horario, setHorario] = useState<BorradorHorario | null>(original.horario);
+  const [catalogo, setCatalogo] = useState<Necesidad[] | null>(null);
+  const [errorCatalogo, setErrorCatalogo] = useState(false);
+  const [intentoCatalogo, setIntentoCatalogo] = useState(0);
+  // Un campo muestra su error al salir de él (o al intentar guardar), no a la primera tecla.
+  const [tocados, setTocados] = useState<Partial<Record<string, boolean>>>({});
+  const [intentado, setIntentado] = useState(false);
+  const [erroresServidor, setErroresServidor] = useState<Record<string, string>>({});
+  const [mensaje, setMensaje] = useState<{ tono: 'exito' | 'peligro'; texto: string } | null>(
+    props.modo === 'editar' && props.confirmacion
+      ? { tono: 'exito', texto: props.confirmacion }
+      : null,
+  );
   const [guardando, setGuardando] = useState(false);
+  // Evita un segundo envío antes de que el estado «guardando» llegue a la pantalla.
+  const enviando = useRef(false);
+  const formulario = useRef<HTMLFormElement>(null);
+  const [enfocarError, setEnfocarError] = useState(0);
 
   useEffect(() => {
     let vigente = true;
     obtenerNecesidades()
-      .then((r) => vigente && setNecesidades(r.necesidades))
-      .catch(() => vigente && setNecesidades([]));
+      .then((r) => vigente && setCatalogo(r.necesidades))
+      .catch(() => vigente && setErrorCatalogo(true));
     return () => {
       vigente = false;
     };
-  }, []);
+  }, [intentoCatalogo]);
+
+  // Tras un intento fallido, el foco va al primer campo con error.
+  useEffect(() => {
+    if (enfocarError === 0) return;
+    formulario.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+  }, [enfocarError]);
+
+  const crear = props.modo === 'crear';
+  const hoy = hoyEnColombia();
+  const erroresCliente = validarFuente(
+    { ...datos, fechaVerificacion: crear ? datos.fechaVerificacion : undefined },
+    hoy,
+  );
+  const erroresHorario = horario ? validarHorario(horario, { exigirCompletos: intentado }) : {};
+  const errorDe = (campo: string) =>
+    erroresServidor[campo] ||
+    (intentado || tocados[campo]
+      ? erroresCliente[campo as keyof typeof erroresCliente]
+      : undefined) ||
+    undefined;
+
+  const sucio = JSON.stringify({ datos, horario }) !== JSON.stringify(original);
 
   const cambiar = <K extends keyof DatosNuevaFuente>(campo: K, valor: DatosNuevaFuente[K]) => {
     setDatos((actual) => ({ ...actual, [campo]: valor }));
-    setErrores((actual) => ({ ...actual, [campo]: '' }));
+    setErroresServidor((actual) => ({ ...actual, [campo]: '' }));
     setMensaje(null);
   };
+  const tocar = (campo: string) => setTocados((actual) => ({ ...actual, [campo]: true }));
 
-  const alternarNecesidad = (codigo: string) =>
+  const alternarNecesidad = (codigo: string) => {
+    tocar('necesidades');
     cambiar(
       'necesidades',
       datos.necesidades.includes(codigo)
         ? datos.necesidades.filter((c) => c !== codigo)
         : [...datos.necesidades, codigo],
     );
+  };
 
   const cambiarHorario = (borrador: BorradorHorario | null) => {
     setHorario(borrador);
-    setErrores((actual) => ({ ...actual, horarioSemanal: '' }));
+    setErroresServidor((actual) => ({ ...actual, horarioSemanal: '', horario: '' }));
     setMensaje(null);
   };
 
-  const erroresHorario = horario
-    ? validarHorario(horario, { exigirCompletos: revisarHorario })
-    : {};
+  const descartar = () => {
+    setDatos(original.datos);
+    setHorario(original.horario);
+    setTocados({});
+    setIntentado(false);
+    setErroresServidor({});
+    setMensaje(null);
+  };
 
   async function alEnviar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    if (horario && Object.keys(validarHorario(horario, { exigirCompletos: true })).length > 0) {
-      setRevisarHorario(true);
+    if (enviando.current) return;
+    setIntentado(true);
+    const pendientes =
+      Object.keys(erroresCliente).length +
+      (horario ? Object.keys(validarHorario(horario, { exigirCompletos: true })).length : 0);
+    if (pendientes > 0) {
       setMensaje({
         tono: 'peligro',
-        texto: 'Revisa el horario: hay intervalos incompletos, al revés o que se cruzan.',
+        texto:
+          pendientes === 1
+            ? 'Revisa el campo marcado para continuar.'
+            : `Revisa los ${pendientes} campos marcados para continuar.`,
       });
+      setEnfocarError((n) => n + 1);
       return;
     }
     // Con horario semanal, el backend escribe el texto; sin él, se conserva el texto anterior.
     const conHorario: DatosNuevaFuente = horario
       ? { ...datos, horario: '', horarioSemanal: horarioDesde(horario) }
       : { ...datos, horarioSemanal: null };
+    enviando.current = true;
     setGuardando(true);
-    setErrores({});
+    setErroresServidor({});
     setMensaje(null);
     try {
-      if (props.modo === 'crear') {
-        await props.alGuardar(conHorario);
-      } else {
-        await props.alGuardar(aEdicion(conHorario));
-        setMensaje({ tono: 'exito', texto: 'Cambios guardados y registrados en la bitácora.' });
+      if (crear) await props.alGuardar(conHorario);
+      else await props.alGuardar(aEdicion(conHorario));
+      // Al crear se navega a la ficha nueva: el botón sigue deshabilitado hasta salir.
+      if (!crear) {
+        enviando.current = false;
+        setGuardando(false);
       }
     } catch (e) {
-      setErrores(erroresPorCampo(e));
+      // Los datos escritos se conservan: solo se marcan los errores.
+      setErroresServidor(erroresPorCampo(e));
       setMensaje({ tono: 'peligro', texto: mensajeDeError(e) });
-    } finally {
+      setEnfocarError((n) => n + 1);
+      enviando.current = false;
       setGuardando(false);
     }
   }
 
-  const texto = (campo: 'institucion' | 'servicio' | 'telefono' | 'enlace' | 'fuenteOriginal') => ({
-    value: datos[campo],
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => cambiar(campo, e.target.value),
-    error: errores[campo] || undefined,
+  const campo = (nombre: CampoTextoFuente) => ({
+    value: datos[nombre],
+    onChange: (e: React.ChangeEvent<HTMLInputElement & HTMLTextAreaElement>) =>
+      cambiar(nombre, e.target.value),
+    onBlur: () => tocar(nombre),
+    error: errorDe(nombre),
   });
 
+  const idErrorTemas = 'fuente-error-temas';
+  const errorTemas = errorDe('necesidades');
+
   return (
-    <form className={comun.formulario} onSubmit={alEnviar} noValidate>
-      {mensaje && <Aviso tono={mensaje.tono}>{mensaje.texto}</Aviso>}
+    <form ref={formulario} className={estilos.formularioFuente} onSubmit={alEnviar} noValidate>
+      {mensaje?.tono === 'exito' && <Aviso tono="exito">{mensaje.texto}</Aviso>}
 
-      <div className={estilos.dosColumnas}>
-        <CampoTexto
-          etiqueta="Institución responsable"
-          obligatorio
-          maxLength={120}
-          {...texto('institucion')}
-        />
-        <CampoTexto
-          etiqueta="Servicio o canal"
-          obligatorio
-          maxLength={120}
-          {...texto('servicio')}
-        />
-      </div>
-
-      <CampoTexto
-        etiqueta="Descripción"
-        obligatorio
-        ayuda="Al menos 10 caracteres. Qué ofrece, con las palabras de la fuente oficial. Sin diagnósticos ni recomendaciones clínicas."
-        multilinea
-        rows={3}
-        maxLength={1000}
-        value={datos.descripcion}
-        onChange={(e) => cambiar('descripcion', e.target.value)}
-        error={errores.descripcion || undefined}
-      />
-
-      <div className={estilos.dosColumnas}>
-        <CampoSeleccion
-          etiqueta="Tipo de canal"
-          obligatorio
-          opciones={OPCIONES_CANAL}
-          value={datos.tipoCanal}
-          onChange={(e) => cambiar('tipoCanal', e.target.value as TipoCanal)}
-          error={errores.tipoCanal || undefined}
-        />
-        <CampoTexto
-          etiqueta="Teléfono"
-          ayuda="Obligatorio para canales telefónicos."
-          {...texto('telefono')}
-        />
-        <CampoTexto
-          etiqueta="Enlace oficial"
-          ayuda="Obligatorio para web y chat. Debe empezar por https://."
-          inputMode="url"
-          {...texto('enlace')}
-        />
-      </div>
-
-      <SelectorHorario
-        borrador={horario}
-        alCambiar={cambiarHorario}
-        errores={erroresHorario}
-        textoAnterior={
-          props.modo === 'editar' && !props.fuente.horarioSemanal ? datos.horario : null
-        }
-        errorServidor={errores.horarioSemanal || errores.horario || undefined}
-      />
-
-      <CampoTexto
-        etiqueta="Fuente original"
-        obligatorio
-        ayuda="Sitio o documento oficial de donde sale esta información."
-        maxLength={300}
-        {...texto('fuenteOriginal')}
-      />
-
-      <fieldset className={estilos.grupo}>
-        <legend className={estilos.leyenda}>
-          Temas de orientación donde aparece{' '}
-          <span className={estilos.notaLeyenda}>Elige al menos uno</span>
-        </legend>
-        <div className={estilos.casillas}>
-          {necesidades.map((necesidad) => (
-            <label key={necesidad.codigo} className={estilos.casilla}>
-              <input
-                type="checkbox"
-                checked={datos.necesidades.includes(necesidad.codigo)}
-                onChange={() => alternarNecesidad(necesidad.codigo)}
-              />
-              {necesidad.nombre}
-            </label>
-          ))}
-        </div>
-        {errores.necesidades && (
-          <p className={estilos.error} role="alert">
-            {errores.necesidades}
-          </p>
-        )}
-      </fieldset>
-
-      {props.modo === 'crear' && (
+      <SeccionFormulario
+        numero={1}
+        titulo="Información general"
+        descripcion="Quién ofrece el servicio y qué ofrece, con las palabras de la fuente oficial."
+      >
         <div className={estilos.dosColumnas}>
-          <CampoSeleccion
-            etiqueta="Estado inicial"
-            opciones={OPCIONES_ESTADO}
-            value={datos.estado}
-            onChange={(e) => cambiar('estado', e.target.value as DatosNuevaFuente['estado'])}
+          <CampoTexto
+            etiqueta="Institución responsable"
+            obligatorio
+            maxLength={120}
+            autoComplete="off"
+            {...campo('institucion')}
           />
           <CampoTexto
-            etiqueta="Fecha de verificación"
+            etiqueta="Servicio o canal"
             obligatorio
-            ayuda="Cuándo se comprobó en la fuente original."
-            type="date"
-            max={hoyEnColombia()}
-            value={datos.fechaVerificacion}
-            onChange={(e) => cambiar('fechaVerificacion', e.target.value)}
-            error={errores.fechaVerificacion || undefined}
+            maxLength={120}
+            autoComplete="off"
+            {...campo('servicio')}
           />
         </div>
-      )}
-
-      <CampoTexto
-        etiqueta="Observaciones internas (opcional)"
-        ayuda="Solo las ve el equipo de gestión; no se muestran al público."
-        multilinea
-        rows={2}
-        maxLength={500}
-        value={datos.observaciones}
-        onChange={(e) => cambiar('observaciones', e.target.value)}
-        error={errores.observaciones || undefined}
-      />
-
-      <label className={estilos.casilla}>
-        <input
-          type="checkbox"
-          checked={datos.esDemo}
-          onChange={(e) => cambiar('esDemo', e.target.checked)}
+        <CampoTexto
+          etiqueta="Descripción"
+          obligatorio
+          ayuda="Al menos 10 caracteres. Sin diagnósticos ni recomendaciones clínicas."
+          multilinea
+          rows={3}
+          maxLength={1000}
+          {...campo('descripcion')}
         />
-        Dato de demostración: se muestra marcado como ficticio y sin enlaces activos.
-      </label>
+      </SeccionFormulario>
 
-      <div className={comun.fila}>
-        <Boton type="submit" cargando={guardando}>
-          {props.modo === 'crear' ? 'Registrar fuente' : 'Guardar cambios'}
-        </Boton>
+      <SeccionFormulario
+        numero={2}
+        titulo="Canal de contacto"
+        descripcion="Cómo se comunica la persona con el servicio."
+      >
+        <div className={estilos.tresColumnas}>
+          <CampoSeleccion
+            etiqueta="Tipo de canal"
+            obligatorio
+            ayuda={AYUDA_CANAL[datos.tipoCanal]}
+            opciones={OPCIONES_CANAL}
+            value={datos.tipoCanal}
+            onChange={(e) => cambiar('tipoCanal', e.target.value as TipoCanal)}
+            error={errorDe('tipoCanal')}
+          />
+          <CampoTexto
+            etiqueta="Teléfono"
+            obligatorio={pideTelefono(datos.tipoCanal)}
+            ayuda="Números, espacios, +, paréntesis o guiones."
+            type="tel"
+            inputMode="tel"
+            autoComplete="off"
+            {...campo('telefono')}
+          />
+          <CampoTexto
+            etiqueta="Enlace oficial"
+            obligatorio={pideEnlace(datos.tipoCanal)}
+            ayuda="Empieza por https:// (o http://)."
+            type="url"
+            inputMode="url"
+            placeholder="https://"
+            autoComplete="off"
+            {...campo('enlace')}
+          />
+        </div>
+      </SeccionFormulario>
+
+      <SeccionFormulario
+        numero={3}
+        titulo="Disponibilidad"
+        descripcion="Días y horas de atención. Puedes dejarlo sin configurar si la fuente no lo indica."
+      >
+        <SelectorHorario
+          borrador={horario}
+          alCambiar={cambiarHorario}
+          errores={erroresHorario}
+          textoAnterior={
+            props.modo === 'editar' && !props.fuente.horarioSemanal ? datos.horario : null
+          }
+          errorServidor={errorDe('horarioSemanal') || errorDe('horario')}
+        />
+      </SeccionFormulario>
+
+      <SeccionFormulario
+        numero={4}
+        titulo={crear ? 'Origen, temas y verificación' : 'Origen y temas'}
+        descripcion={
+          crear
+            ? 'De dónde sale la información, dónde aparece en Orientación y cuándo se comprobó.'
+            : 'De dónde sale la información y dónde aparece en Orientación. El estado y la verificación se cambian arriba, con sus acciones.'
+        }
+      >
+        <CampoTexto
+          etiqueta="Fuente original"
+          obligatorio
+          ayuda="Sitio o documento oficial de donde sale esta información."
+          maxLength={300}
+          {...campo('fuenteOriginal')}
+        />
+
+        <fieldset
+          className={estilos.grupo}
+          aria-describedby={errorTemas ? idErrorTemas : undefined}
+        >
+          <legend className={estilos.leyenda}>
+            Temas de orientación donde aparece{' '}
+            <span className={estilos.notaLeyenda}>Obligatorio · elige al menos uno</span>
+          </legend>
+          {errorCatalogo ? (
+            <div className={comun.fila}>
+              <p className={estilos.error} role="alert">
+                No se pudieron cargar los temas.
+              </p>
+              <Boton
+                variante="secundario"
+                tamano="sm"
+                onClick={() => {
+                  setErrorCatalogo(false);
+                  setIntentoCatalogo((n) => n + 1);
+                }}
+              >
+                Reintentar
+              </Boton>
+            </div>
+          ) : !catalogo ? (
+            <p className={comun.suave}>Cargando temas…</p>
+          ) : (
+            <div className={estilos.casillas}>
+              {catalogo.map((necesidad) => (
+                <label key={necesidad.codigo} className={estilos.casilla}>
+                  <input
+                    type="checkbox"
+                    checked={datos.necesidades.includes(necesidad.codigo)}
+                    onChange={() => alternarNecesidad(necesidad.codigo)}
+                    aria-invalid={errorTemas ? true : undefined}
+                  />
+                  {necesidad.nombre}
+                </label>
+              ))}
+            </div>
+          )}
+          {errorTemas && (
+            <p id={idErrorTemas} className={estilos.error} role="alert">
+              {errorTemas}
+            </p>
+          )}
+        </fieldset>
+
+        {crear && (
+          <div className={estilos.dosColumnas}>
+            <CampoSeleccion
+              etiqueta="Estado inicial"
+              obligatorio
+              opciones={OPCIONES_ESTADO}
+              value={datos.estado}
+              onChange={(e) => cambiar('estado', e.target.value as DatosNuevaFuente['estado'])}
+            />
+            <CampoTexto
+              etiqueta="Fecha de verificación"
+              obligatorio
+              ayuda="Cuándo se comprobó en la fuente original. No puede ser futura."
+              type="date"
+              max={hoy}
+              {...campo('fechaVerificacion')}
+            />
+          </div>
+        )}
+      </SeccionFormulario>
+
+      <SeccionFormulario numero={5} titulo="Configuración adicional">
+        <CampoTexto
+          etiqueta="Observaciones internas (opcional)"
+          ayuda="Solo las ve el equipo de gestión; no se muestran al público."
+          multilinea
+          rows={2}
+          maxLength={500}
+          {...campo('observaciones')}
+        />
+        <label className={estilos.casilla}>
+          <input
+            type="checkbox"
+            checked={datos.esDemo}
+            onChange={(e) => cambiar('esDemo', e.target.checked)}
+          />
+          Dato de demostración: se muestra marcado como ficticio y sin enlaces activos.
+        </label>
+      </SeccionFormulario>
+
+      <div className={estilos.pieFormulario}>
+        {mensaje?.tono === 'peligro' && <Aviso tono="peligro">{mensaje.texto}</Aviso>}
+        <div className={comun.fila}>
+          <Boton type="submit" cargando={guardando} disabled={!crear && !sucio}>
+            {crear
+              ? guardando
+                ? 'Registrando…'
+                : 'Registrar fuente'
+              : guardando
+                ? 'Guardando…'
+                : 'Guardar cambios'}
+          </Boton>
+          {crear ? (
+            <BotonEnlace href="/gestion/fuentes" variante="fantasma">
+              Cancelar
+            </BotonEnlace>
+          ) : (
+            sucio && (
+              <Boton variante="fantasma" onClick={descartar} disabled={guardando}>
+                Descartar cambios
+              </Boton>
+            )
+          )}
+          <span className={comun.suave} aria-live="polite">
+            {crear
+              ? 'Los campos marcados «Obligatorio» son necesarios para registrar.'
+              : sucio
+                ? 'Tienes cambios sin guardar.'
+                : 'Sin cambios por guardar.'}
+          </span>
+        </div>
       </div>
     </form>
   );
