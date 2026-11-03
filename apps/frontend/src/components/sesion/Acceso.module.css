@@ -1,6 +1,8 @@
 /* «Iniciar con mi Avatar» (/acceso): entrar con una cuenta existente o crear una nueva. */
 
 .pagina {
+  /* Ancho de la columna del acceso: el de una tarjeta de entrada, no el de la página. */
+  --ancho-acceso: 28rem;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   justify-items: center;
@@ -18,7 +20,7 @@
 
 /* Todo en una columna centrada del ancho del formulario de entrada. */
 .pagina > * {
-  width: min(100%, 28rem);
+  width: min(100%, var(--ancho-acceso));
 }
 
 .pagina > header {
@@ -27,18 +29,23 @@
   text-align: center;
 }
 
-/* El registro es más ancho (personaje y formulario lado a lado) y arranca arriba: sus etapas
-   cambian de alto y, centradas, harían saltar la página. */
+/* El registro arranca arriba: sus etapas cambian de alto y, centradas, harían saltar la página.
+   En una sola columna (sin el personaje al lado) conserva el ancho del acceso, alineado con las
+   pestañas; así sus campos no se estiran a lo ancho de la pantalla. */
 .pagina[data-modo='registro'] {
   align-content: start;
 }
 
-.pagina[data-modo='registro'] > header {
-  width: min(100%, 40rem);
-}
+/* Con el personaje y el formulario lado a lado (mismo corte que `Registro.module.css`), la
+   tarjeta suma la columna del personaje y la del formulario conserva el ancho del acceso. */
+@media (min-width: 52rem) {
+  .pagina[data-modo='registro'] > header {
+    width: min(100%, 40rem);
+  }
 
-.pagina > .panelRegistro {
-  width: min(100%, 60rem);
+  .pagina > .panelRegistro {
+    width: min(100%, 52rem);
+  }
 }
 
 .panelEntrar[hidden],
