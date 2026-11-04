@@ -73,8 +73,15 @@ export function ListaSalas() {
               }
             >
               {/* Miniatura de la sala: pared, zócalo y un puesto por cada cupo (decorativa). */}
-              <div className={estilos.miniaturaSala} aria-hidden="true">
+              <div
+                className={estilos.miniaturaSala}
+                aria-hidden="true"
+                data-con-gente={sala.ocupacion > 0 || undefined}
+              >
                 <span className={estilos.ventanaSala} />
+                {/* Punto «en vivo» que late cuando hay alguien dentro (la ocupación exacta va en
+                    texto en el pie de la tarjeta). */}
+                {sala.ocupacion > 0 && <span className={estilos.puntoEnVivo} />}
                 <span className={estilos.puestos}>
                   {Array.from({ length: sala.capacidad }, (_, i) => (
                     <span key={i} data-ocupado={i < sala.ocupacion || undefined} />
