@@ -94,7 +94,7 @@
 @keyframes salir {
   to {
     opacity: 0;
-    transform: translateY(6px) scale(0.98);
+    transform: perspective(1000px) translateY(10px) rotateX(-6deg) scale(0.96);
   }
 }
 
@@ -107,7 +107,7 @@
 @keyframes entrar {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.96);
+    transform: perspective(1000px) translateY(18px) rotateX(9deg) scale(0.95);
   }
 }
 

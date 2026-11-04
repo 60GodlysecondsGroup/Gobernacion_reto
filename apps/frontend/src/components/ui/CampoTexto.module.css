@@ -145,7 +145,13 @@ textarea.control {
 @keyframes aparecerError {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(-4px);
+    transform: none;
   }
 }
 

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { TextoRevelado } from '@/components/movimiento/TextoRevelado';
 import estilos from './EncabezadoPagina.module.css';
 
 /**
@@ -23,11 +24,24 @@ export function EncabezadoPagina({
     <header className={estilos.encabezado}>
       <div className={estilos.textos}>
         {antetitulo && (
-          <p className={`${estilos.antetitulo} ${tono === 'ayuda' ? estilos.antetituloAyuda : ''}`}>
-            {antetitulo}
-          </p>
+          <TextoRevelado
+            as="p"
+            className={`${estilos.antetitulo} ${tono === 'ayuda' ? estilos.antetituloAyuda : ''}`}
+            efecto="desenfoque"
+            paso={30}
+            tramos={[antetitulo]}
+          />
         )}
-        <h1 className={estilos.titulo}>{titulo}</h1>
+        {/* `key`: si el título cambia (p. ej. entrar ↔ crear cuenta), se vuelve a revelar. */}
+        <TextoRevelado
+          key={titulo}
+          as="h1"
+          className={estilos.titulo}
+          efecto="mascara"
+          retraso={90}
+          paso={50}
+          tramos={[titulo]}
+        />
         {children && <div className={estilos.descripcion}>{children}</div>}
       </div>
       {acciones && <div className={estilos.acciones}>{acciones}</div>}

@@ -83,14 +83,19 @@
 @keyframes asentarEstado {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    filter: blur(5px);
+    transform: translateY(10px) scale(0.97);
   }
 }
 
 @keyframes impulsoIcono {
   from {
     opacity: 0;
-    transform: scale(0.7);
+    transform: scale(0.6) rotate(-14deg);
+  }
+  65% {
+    opacity: 1;
+    transform: scale(1.08) rotate(3deg);
   }
 }
 
