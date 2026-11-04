@@ -4,7 +4,13 @@
  */
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { MENSAJES_FUENTE, validarFuente, type DatosValidables } from './fuentes-validacion.ts';
+import {
+  MENSAJES_FUENTE,
+  validarFuente,
+  validarUbicacionManual,
+  type DatosValidables,
+} from './fuentes-validacion.ts';
+import { leerCoordenadas } from './mapas.ts';
 
 const valida: DatosValidables = {
   institucion: 'InstituciónDemo',
@@ -83,5 +89,35 @@ describe('validación de fuentes', () => {
       MENSAJES_FUENTE.fechaFutura,
     );
     assert.deepEqual(validarFuente({ ...valida, fechaVerificacion: hoy }, hoy), {});
+  });
+});
+
+describe('dirección y ubicación', () => {
+  it('la dirección escrita es opcional, con 5 a 200 caracteres', () => {
+    assert.deepEqual(validarFuente({ ...valida, direccion: '' }), {});
+    assert.deepEqual(validarFuente({ ...valida, direccion: 'Calle 38 # 30-25' }), {});
+    assert.deepEqual(validarFuente({ ...valida, direccion: ' abc ' }), {
+      direccion: MENSAJES_FUENTE.direccion,
+    });
+    assert.deepEqual(validarFuente({ ...valida, direccion: 'x'.repeat(201) }), {
+      direccion: MENSAJES_FUENTE.maximo(200),
+    });
+  });
+
+  it('la ubicación a mano necesita un par de coordenadas y su dirección', () => {
+    assert.deepEqual(
+      validarUbicacionManual(
+        { coordenadas: '4.142, -73.6266', direccion: 'Calle 38 # 30-25' },
+        leerCoordenadas,
+      ),
+      {},
+    );
+    assert.deepEqual(
+      validarUbicacionManual({ coordenadas: '4.142', direccion: 'x' }, leerCoordenadas),
+      {
+        coordenadas: MENSAJES_FUENTE.coordenadas,
+        direccion: MENSAJES_FUENTE.direccionUbicacion,
+      },
+    );
   });
 });

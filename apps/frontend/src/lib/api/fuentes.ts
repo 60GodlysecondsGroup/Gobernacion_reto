@@ -1,5 +1,6 @@
 import type { EstadoFuente, TipoCanal } from '@/config/fuentes';
 import type { HorarioSemanal } from '@/lib/horarios';
+import type { UbicacionFuente } from '@/lib/mapas';
 import { api } from './cliente';
 
 export type AccionEstado = 'marcar_revision' | 'verificar' | 'desactivar';
@@ -18,6 +19,9 @@ export type FuenteGestion = {
   horario: string | null;
   /** null en las fuentes registradas antes del horario semanal: conservan su texto. */
   horarioSemanal: HorarioSemanal | null;
+  /** null en las fuentes registradas antes de la ubicación (y en las virtuales). */
+  direccion: string | null;
+  ubicacion: UbicacionFuente | null;
   fuenteOriginal: string;
   fechaVerificacion: string;
   diasDesdeVerificacion: number;
@@ -57,6 +61,10 @@ export type DatosFuente = {
   /** Solo cuenta si `horarioSemanal` es null (texto anterior que se conserva). */
   horario: string;
   horarioSemanal: HorarioSemanal | null;
+  /** Vacía = sin dirección. */
+  direccion: string;
+  /** null = sin ubicación en el mapa (la quita si la había). */
+  ubicacion: UbicacionFuente | null;
   fuenteOriginal: string;
   necesidades: string[];
   observaciones: string;
@@ -93,3 +101,29 @@ export const cambiarEstadoFuente = (
   accion: AccionEstado,
   cuerpo: { motivo?: string; fecha?: string; observacion?: string },
 ) => api.post<DetalleFuente>(`${RUTA}/${encodeURIComponent(id)}/${RUTAS_ACCION[accion]}`, cuerpo);
+
+// ── Búsqueda de lugares (Google Places, a través del backend: la clave nunca llega aquí) ──────
+
+export type SugerenciaLugar = { placeId: string; principal: string; secundario: string | null };
+export type LugarSeleccionado = {
+  placeId: string;
+  nombre: string | null;
+  latitud: number;
+  longitud: number;
+  direccion: string;
+};
+
+/** Si el backend tiene configurada la búsqueda de lugares. */
+export const busquedaLugaresDisponible = () => api.get<{ disponible: boolean }>(`${RUTA}/lugares`);
+
+/** `sesion` agrupa las consultas de una misma búsqueda (una sola sesión facturable en Google). */
+export const buscarLugares = (texto: string, sesion: string, signal?: AbortSignal) =>
+  api.get<{ sugerencias: SugerenciaLugar[] }>(
+    `${RUTA}/lugares/sugerencias?${new URLSearchParams({ texto, sesion })}`,
+    { signal },
+  );
+
+export const obtenerLugar = (placeId: string, sesion: string) =>
+  api.get<{ lugar: LugarSeleccionado }>(
+    `${RUTA}/lugares/${encodeURIComponent(placeId)}?${new URLSearchParams({ sesion })}`,
+  );

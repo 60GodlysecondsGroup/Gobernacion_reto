@@ -24,6 +24,7 @@ import { ContactoServicio, IconoCanal } from './ContactoServicio';
 import estilos from './FichaCompleta.module.css';
 import { ModalFicha } from './ModalFicha';
 import { AVISO_PLATAFORMA, DatosVerificacion, TemasRelacionados } from './PiezasFicha';
+import { UbicacionServicio } from './UbicacionServicio';
 
 type Estado =
   | { tipo: 'cargando' }
@@ -178,6 +179,9 @@ export function FichaCompleta() {
         </Aviso>
       )}
 
+      {/* Dónde queda (atención presencial): a la vista, sin abrir un modal. */}
+      <UbicacionServicio servicio={servicio} />
+
       {/* Cada bloque de la ficha abre su modal */}
       <ul className={estilos.acciones} aria-label="Información del servicio">
         {acciones.map((accion) => (
@@ -220,6 +224,12 @@ export function FichaCompleta() {
           <p className={estilos.rotulo}>Canal</p>
           <ContactoServicio servicio={servicio} />
         </div>
+        {(servicio.ubicacion || servicio.direccion) && (
+          <div className={estilos.bloque}>
+            <p className={estilos.rotulo}>Dirección</p>
+            <UbicacionServicio servicio={servicio} compacta />
+          </div>
+        )}
         {servicio.horario && (
           <div className={estilos.bloque}>
             <p className={estilos.rotulo}>

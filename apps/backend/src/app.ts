@@ -23,6 +23,7 @@ import { crearServicioHilos } from './modules/comunidad/hilos.service.js';
 import { crearRepositorioDlp } from './modules/dlp/dlp.repository.js';
 import { crearServicioDlp } from './modules/dlp/dlp.service.js';
 import { crearRepositorioFuentes } from './modules/fuentes/fuentes.repository.js';
+import { crearClienteLugares, type ClienteLugares } from './modules/fuentes/fuentes.lugares.js';
 import { rutasFuentes } from './modules/fuentes/fuentes.routes.js';
 import { crearServicioFuentes } from './modules/fuentes/fuentes.service.js';
 import { crearRepositorioModeracion } from './modules/moderacion/moderacion.repository.js';
@@ -70,7 +71,10 @@ import { crearServicioSistema } from './modules/sistema/sistema.service.js';
 export type Dependencias = {
   db: Database;
   logger: Logger;
-  config: Pick<Config, 'origenesPermitidos' | 'sesion' | 'salas' | 'openai'>;
+  config: Pick<Config, 'origenesPermitidos' | 'sesion' | 'salas' | 'openai'> &
+    Partial<Pick<Config, 'googleMaps'>>;
+  /** Búsqueda de lugares del panel de fuentes (las pruebas inyectan una falsa). */
+  clienteLugares?: ClienteLugares;
   /**
    * Estado compartido de las salas entre instancias (Redis, ver server.ts). Sin indicarla, cada
    * servidor tiene la suya en memoria: sirve para pruebas y para un solo backend local.
@@ -118,6 +122,7 @@ export function crearServidor({
   limitesAcceso,
   ttlReglasDlpMs,
   intervalosSalas = {},
+  clienteLugares = crearClienteLugares({ claveApi: config.googleMaps?.claveServidor, logger }),
 }: Dependencias): Servidor {
   const app = express();
 
@@ -194,7 +199,7 @@ export function crearServidor({
   const fuentes = crearRepositorioFuentes(db);
   const orientacion = crearServicioOrientacion(fuentes);
   app.use('/api', rutasOrientacion(orientacion));
-  app.use('/api', rutasFuentes(crearServicioFuentes(fuentes)));
+  app.use('/api', rutasFuentes(crearServicioFuentes(fuentes), clienteLugares));
 
   const repositorioSalas = crearRepositorioSalas(db);
   app.use('/api', rutasSalas(repositorioSalas, servicioComunidad));

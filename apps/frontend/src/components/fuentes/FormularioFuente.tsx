@@ -19,6 +19,7 @@ import comun from '../comun.module.css';
 import estilos from './Fuentes.module.css';
 import { SeccionFormulario } from './SeccionFormulario';
 import { SelectorHorario } from './SelectorHorario';
+import { SelectorUbicacion } from './SelectorUbicacion';
 
 type Props =
   | { modo: 'crear'; alGuardar: (datos: DatosNuevaFuente) => Promise<void> }
@@ -60,6 +61,8 @@ function inicial(props: Props): DatosNuevaFuente {
       enlace: f.enlace ?? '',
       horario: f.horario ?? '',
       horarioSemanal: f.horarioSemanal,
+      direccion: f.direccion ?? '',
+      ubicacion: f.ubicacion,
       fuenteOriginal: f.fuenteOriginal,
       necesidades: f.necesidades.map((n) => n.codigo),
       observaciones: f.observaciones ?? '',
@@ -77,6 +80,8 @@ function inicial(props: Props): DatosNuevaFuente {
     enlace: '',
     horario: '',
     horarioSemanal: null,
+    direccion: '',
+    ubicacion: null,
     fuenteOriginal: '',
     necesidades: [],
     observaciones: '',
@@ -96,6 +101,8 @@ const aEdicion = (datos: DatosNuevaFuente): DatosFuente => ({
   enlace: datos.enlace,
   horario: datos.horario,
   horarioSemanal: datos.horarioSemanal,
+  direccion: datos.direccion,
+  ubicacion: datos.ubicacion,
   fuenteOriginal: datos.fuenteOriginal,
   necesidades: datos.necesidades,
   observaciones: datos.observaciones,
@@ -119,6 +126,7 @@ type CampoTextoFuente =
   | 'descripcion'
   | 'telefono'
   | 'enlace'
+  | 'direccion'
   | 'fuenteOriginal'
   | 'observaciones'
   | 'fechaVerificacion';
@@ -344,6 +352,35 @@ export function FormularioFuente(props: Props) {
 
       <SeccionFormulario
         numero={3}
+        titulo="Dirección y ubicación"
+        descripcion={
+          datos.tipoCanal === 'presencial'
+            ? 'Recomendado en la atención presencial: la ficha muestra un mapa pequeño y «Cómo llegar» con Google Maps.'
+            : 'Opcional. Agrégala si además se atiende en una sede física (atención híbrida); los canales virtuales se conservan.'
+        }
+      >
+        <CampoTexto
+          etiqueta="Dirección escrita (opcional)"
+          ayuda="Como la indica la fuente oficial, con piso u oficina si aplica. Se muestra aunque no haya ubicación en el mapa."
+          maxLength={200}
+          autoComplete="off"
+          {...campo('direccion')}
+        />
+        <div className={estilos.grupo} role="group" aria-labelledby="fuente-titulo-ubicacion">
+          <p id="fuente-titulo-ubicacion" className={estilos.leyenda}>
+            Ubicación en el mapa <span className={estilos.notaLeyenda}>Opcional</span>
+          </p>
+          <SelectorUbicacion
+            ubicacion={datos.ubicacion}
+            alCambiar={(ubicacion) => cambiar('ubicacion', ubicacion)}
+            error={errorDe('ubicacion')}
+            lugar={datos.servicio.trim() || 'esta fuente'}
+          />
+        </div>
+      </SeccionFormulario>
+
+      <SeccionFormulario
+        numero={4}
         titulo="Disponibilidad"
         descripcion="Días y horas de atención. Puedes dejarlo sin configurar si la fuente no lo indica."
       >
@@ -359,7 +396,7 @@ export function FormularioFuente(props: Props) {
       </SeccionFormulario>
 
       <SeccionFormulario
-        numero={4}
+        numero={5}
         titulo={crear ? 'Origen, temas y verificación' : 'Origen y temas'}
         descripcion={
           crear
@@ -444,7 +481,7 @@ export function FormularioFuente(props: Props) {
         )}
       </SeccionFormulario>
 
-      <SeccionFormulario numero={5} titulo="Configuración adicional">
+      <SeccionFormulario numero={6} titulo="Configuración adicional">
         <CampoTexto
           etiqueta="Observaciones internas (opcional)"
           ayuda="Solo las ve el equipo de gestión; no se muestran al público."

@@ -21,6 +21,7 @@ import { dominio, hrefTelefono, IconoCanal } from './ContactoServicio';
 import estilos from './DetalleServicio.module.css';
 import { ModalFicha } from './ModalFicha';
 import { AVISO_PLATAFORMA, DatosVerificacion, TemasRelacionados } from './PiezasFicha';
+import { UbicacionServicio } from './UbicacionServicio';
 
 /**
  * Consulta rápida de una ficha (F05, F06, B.6): toda la información del servicio en un modal, sin
@@ -67,7 +68,7 @@ export function ModalServicio({
 
 /**
  * Contenido completo de la ficha, por secciones: estado, cómo contactar (teléfono, enlace,
- * horario), qué ofrece, fuente y verificación. Solo se muestran los datos que tiene el servicio:
+ * horario y, si tiene sede física, dónde queda), qué ofrece, fuente y verificación. Solo se muestran los datos que tiene el servicio:
  * nada inventado ni campos vacíos. Los registros de demostración muestran su contacto como texto,
  * sin enlaces ni llamadas (como en las tarjetas).
  */
@@ -158,6 +159,9 @@ export function DetalleServicio({ servicio }: { servicio: FichaServicio }) {
               </div>
             </div>
           )}
+
+          {/* Sede física (presencial o híbrida): mapa, dirección y «Cómo llegar». */}
+          <UbicacionServicio servicio={servicio} nivelTitulo="h4" sinMarco />
         </section>
 
         <section className={`${estilos.seccion} ${estilos.ofrece}`} aria-labelledby={idOfrece}>
