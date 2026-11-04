@@ -109,9 +109,45 @@
 }
 
 .pestana[aria-selected='true'] {
-  background: var(--color-superficie-solida);
   color: var(--color-primario);
+}
+
+/* La pestaña elegida se marca con una pastilla que se desliza (mismo fondo y sombra que antes). */
+.pestanas {
+  position: relative;
+  isolation: isolate;
+}
+
+.pestana {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ocupa una de las dos columnas (mismo ancho y separación que las pestañas). */
+.pildoraPestana {
+  position: absolute;
+  top: var(--espacio-1);
+  bottom: var(--espacio-1);
+  left: var(--espacio-1);
+  width: calc((100% - 3 * var(--espacio-1)) / 2);
+  border-radius: var(--radio-total);
+  background: var(--color-superficie-solida);
   box-shadow: var(--sombra-1);
+  pointer-events: none;
+  transition: transform 460ms cubic-bezier(0.32, 1.25, 0.5, 1);
+}
+
+.pagina[data-modo='registro'] .pildoraPestana {
+  transform: translateX(calc(100% + var(--espacio-1)));
+}
+
+.textoPestana {
+  display: inline-block;
+  transition: transform 220ms var(--curva-salida);
+}
+
+.pestana:active .textoPestana {
+  transform: scale(0.96);
 }
 
 .pestana:focus-visible {
@@ -217,4 +253,247 @@
   color: var(--color-texto-tenue);
   font-size: var(--texto-xs);
   text-align: center;
+}
+
+/* ─── Movimiento del acceso ───────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  /* El selector llega después del título; los paneles entran desde el lado de su pestaña
+     (la animación se reinicia cada vez que el panel deja de estar oculto). */
+  .pestanas {
+    animation: llegarSelector 560ms var(--curva-salida) 200ms backwards;
+  }
+
+  .panelEntrar:not([hidden]) {
+    transform-origin: 0% 50%;
+    animation: panelDesdeIzquierda 560ms var(--curva-salida);
+  }
+
+  .panelRegistro:not([hidden]) {
+    transform-origin: 100% 50%;
+    animation: panelDesdeDerecha 560ms var(--curva-salida);
+  }
+
+  /* Los campos del formulario aparecen en cascada, uno tras otro. */
+  .formularioCorto > * {
+    animation: llegarCampo 520ms var(--curva-salida) backwards;
+    animation-delay: calc(140ms + var(--n, 0) * 45ms);
+  }
+
+  .formularioCorto > :nth-child(2) {
+    --n: 1;
+  }
+  .formularioCorto > :nth-child(3) {
+    --n: 2;
+  }
+  .formularioCorto > :nth-child(4) {
+    --n: 3;
+  }
+  .formularioCorto > :nth-child(5) {
+    --n: 4;
+  }
+  .formularioCorto > :nth-child(6) {
+    --n: 5;
+  }
+  .formularioCorto > :nth-child(n + 7) {
+    --n: 6;
+  }
+
+  /* Sesión ya abierta: la tarjeta se asienta con profundidad. */
+  .tarjeta {
+    animation: asentarTarjeta 620ms var(--curva-salida) 160ms backwards;
+  }
+}
+
+@keyframes llegarSelector {
+  from {
+    opacity: 0;
+    transform: scale(0.6, 0.9);
+  }
+}
+
+/* Cambio de formulario con profundidad: el panel gira levemente sobre su borde, como una
+   tarjeta que se da la vuelta hacia la persona. */
+@keyframes panelDesdeIzquierda {
+  from {
+    opacity: 0;
+    transform: perspective(1100px) translateX(-26px) rotateY(9deg) scale(0.98);
+  }
+}
+
+@keyframes panelDesdeDerecha {
+  from {
+    opacity: 0;
+    transform: perspective(1100px) translateX(26px) rotateY(-9deg) scale(0.98);
+  }
+}
+
+@keyframes llegarCampo {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(-8px);
+    transform: none;
+  }
+}
+
+@keyframes asentarTarjeta {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+}
+
+/* ─── Capa ambiental y microinteracciones del acceso ──────────────────────── */
+
+/* Halo de luz detrás de la columna del acceso: da profundidad sin añadir contenido. */
+.pagina {
+  position: relative;
+  isolation: isolate;
+  /* Los paneles entran desde los lados: en móvil no deben abrir un scroll horizontal. */
+  overflow-x: clip;
+}
+
+.pagina::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(22rem 16rem at 50% 30%, rgb(115 80 234 / 0.12), transparent 70%),
+    radial-gradient(18rem 14rem at 62% 70%, rgb(94 211 243 / 0.08), transparent 70%);
+  pointer-events: none;
+}
+
+/* La etiqueta del campo enfocado se ilumina y se adelanta un poco. */
+.pagina form label {
+  transition:
+    color 200ms ease,
+    transform 280ms var(--curva-salida);
+}
+
+.pagina form > :focus-within > label:first-child {
+  color: var(--color-primario);
+  transform: translateX(3px);
+}
+
+/* La flecha del botón de entrar se adelanta al pasar el cursor. */
+.enviar svg {
+  transition: transform 280ms var(--curva-salida);
+}
+
+.enviar:hover svg {
+  transform: translateX(3px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* El halo se enciende despacio y respira; su movimiento es muy lento. */
+  .pagina::before {
+    animation:
+      encenderHalo 1.4s var(--curva-salida) backwards,
+      respirarHalo 14s ease-in-out 1.4s infinite alternate;
+  }
+
+  /* Un error al enviar sacude el aviso con suavidad. */
+  .contenedorError [role='alert'] {
+    animation: sacudirAviso 460ms var(--curva-salida);
+  }
+
+  /* El contenedor del error tiene su propia entrada (Motion): fuera de la cascada inicial. */
+  .formularioCorto > .contenedorError {
+    animation: none;
+  }
+
+  /* Identidad: el logo llega girando desde la profundidad y emite un anillo de luz. */
+  .identidad {
+    animation: llegarIdentidad 900ms var(--curva-salida) backwards;
+  }
+
+  .identidad::after {
+    animation: anilloIdentidad 1.4s var(--curva-salida) 500ms both;
+  }
+}
+
+/* En pantallas pequeñas el halo queda quieto: menos trabajo para el móvil. */
+@media (max-width: 39.99rem) {
+  .pagina::before {
+    animation: encenderHalo 1.2s var(--curva-salida) backwards;
+  }
+}
+
+@keyframes encenderHalo {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes respirarHalo {
+  to {
+    transform: translate3d(0, -12px, 0) scale(1.06);
+  }
+}
+
+@keyframes sacudirAviso {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  35% {
+    opacity: 1;
+    transform: translateX(-5px);
+  }
+  55% {
+    transform: translateX(4px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+}
+
+/* Contenedor del aviso de error: recorta mientras su alto se anima. */
+.contenedorError {
+  overflow: hidden;
+}
+
+.identidad {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  margin-bottom: calc(-1 * var(--espacio-2));
+}
+
+.identidad::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 56px;
+  height: 56px;
+  margin: -28px 0 0 -28px;
+  border: 2px solid var(--color-primario);
+  border-radius: 30%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes llegarIdentidad {
+  from {
+    opacity: 0;
+    transform: perspective(600px) translateY(-10px) rotateX(55deg) scale(0.7);
+  }
+}
+
+@keyframes anilloIdentidad {
+  from {
+    opacity: 0.55;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.9);
+  }
 }

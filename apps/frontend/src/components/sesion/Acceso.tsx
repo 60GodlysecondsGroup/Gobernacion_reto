@@ -1,12 +1,15 @@
 'use client';
 
 import { ArrowRight } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useId, useState, type FormEvent } from 'react';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
+import { Logo } from '@/components/layout/Logo';
 import { Aviso, Boton, CampoTexto, CargandoLista } from '@/components/ui';
 import { mensajeDeError } from '@/lib/api/cliente';
 import type { SesionPublica } from '@/lib/api/sesion';
+import { RESORTE_PANEL } from '@/lib/movimiento';
 import {
   CampoContrasena,
   CasillaRecordar,
@@ -71,6 +74,10 @@ export function Acceso() {
 
   return (
     <div className={estilos.pagina} data-modo={modo}>
+      {/* Primera capa de la entrada: la identidad aparece y se enciende antes del título. */}
+      <span className={estilos.identidad} aria-hidden="true">
+        <Logo tamano={56} />
+      </span>
       <EncabezadoPagina
         antetitulo="Iniciar con mi Avatar"
         titulo={modo === 'registro' ? 'Crea tu avatar y entra' : 'Entra con tu avatar'}
@@ -90,6 +97,8 @@ export function Acceso() {
           document.getElementById(`${idPestanas}-${otro}`)?.focus();
         }}
       >
+        {/* Control segmentado: una sola pastilla que se desliza a la pestaña elegida (CSS). */}
+        <span className={estilos.pildoraPestana} aria-hidden="true" />
         {pestanas.map((p) => (
           <button
             key={p.modo}
@@ -102,7 +111,7 @@ export function Acceso() {
             className={estilos.pestana}
             onClick={() => cambiarModo(p.modo)}
           >
-            {p.texto}
+            <span className={estilos.textoPestana}>{p.texto}</span>
           </button>
         ))}
       </div>
@@ -171,7 +180,21 @@ function FormularioEntrar({
 
   return (
     <form className={estilos.formularioCorto} onSubmit={enviar} noValidate>
-      {error && <Aviso tono="peligro">{error}</Aviso>}
+      {/* El error entra y sale con un resorte, sin saltos: su alto se anima al aparecer. */}
+      <AnimatePresence initial={false}>
+        {error && (
+          <motion.div
+            key="error"
+            className={estilos.contenedorError}
+            initial={{ opacity: 0, height: 0, y: -6 }}
+            animate={{ opacity: 1, height: 'auto', y: 0 }}
+            exit={{ opacity: 0, height: 0, y: -4, transition: { duration: 0.18 } }}
+            transition={RESORTE_PANEL}
+          >
+            <Aviso tono="peligro">{error}</Aviso>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <CampoTexto
         etiqueta="Nametag"
         name="username"

@@ -225,14 +225,14 @@ button.botonEtapa:focus-visible {
 @keyframes entrarAdelante {
   from {
     opacity: 0;
-    transform: translateX(1rem);
+    transform: perspective(1100px) translateX(1.25rem) rotateY(-8deg);
   }
 }
 
 @keyframes entrarAtras {
   from {
     opacity: 0;
-    transform: translateX(-1rem);
+    transform: perspective(1100px) translateX(-1.25rem) rotateY(8deg);
   }
 }
 
