@@ -689,3 +689,30 @@
     transform: translateY(-10px) scale(0.93);
   }
 }
+
+/* ── Héroe: título escrito a máquina (una vez) ───────────────────────────── */
+.escritura {
+  display: grid;
+}
+
+.escritura > * {
+  grid-area: 1 / 1;
+}
+
+.reserva {
+  visibility: hidden;
+}
+
+.frase {
+  min-width: 0;
+}
+
+/* El resalte con brillo va en línea para que «crecer, conectar y compartir» corte entre líneas. */
+.escritura .resalteBrillo {
+  display: inline;
+}
+
+.cursor {
+  color: var(--color-primario);
+  font-weight: 400;
+}

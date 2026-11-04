@@ -4,6 +4,7 @@ import type { CSSProperties } from 'react';
 import { Chigui } from '@/components/guia/Chigui';
 import { AtajosOrientacion } from '@/components/inicio/AtajosOrientacion';
 import { ComoFunciona } from '@/components/inicio/ComoFunciona';
+import { TituloHeroe } from '@/components/inicio/TituloHeroe';
 import { ValleComunidades } from '@/components/inicio/ValleComunidades';
 import { Inclinable } from '@/components/movimiento/Inclinable';
 import { Magnetico } from '@/components/movimiento/Magnetico';
@@ -27,19 +28,7 @@ export default function Inicio() {
       {/* ── Héroe ─────────────────────────────────────── */}
       <section className={estilos.heroe} aria-labelledby="titulo-inicio">
         <div className={estilos.textoHeroe}>
-          <TextoRevelado
-            as="h1"
-            id="titulo-inicio"
-            className={estilos.titulo}
-            efecto="mascara"
-            retraso={60}
-            paso={55}
-            tramos={[
-              'Un espacio para ',
-              { texto: 'crecer, conectar y compartir', className: estilos.resalte },
-              ' en Villavicencio',
-            ]}
-          />
+          <TituloHeroe />
           <TextoRevelado
             as="p"
             className={estilos.entradilla}
