@@ -113,4 +113,22 @@ const ARTE: Record<IdObjetoSala, React.ReactNode> = {
       <rect x="3" y="22" width="18" height="1" fill={SOMBRA} />
     </>
   ),
+  // Rincón de juegos: una maquinita con pantalla de noche y una luciérnaga.
+  arcade: (
+    <>
+      <rect x="5" y="2" width="14" height="20" fill="#3b3fa8" />
+      <rect x="6" y="3" width="12" height="2" fill="#7c6cf2" />
+      <rect x="7" y="6" width="10" height="7" fill="#1d1f52" />
+      <rect x="8" y="11" width="8" height="2" fill="#2b6a3f" />
+      <rect x="12" y="8" width="2" height="2" fill="#f9ff9e" />
+      <rect x="11" y="9" width="1" height="1" fill="rgb(249 255 158 / 0.5)" />
+      <rect x="7" y="15" width="10" height="3" fill="#2a2d7a" />
+      <rect x="8" y="16" width="2" height="1" fill="#e5534b" />
+      <rect x="11" y="16" width="1" height="1" fill="#f2a623" />
+      <rect x="13" y="16" width="1" height="1" fill="#17a97e" />
+      <rect x="15" y="16" width="1" height="1" fill="#2f9be0" />
+      <rect x="6" y="19" width="12" height="2" fill="#2a2d7a" />
+      <rect x="4" y="22" width="16" height="1" fill={SOMBRA} />
+    </>
+  ),
 };

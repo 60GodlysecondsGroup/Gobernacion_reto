@@ -84,14 +84,10 @@ export const MENSAJES_SALA = {
 };
 
 // ── Objetos interactivos de la sala (cuelgan de la pared del escenario) ─────────────────
-export type IdTareaSala = 'conectar' | 'ordenar' | 'animo' | 'que-harias' | 'detecta' | 'retos';
+export type IdTareaSala =
+  'conectar' | 'ordenar' | 'animo' | 'que-harias' | 'detecta' | 'retos' | 'minijuegos';
 export type IdObjetoSala =
-  | 'tablero'
-  | 'pizarra'
-  | 'cafe'
-  | 'encuentro'
-  | 'escritorio'
-  | 'estanteria';
+  'tablero' | 'pizarra' | 'cafe' | 'encuentro' | 'escritorio' | 'estanteria' | 'arcade';
 
 export const OBJETOS_SALA: {
   id: IdObjetoSala;
@@ -141,6 +137,13 @@ export const OBJETOS_SALA: {
     tarea: 'retos',
     titulo: 'Retos rápidos',
     instruccion: 'Encuentra las parejas y responde tres preguntas.',
+  },
+  {
+    id: 'arcade',
+    objeto: 'Rincón de juegos',
+    tarea: 'minijuegos',
+    titulo: 'Minijuegos del valle',
+    instruccion: 'Elige un juego corto. No hay puntos ni premios: es solo para divertirse.',
   },
 ];
 

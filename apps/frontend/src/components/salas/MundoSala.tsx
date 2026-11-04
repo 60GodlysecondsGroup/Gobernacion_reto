@@ -20,6 +20,7 @@ import { geometriaEscenario } from './Escenario2D';
 import estilos from './MundoSala.module.css';
 import { ObjetoArte } from './ObjetoArte';
 import { RetosRapidos } from './RetosRapidos';
+import { MinijuegosValle } from './MinijuegosValle';
 import { ConectarIdeas, EstadoAnimo, OrdenarIdeas } from './TareasRapidas';
 
 type Celda = { x: number; y: number };
@@ -313,6 +314,8 @@ export function MundoSala({
         return <EstadoAnimo key={tocado?.vez} {...comunes} />;
       case 'retos':
         return <RetosRapidos key={tocado?.vez} {...comunes} />;
+      case 'minijuegos':
+        return <MinijuegosValle key={tocado?.vez} {...comunes} />;
       default:
         return juego ? (
           <Minijuego
@@ -451,6 +454,12 @@ export function MundoSala({
 
       <ModalFicha
         abierto={activo !== null}
+        // Los juegos necesitan más espacio para jugar con comodidad.
+        ancho={
+          objeto && ['minijuegos', 'retos', 'que-harias', 'detecta'].includes(objeto.tarea)
+            ? 'amplio'
+            : 'normal'
+        }
         alCerrar={cerrar}
         icono={activo ? <span className={estilos.iconoModal}><ObjetoArte id={activo} /></span> : null}
         antetitulo={objeto ? `${objeto.objeto} · ${sala}` : ''}

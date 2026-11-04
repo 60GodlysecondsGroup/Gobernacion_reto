@@ -1,0 +1,433 @@
+/* Minijuegos del valle: menú de tarjetas y tres juegos cortos con más espacio para jugar. */
+.menu,
+.juego,
+.zona {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.lema {
+  margin: 0;
+  color: var(--color-texto-suave);
+}
+
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: var(--espacio-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tarjeta {
+  display: grid;
+  justify-items: start;
+  gap: var(--espacio-2);
+  width: 100%;
+  height: 100%;
+  padding: var(--espacio-4);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie-solida);
+  color: var(--color-texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--transicion),
+    box-shadow var(--transicion-lenta),
+    translate 260ms var(--curva-salida);
+}
+
+.tarjeta strong {
+  font-family: var(--fuente-titulos);
+  font-size: var(--texto-md);
+}
+
+.tarjeta span:last-child {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.tarjeta:hover {
+  border-color: var(--color-borde-fuerte);
+  box-shadow: var(--sombra-2);
+  translate: 0 -2px;
+}
+
+.tarjeta:active {
+  scale: 0.98;
+}
+
+.tarjeta:focus-visible,
+.volver:focus-visible,
+.luciernaga:focus-visible,
+.libro:focus-visible,
+.planta:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.iconoJuego {
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: var(--radio-md);
+  background: var(--color-primario-suave);
+  color: var(--color-primario);
+}
+
+.iconoJuego[data-juego='luciernagas'] {
+  background: linear-gradient(180deg, #1d1f52, #33307a);
+}
+
+.iconoJuego[data-juego='huerto'] {
+  background: var(--color-exito-suave);
+  color: var(--color-exito);
+}
+
+.volver {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 6px;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: var(--radio-total);
+  background: transparent;
+  color: var(--color-primario);
+  font: inherit;
+  font-weight: var(--peso-fuerte);
+  cursor: pointer;
+}
+
+.marcador {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--espacio-2);
+  margin: 0;
+  font-weight: var(--peso-fuerte);
+}
+
+.inicio {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--espacio-3);
+  padding: var(--espacio-4);
+  background: rgb(10 10 30 / 0.45);
+  color: #fff;
+  text-align: center;
+}
+
+.inicio p {
+  max-width: 22rem;
+  margin: 0;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--espacio-2);
+}
+
+.final {
+  display: grid;
+  justify-items: center;
+  gap: var(--espacio-3);
+  padding: var(--espacio-5) var(--espacio-4);
+  border-radius: var(--radio-lg);
+  background: var(--color-primario-suave);
+  text-align: center;
+}
+
+.final h3 {
+  margin: 0;
+  font-family: var(--fuente-titulos);
+  font-size: var(--texto-xl, 1.5rem);
+  outline: none;
+}
+
+.final p {
+  margin: 0;
+}
+
+/* ── Luciérnagas ── */
+.noche {
+  position: relative;
+  overflow: hidden;
+  height: clamp(16rem, 48vh, 24rem);
+  border-radius: var(--radio-lg);
+  background:
+    radial-gradient(30rem 14rem at 50% 115%, #2b6a3f, transparent 70%),
+    linear-gradient(180deg, #0f1235 0%, #1d1f52 60%, #24395a 100%);
+}
+
+.luciernaga {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, #f9ff9e 0 4px, rgb(232 255 154 / 0.55) 5px, transparent 15px);
+  cursor: pointer;
+  animation: luzLuciernaga 2.8s ease-in-out forwards;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .luciernaga {
+    animation:
+      luzLuciernaga 2.8s ease-in-out forwards,
+      vagarLuciernaga 2.8s ease-in-out forwards;
+  }
+}
+
+@keyframes luzLuciernaga {
+  0% {
+    opacity: 0;
+  }
+  15%,
+  70% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes vagarLuciernaga {
+  0% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 10px -12px;
+  }
+  100% {
+    translate: -6px -22px;
+  }
+}
+
+.cocuyoJuego {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  filter: drop-shadow(0 4px 10px rgb(242 169 59 / 0.5));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cocuyoJuego {
+    animation: saltoCocuyo 480ms cubic-bezier(0.32, 1.25, 0.5, 1);
+  }
+}
+
+@keyframes saltoCocuyo {
+  40% {
+    transform: translateY(-14px) rotate(-10deg);
+  }
+}
+
+/* ── Biblioteca ── */
+.estante {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(6px, 2vw, 14px);
+  height: clamp(13rem, 40vh, 18rem);
+  margin: 0;
+  padding: var(--espacio-4) var(--espacio-4) 0;
+  border-bottom: 12px solid #8a5f38;
+  border-radius: var(--radio-lg) var(--radio-lg) 0 0;
+  background: linear-gradient(180deg, #f3e3c6, #e6cfa4);
+  list-style: none;
+}
+
+.estante li {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+}
+
+.libro {
+  display: grid;
+  place-items: start center;
+  width: clamp(2.2rem, 9vw, 3.4rem);
+  height: var(--alto);
+  padding-top: 8px;
+  border: 0;
+  border-radius: 4px 4px 0 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgb(0 0 0 / 0.18) 0 4px,
+      transparent 4px calc(100% - 4px),
+      rgb(0 0 0 / 0.12) calc(100% - 4px)
+    ),
+    var(--color);
+  color: #fff;
+  font: inherit;
+  font-weight: var(--peso-fuerte);
+  cursor: pointer;
+  transition: transform 220ms var(--curva-salida);
+}
+
+.libro span {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 0.25);
+}
+
+.libro[data-elegido] {
+  transform: translateY(-14px);
+  box-shadow: 0 0 0 3px var(--color-foco);
+}
+
+.estante[data-listo] .libro {
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .estante[data-listo] li {
+    animation: celebrarLibro 600ms var(--curva-salida) both;
+  }
+
+  .estante[data-listo] li:nth-child(2) {
+    animation-delay: 60ms;
+  }
+  .estante[data-listo] li:nth-child(3) {
+    animation-delay: 120ms;
+  }
+  .estante[data-listo] li:nth-child(4) {
+    animation-delay: 180ms;
+  }
+  .estante[data-listo] li:nth-child(5) {
+    animation-delay: 240ms;
+  }
+  .estante[data-listo] li:nth-child(6) {
+    animation-delay: 300ms;
+  }
+}
+
+@keyframes celebrarLibro {
+  40% {
+    transform: translateY(-12px);
+  }
+}
+
+/* ── Huerto ── */
+.huerto {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radio-lg);
+  background: linear-gradient(180deg, #bfe6ff 0%, #e6f6d8 40%, #9b6b43 40%, #8a5f38 100%);
+}
+
+.parcelas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(8px, 2vw, 16px);
+  margin: 0;
+  padding: clamp(5rem, 14vh, 7rem) var(--espacio-4) var(--espacio-4);
+  list-style: none;
+}
+
+.planta {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px 6px 8px;
+  border: 0;
+  border-radius: var(--radio-md);
+  background: rgb(80 50 25 / 0.35);
+  color: #3fa34d;
+  cursor: pointer;
+  transition:
+    color 300ms ease,
+    transform 300ms var(--curva-salida);
+}
+
+.planta[data-agua='3'] svg {
+  transform: scale(1.15);
+}
+
+.planta[data-agua='2'] {
+  color: #6fbf4a;
+}
+
+.planta[data-agua='1'] {
+  color: #c9b14a;
+}
+
+.planta[data-agua='0'] {
+  color: #8a7a5a;
+  cursor: default;
+}
+
+.planta[data-agua='0'] svg {
+  transform: rotate(-24deg) translateY(4px);
+}
+
+.planta svg {
+  transition: transform 300ms var(--curva-salida);
+}
+
+.planta:not(:disabled):active {
+  transform: scale(0.95);
+}
+
+.nivel {
+  display: block;
+  width: 80%;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: rgb(0 0 0 / 0.25);
+}
+
+.nivel span {
+  display: block;
+  height: 100%;
+  background: #4fb6ff;
+  transform-origin: 0 50%;
+  transition: transform 300ms ease;
+}
+
+.gota {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  color: #4fb6ff;
+  translate: -50% 0;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .gota {
+    animation: caerGota 600ms ease-in;
+  }
+}
+
+@keyframes caerGota {
+  0% {
+    opacity: 1;
+    transform: translateY(-12px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
