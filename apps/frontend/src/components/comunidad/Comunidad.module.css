@@ -435,6 +435,12 @@
 @keyframes llegarRespuesta {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    clip-path: inset(0 0 100% 0 round var(--radio-md));
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0 round var(--radio-md));
+    transform: none;
   }
 }

@@ -498,7 +498,8 @@
 @keyframes llegarMensaje {
   from {
     opacity: 0;
-    transform: translateY(6px) scale(0.97);
+    filter: blur(3px);
+    transform: translateY(8px) scale(0.92);
   }
 }
 
@@ -546,7 +547,7 @@
 @keyframes entrarSala {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: perspective(1000px) translateY(18px) rotateX(8deg) scale(0.97);
   }
 }
 

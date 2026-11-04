@@ -211,7 +211,13 @@
 @keyframes entrarBitacora {
   from {
     opacity: 0;
+    clip-path: inset(0 100% 0 0);
     transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(-8px);
+    transform: none;
   }
 }
 

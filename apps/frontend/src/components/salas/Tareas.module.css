@@ -261,7 +261,13 @@
 @keyframes entrar {
   from {
     opacity: 0;
+    clip-path: inset(0 0 100% 0);
     transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(-8px);
+    transform: none;
   }
 }
 

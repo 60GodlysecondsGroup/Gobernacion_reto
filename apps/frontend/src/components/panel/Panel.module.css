@@ -543,6 +543,6 @@ a.indicadorDestacado:hover {
 @keyframes llegarIndicador {
   from {
     opacity: 0;
-    transform: translateY(12px) scale(0.98);
+    transform: perspective(800px) translateY(12px) rotateX(-16deg) scale(0.96);
   }
 }

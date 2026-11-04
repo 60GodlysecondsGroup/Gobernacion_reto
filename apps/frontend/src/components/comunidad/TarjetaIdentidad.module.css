@@ -201,6 +201,6 @@
 @keyframes llegarTarjeta {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: perspective(900px) translateX(-10px) rotateY(-18deg) scale(0.96);
   }
 }

@@ -284,7 +284,8 @@
 @keyframes aparecerValor {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    filter: blur(3px);
+    transform: translateY(4px) scale(0.96);
   }
 }
 
