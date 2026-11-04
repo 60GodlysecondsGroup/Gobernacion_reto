@@ -22,48 +22,19 @@ export function Logo({
   tono?: 'claro' | 'oscuro';
   className?: string;
 }) {
-  const arco = 'M9.5 37V23.5a14.5 14.5 0 0 1 29 0V37';
-  const ventanas =
-    variante === 'simbolo' && tono === 'claro'
-      ? ['#2f9be0', '#f2a623', '#17a97e', '#7c6cf2']
-      : ['#8fd3ff', '#ffc857', '#7de3c3', '#c4bdff'];
-  const colorArco = variante === 'simbolo' && tono === 'claro' ? '#33198a' : '#fff';
-
+  // Logo oficial (PNG 359×369): se respeta su proporción con height derivado del ancho.
+  const alto = (tamano * 369) / 359;
   return (
-    <svg
-      width={tamano}
-      height={variante === 'simbolo' ? (tamano * 33) / 38 : tamano}
-      viewBox={variante === 'simbolo' ? '5 7 38 33' : '0 0 48 48'}
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/marca/comunidad_protegida_logo.png"
+      alt=""
       aria-hidden="true"
-      focusable="false"
+      width={tamano}
+      height={alto}
+      style={{ width: tamano, height: 'auto', objectFit: 'contain' }}
       className={[estilos.logo, className].filter(Boolean).join(' ')}
-    >
-      {variante === 'icono' && (
-        <>
-          <defs>
-            <linearGradient id="cp-logo-fondo" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="#7350ea" />
-              <stop offset="1" stopColor="#33198a" />
-            </linearGradient>
-          </defs>
-          <rect width="48" height="48" rx="13" fill="url(#cp-logo-fondo)" />
-        </>
-      )}
-      <path
-        d={arco}
-        fill="none"
-        stroke={colorArco}
-        strokeWidth="4.2"
-        strokeLinecap="round"
-        className={estilos.arco}
-      />
-      <g className={estilos.ventanas}>
-        <rect x="16.5" y="21" width="6.8" height="6.8" rx="2" fill={ventanas[0]} />
-        <rect x="24.7" y="21" width="6.8" height="6.8" rx="2" fill={ventanas[1]} />
-        <rect x="16.5" y="29.2" width="6.8" height="6.8" rx="2" fill={ventanas[2]} />
-        <rect x="24.7" y="29.2" width="6.8" height="6.8" rx="2" fill={ventanas[3]} />
-      </g>
-    </svg>
+    />
   );
 }
 
