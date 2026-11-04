@@ -1,0 +1,142 @@
+/* Escena del acceso: el formulario y Cocuyo volando a su lado (decorativo, sin clics). */
+.escena {
+  position: relative;
+}
+
+.cocuyo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  width: 46px;
+  height: 46px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 600ms ease;
+  /* Halo de luz que lo acompaña. */
+  filter: drop-shadow(0 6px 14px rgb(242 169 59 / 0.35));
+}
+
+.cocuyo[data-visible] {
+  opacity: 1;
+}
+
+.cuerpo {
+  display: block;
+  transform-origin: 50% 70%;
+}
+
+.cuerpo svg {
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 39.99rem) {
+  .cocuyo {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Triste: se encoge y baja un poco. */
+  .cocuyo[data-modo='triste'] .cuerpo {
+    animation: entristecer 700ms var(--curva-salida) forwards;
+  }
+
+  /* Celebra: salta, gira y se estira. */
+  .cocuyo[data-modo='celebrar'] .cuerpo {
+    animation: celebrar 900ms cubic-bezier(0.32, 1.25, 0.5, 1) 2;
+  }
+
+  /* Mirando un campo: se acerca un poco, curioso. */
+  .cocuyo[data-modo='mirar'] .cuerpo,
+  .cocuyo[data-modo='tapar'] .cuerpo {
+    animation: curiosear 2.4s ease-in-out infinite;
+  }
+}
+
+@keyframes entristecer {
+  to {
+    transform: translateY(8px) scale(0.9) rotate(-6deg);
+  }
+}
+
+@keyframes celebrar {
+  0% {
+    transform: none;
+  }
+  30% {
+    transform: translateY(-18px) scale(1.1, 0.92) rotate(-12deg);
+  }
+  60% {
+    transform: translateY(-10px) rotate(200deg) scale(1.05);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes curiosear {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: translateY(-3px) rotate(-4deg);
+  }
+}
+
+/* Chispas de celebración alrededor de Cocuyo. */
+.chispas span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  background: #f7c96f;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .chispas span {
+    animation: chispa 900ms ease-out 2;
+  }
+
+  .chispas span:nth-child(1) {
+    --cx: -26px;
+    --cy: -22px;
+  }
+
+  .chispas span:nth-child(2) {
+    --cx: 26px;
+    --cy: -20px;
+    animation-delay: 80ms;
+  }
+
+  .chispas span:nth-child(3) {
+    --cx: -22px;
+    --cy: 18px;
+    animation-delay: 160ms;
+    background: #b9a6f8;
+  }
+
+  .chispas span:nth-child(4) {
+    --cx: 24px;
+    --cy: 20px;
+    animation-delay: 240ms;
+    background: #9fe0c8;
+  }
+}
+
+@keyframes chispa {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--cx)), calc(-50% + var(--cy))) scale(1);
+  }
+}
