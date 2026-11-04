@@ -502,6 +502,20 @@
     transition: opacity var(--barra-aparecer-opacidad);
   }
 
+  /* Escritorio: salida rápida y limpia (sale del todo, con su sombra) y vuelta más suave, con
+     una curva que frena al final, como las barras de las apps de Apple. */
+  @media (min-width: 64rem) {
+    .encabezado {
+      --barra-aparecer: 480ms cubic-bezier(0.22, 1, 0.36, 1);
+      --barra-ocultar: 280ms cubic-bezier(0.4, 0, 0.6, 1);
+      --barra-ocultar-opacidad: 200ms cubic-bezier(0.4, 0, 1, 1) 60ms;
+    }
+
+    :global(html[data-desplazamiento='abajo']) .encabezado {
+      transform: translateY(calc(-100% - var(--espacio-4)));
+    }
+  }
+
   /* Con «reducir movimiento» el cambio es inmediato (regla global): sin retardo en el fundido. */
   @media (prefers-reduced-motion: reduce) {
     .barra,

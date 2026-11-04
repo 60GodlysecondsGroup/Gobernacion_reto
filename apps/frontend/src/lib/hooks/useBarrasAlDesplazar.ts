@@ -7,6 +7,13 @@ import { useEffect } from 'react';
 const CONSULTA_MOVIL = '(max-width: 63.99rem)';
 /** Recorrido mínimo en un mismo sentido antes de cambiar de barra: ignora roces y temblores. */
 const UMBRAL = 24;
+/**
+ * Escritorio: el encabezado se va apenas se empieza a bajar (unos píxeles bastan para filtrar
+ * el temblor del trackpad) y solo se queda fijo pegado al inicio.
+ */
+const UMBRAL_ESCRITORIO = 6;
+const ZONA_INICIO_ESCRITORIO = 8;
+const ESPERA_INICIAL_ESCRITORIO = 150;
 /** Al principio de la página (aprox. el alto del encabezado) se ven las dos barras. */
 const ZONA_INICIO = 80;
 /** Tras cargar cada página (ms), el scroll que se mueva solo no oculta ninguna barra. */
@@ -47,7 +54,8 @@ export function useBarrasAlDesplazar() {
       const y = posicion();
       const delta = y - anterior;
       anterior = y;
-      if (y <= ZONA_INICIO) {
+      const movil = consulta.matches;
+      if (y <= (movil ? ZONA_INICIO : ZONA_INICIO_ESCRITORIO)) {
         recorrido = 0;
         fijar(null);
         return;
@@ -61,7 +69,9 @@ export function useBarrasAlDesplazar() {
       if (delta === 0) return;
       // Cambiar de sentido reinicia el recorrido acumulado.
       recorrido = Math.sign(delta) === Math.sign(recorrido) ? recorrido + delta : delta;
-      if (Math.abs(recorrido) >= UMBRAL) fijar(recorrido > 0 ? 'abajo' : 'arriba');
+      if (Math.abs(recorrido) >= (movil ? UMBRAL : UMBRAL_ESCRITORIO)) {
+        fijar(recorrido > 0 ? 'abajo' : 'arriba');
+      }
     };
 
     const alDesplazar = () => {
@@ -76,7 +86,7 @@ export function useBarrasAlDesplazar() {
       fijar(null);
       anterior = posicion();
       recorrido = 0;
-      listaEn = performance.now() + ESPERA_INICIAL;
+      listaEn = performance.now() + (consulta.matches ? ESPERA_INICIAL : ESPERA_INICIAL_ESCRITORIO);
       window.addEventListener('scroll', alDesplazar, { passive: true });
     };
 
