@@ -66,6 +66,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <Suspense fallback={null}>
           <BarraProgreso />
         </Suspense>
+        <div className="progreso-scroll" aria-hidden="true" />
         <LuzPuntero />
         <ProveedorMovimiento>
           <ProveedorSesion>

@@ -93,9 +93,17 @@
   animation-delay: 270ms;
 }
 
+/* Cada bloque emerge de su propio contenedor enmascarado (no un simple fundido): la máscara se
+   abre de abajo arriba mientras el bloque sube. Al terminar no queda recorte. */
 @keyframes asentarBloque {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    clip-path: inset(0 0 40% 0 round var(--radio-lg));
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0 round var(--radio-lg));
+    transform: none;
   }
 }

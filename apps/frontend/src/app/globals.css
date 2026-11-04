@@ -332,10 +332,15 @@ body::after {
  */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
+    /* Entrada al llegar y salida suave al irse por arriba (solo cuando ya casi no se ve). */
     .revelar {
-      animation: revelar linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 40%;
+      animation:
+        revelar linear both,
+        salir-scroll linear forwards;
+      animation-timeline: view(), view();
+      animation-range:
+        entry 0% entry 40%,
+        exit 45% exit 100%;
     }
   }
 }
@@ -343,6 +348,493 @@ body::after {
 @keyframes revelar {
   from {
     opacity: 0;
-    transform: translateY(28px);
+    clip-path: inset(0 0 30% 0);
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(-80px);
+    transform: none;
+  }
+}
+
+/*
+ * Variantes del revelado al hacer scroll, para no repetir la misma entrada en toda la página:
+ * `revelar-profundidad` llega desde atrás (escala) y `revelar-lateral` se desliza desde un lado.
+ * Mismo criterio que `revelar`: sin soporte o con «reducir movimiento», todo está visible.
+ */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .revelar-profundidad {
+      animation:
+        revelar-profundidad linear both,
+        salir-profundidad linear forwards;
+      animation-timeline: view(), view();
+      animation-range:
+        entry 0% entry 45%,
+        exit 40% exit 100%;
+    }
+
+    .revelar-lateral {
+      animation:
+        revelar-lateral linear both,
+        salir-scroll linear forwards;
+      animation-timeline: view(), view();
+      animation-range:
+        entry 10% entry 60%,
+        exit 45% exit 100%;
+    }
+  }
+}
+
+@keyframes revelar-profundidad {
+  from {
+    opacity: 0;
+    transform: perspective(1200px) translateY(40px) rotateX(10deg) scale(0.95);
+  }
+}
+
+@keyframes revelar-lateral {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+    transform: translateX(-28px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(-80px);
+    transform: none;
+  }
+}
+
+/* Salidas al abandonar la vista por arriba: se alejan un poco y se atenúan. */
+@keyframes salir-scroll {
+  from {
+    clip-path: inset(-80px);
+  }
+  to {
+    opacity: 0.25;
+    clip-path: inset(14% -80px -80px);
+    transform: translateY(-18px) scale(0.98);
+  }
+}
+
+@keyframes salir-profundidad {
+  to {
+    opacity: 0.3;
+    transform: translateY(-24px) scale(0.94);
+  }
+}
+
+/*
+ * Indicador de lectura: una línea fina arriba que avanza con el scroll de la página. Sin
+ * JavaScript (línea de tiempo del scroll del documento); en páginas sin scroll no se ve.
+ */
+.progreso-scroll {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 60;
+  height: 3px;
+  background: var(--degradado-accion);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  pointer-events: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .progreso-scroll {
+      animation: avanzar-lectura linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
+}
+
+@keyframes avanzar-lectura {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/*
+ * Revelado por mosaico (inspirado en los «tile reveal»): el elemento se descubre en una cuadrícula
+ * de 6 × 4 teselas que se encienden en diagonal, con un poco de azar. Solo CSS: cada tesela es
+ * una capa de máscara cuya opacidad es una propiedad registrada (`@property`) que se anima por
+ * separado. Sin soporte, o con «reducir movimiento», no hay máscara: el contenido se ve entero.
+ * Uso: `className="mosaico"`; `--mosaico-retraso` adelanta o atrasa la secuencia. No ponerlo en
+ * un elemento con sombra exterior (la máscara la recortaría): mejor en su contenido.
+ */
+@property --tesela-0 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-1 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-2 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-3 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-4 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-5 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-6 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-7 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-8 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-9 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-10 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-11 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-12 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-13 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-14 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-15 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-16 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-17 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-18 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-19 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-20 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-21 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-22 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+@property --tesela-23 {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mosaico {
+    /* Teselas un poco más grandes que su celda: se solapan y no quedan juntas visibles. */
+    -webkit-mask-image:
+      linear-gradient(rgb(0 0 0 / var(--tesela-0)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-1)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-2)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-3)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-4)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-5)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-6)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-7)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-8)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-9)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-10)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-11)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-12)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-13)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-14)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-15)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-16)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-17)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-18)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-19)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-20)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-21)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-22)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-23)) 0 0);
+    mask-image:
+      linear-gradient(rgb(0 0 0 / var(--tesela-0)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-1)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-2)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-3)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-4)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-5)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-6)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-7)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-8)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-9)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-10)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-11)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-12)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-13)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-14)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-15)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-16)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-17)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-18)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-19)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-20)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-21)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-22)) 0 0),
+      linear-gradient(rgb(0 0 0 / var(--tesela-23)) 0 0);
+    -webkit-mask-size: calc(100% / 6 + 1px) calc(100% / 4 + 1px);
+    mask-size: calc(100% / 6 + 1px) calc(100% / 4 + 1px);
+    -webkit-mask-position:
+      0% 0%,
+      20% 0%,
+      40% 0%,
+      60% 0%,
+      80% 0%,
+      100% 0%,
+      0% 33.33%,
+      20% 33.33%,
+      40% 33.33%,
+      60% 33.33%,
+      80% 33.33%,
+      100% 33.33%,
+      0% 66.67%,
+      20% 66.67%,
+      40% 66.67%,
+      60% 66.67%,
+      80% 66.67%,
+      100% 66.67%,
+      0% 100%,
+      20% 100%,
+      40% 100%,
+      60% 100%,
+      80% 100%,
+      100% 100%;
+    mask-position:
+      0% 0%,
+      20% 0%,
+      40% 0%,
+      60% 0%,
+      80% 0%,
+      100% 0%,
+      0% 33.33%,
+      20% 33.33%,
+      40% 33.33%,
+      60% 33.33%,
+      80% 33.33%,
+      100% 33.33%,
+      0% 66.67%,
+      20% 66.67%,
+      40% 66.67%,
+      60% 66.67%,
+      80% 66.67%,
+      100% 66.67%,
+      0% 100%,
+      20% 100%,
+      40% 100%,
+      60% 100%,
+      80% 100%,
+      100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    animation-name:
+      tesela-0, tesela-1, tesela-2, tesela-3, tesela-4, tesela-5, tesela-6, tesela-7, tesela-8,
+      tesela-9, tesela-10, tesela-11, tesela-12, tesela-13, tesela-14, tesela-15, tesela-16,
+      tesela-17, tesela-18, tesela-19, tesela-20, tesela-21, tesela-22, tesela-23;
+    animation-duration: 520ms;
+    animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+    animation-fill-mode: backwards;
+    animation-delay:
+      calc(var(--mosaico-retraso, 0ms) + 20ms), calc(var(--mosaico-retraso, 0ms) + 115ms),
+      calc(var(--mosaico-retraso, 0ms) + 119ms), calc(var(--mosaico-retraso, 0ms) + 190ms),
+      calc(var(--mosaico-retraso, 0ms) + 261ms), calc(var(--mosaico-retraso, 0ms) + 278ms),
+      calc(var(--mosaico-retraso, 0ms) + 59ms), calc(var(--mosaico-retraso, 0ms) + 162ms),
+      calc(var(--mosaico-retraso, 0ms) + 199ms), calc(var(--mosaico-retraso, 0ms) + 226ms),
+      calc(var(--mosaico-retraso, 0ms) + 298ms), calc(var(--mosaico-retraso, 0ms) + 367ms),
+      calc(var(--mosaico-retraso, 0ms) + 113ms), calc(var(--mosaico-retraso, 0ms) + 223ms),
+      calc(var(--mosaico-retraso, 0ms) + 252ms), calc(var(--mosaico-retraso, 0ms) + 288ms),
+      calc(var(--mosaico-retraso, 0ms) + 332ms), calc(var(--mosaico-retraso, 0ms) + 390ms),
+      calc(var(--mosaico-retraso, 0ms) + 192ms), calc(var(--mosaico-retraso, 0ms) + 246ms),
+      calc(var(--mosaico-retraso, 0ms) + 279ms), calc(var(--mosaico-retraso, 0ms) + 345ms),
+      calc(var(--mosaico-retraso, 0ms) + 390ms), calc(var(--mosaico-retraso, 0ms) + 475ms);
+  }
+}
+
+@keyframes tesela-0 {
+  from {
+    --tesela-0: 0;
+  }
+}
+@keyframes tesela-1 {
+  from {
+    --tesela-1: 0;
+  }
+}
+@keyframes tesela-2 {
+  from {
+    --tesela-2: 0;
+  }
+}
+@keyframes tesela-3 {
+  from {
+    --tesela-3: 0;
+  }
+}
+@keyframes tesela-4 {
+  from {
+    --tesela-4: 0;
+  }
+}
+@keyframes tesela-5 {
+  from {
+    --tesela-5: 0;
+  }
+}
+@keyframes tesela-6 {
+  from {
+    --tesela-6: 0;
+  }
+}
+@keyframes tesela-7 {
+  from {
+    --tesela-7: 0;
+  }
+}
+@keyframes tesela-8 {
+  from {
+    --tesela-8: 0;
+  }
+}
+@keyframes tesela-9 {
+  from {
+    --tesela-9: 0;
+  }
+}
+@keyframes tesela-10 {
+  from {
+    --tesela-10: 0;
+  }
+}
+@keyframes tesela-11 {
+  from {
+    --tesela-11: 0;
+  }
+}
+@keyframes tesela-12 {
+  from {
+    --tesela-12: 0;
+  }
+}
+@keyframes tesela-13 {
+  from {
+    --tesela-13: 0;
+  }
+}
+@keyframes tesela-14 {
+  from {
+    --tesela-14: 0;
+  }
+}
+@keyframes tesela-15 {
+  from {
+    --tesela-15: 0;
+  }
+}
+@keyframes tesela-16 {
+  from {
+    --tesela-16: 0;
+  }
+}
+@keyframes tesela-17 {
+  from {
+    --tesela-17: 0;
+  }
+}
+@keyframes tesela-18 {
+  from {
+    --tesela-18: 0;
+  }
+}
+@keyframes tesela-19 {
+  from {
+    --tesela-19: 0;
+  }
+}
+@keyframes tesela-20 {
+  from {
+    --tesela-20: 0;
+  }
+}
+@keyframes tesela-21 {
+  from {
+    --tesela-21: 0;
+  }
+}
+@keyframes tesela-22 {
+  from {
+    --tesela-22: 0;
+  }
+}
+@keyframes tesela-23 {
+  from {
+    --tesela-23: 0;
   }
 }
