@@ -10,10 +10,9 @@ import estilos from './Logo.module.css';
  * en la página no cambia el resultado.
  * - `simbolo`: solo el arco y las ventanas, en color (`tono="claro"`) o en blanco (`tono="oscuro"`).
  */
+// `variante` y `tono` siguen en la firma por compatibilidad: el logo oficial es una sola imagen.
 export function Logo({
   tamano = 36,
-  variante = 'icono',
-  tono = 'claro',
   className,
 }: {
   tamano?: number;
