@@ -746,3 +746,167 @@
     margin-top: var(--espacio-1);
   }
 }
+
+/* ─── «¿Necesitas hablar con alguien ahora?»: entrada por capas ligada al scroll ─────────
+   Conserva el efecto original (la tarjeta se descubre con una máscara de izquierda a
+   derecha mientras llega desde la izquierda) y lo hace más suave y con más presencia:
+   recorrido de scroll más largo, profundidad (giro leve sobre su borde y escala) y una
+   secuencia interna: icono con impulso → título que se enfoca y destaca → descripción →
+   enlace. Todo es reversible al subir y sale con suavidad al irse por arriba. Sin soporte de
+   animaciones ligadas al scroll, o con «reducir movimiento», se ve tal cual, sin animar. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* `a.ayuda` gana a la clase global `revelar-lateral`, que queda como respaldo. */
+    a.ayuda {
+      view-timeline-name: --ayuda;
+      transform-origin: 0% 50%;
+      animation:
+        ayudaEntrar linear both,
+        ayudaSalir linear forwards;
+      animation-timeline: view(), view();
+      animation-range:
+        entry 0% cover 38%,
+        exit 45% exit 100%;
+    }
+
+    a.ayuda .iconoAyuda {
+      animation: ayudaIcono linear both;
+      animation-timeline: --ayuda;
+      animation-range: entry 35% cover 32%;
+    }
+
+    a.ayuda .textoAyuda strong {
+      display: inline-block;
+      transform-origin: 0% 100%;
+      animation: ayudaTitulo linear both;
+      animation-timeline: --ayuda;
+      animation-range: entry 40% cover 32%;
+    }
+
+    a.ayuda .textoAyuda span {
+      animation: ayudaTexto linear both;
+      animation-timeline: --ayuda;
+      animation-range: entry 55% cover 36%;
+    }
+
+    a.ayuda .irAyuda {
+      animation: ayudaEnlace linear both;
+      animation-timeline: --ayuda;
+      animation-range: entry 65% cover 40%;
+    }
+  }
+}
+
+@keyframes ayudaEntrar {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0 round var(--radio-lg));
+    transform: perspective(1100px) translateX(-40px) rotateY(7deg) scale(0.95);
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(-40px round var(--radio-lg));
+    transform: none;
+  }
+}
+
+@keyframes ayudaSalir {
+  from {
+    clip-path: inset(-40px round var(--radio-lg));
+  }
+  to {
+    opacity: 0.3;
+    clip-path: inset(10% -40px -40px round var(--radio-lg));
+    transform: translateY(-16px) scale(0.98);
+  }
+}
+
+@keyframes ayudaIcono {
+  from {
+    opacity: 0;
+    transform: scale(0.5) rotate(-28deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.1) rotate(5deg);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* El título es lo que más destaca: llega desenfocado, algo más grande, y se asienta. */
+@keyframes ayudaTitulo {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(12px) scale(1.04);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+  }
+}
+
+@keyframes ayudaTexto {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes ayudaEnlace {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+}
+
+/* Microinteracciones: la tarjeta se eleva (con `translate`, que se suma a la animación de
+   scroll), el icono se inclina y el enlace subraya con una línea que crece. */
+.ayuda {
+  transition:
+    border-color var(--transicion),
+    box-shadow var(--transicion-lenta),
+    translate 320ms var(--curva-salida);
+}
+
+.iconoAyuda {
+  transition: rotate 360ms cubic-bezier(0.32, 1.25, 0.5, 1);
+}
+
+.irAyuda {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0 100%;
+  background-size: 0% 1.5px;
+  background-repeat: no-repeat;
+  transition: background-size 320ms var(--curva-salida);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ayuda:hover {
+    translate: 0 -3px;
+    box-shadow: var(--cristal-brillo), var(--sombra-2);
+  }
+
+  .ayuda:hover .iconoAyuda {
+    rotate: -10deg;
+  }
+
+  .ayuda:hover .irAyuda {
+    background-size: 100% 1.5px;
+  }
+
+  .ayuda:hover .irAyuda svg {
+    transform: translateX(4px);
+  }
+}
+
+.ayuda:active {
+  translate: 0 0;
+  scale: 0.99;
+}
