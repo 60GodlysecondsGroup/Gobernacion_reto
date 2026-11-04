@@ -120,7 +120,7 @@ export default function Inicio() {
 
         {/* ── Salas vivas ───────────────────────────────── */}
         <section
-          className={`${estilos.juegos} ${estilos.entradaJuegos}`}
+          className={`${estilos.juegos} ${estilos.entradaJuegos} revelar`}
           aria-labelledby="titulo-salas"
         >
           <div className={estilos.personajeJuegos} aria-hidden="true">
