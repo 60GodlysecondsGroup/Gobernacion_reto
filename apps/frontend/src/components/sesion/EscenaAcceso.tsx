@@ -1,33 +1,35 @@
 'use client';
 
-import {
-  animate,
-  motion,
-  useMotionValue,
-  useMotionValueEvent,
-  useReducedMotion,
-  type AnimationPlaybackControls,
-} from 'motion/react';
+import { animate, motion, useMotionValue, useReducedMotion } from 'motion/react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Cocuyo, type ExpresionCocuyo } from '@/components/guia/Cocuyo';
 import { useSesion } from './ProveedorSesion';
 import estilos from './EscenaAcceso.module.css';
 
-type Modo = 'volar' | 'mirar' | 'tapar' | 'triste' | 'celebrar';
-type Punto = { x: number; y: number };
+type Modo = 'reposo' | 'mirar' | 'espaldas' | 'triste' | 'celebrar';
 
-const RESORTE_VUELO = { type: 'spring', stiffness: 70, damping: 16, mass: 0.9 } as const;
+const RESORTE = { type: 'spring', stiffness: 120, damping: 20, mass: 0.8 } as const;
 const DURACION_TRISTE = 2600;
+const SEPARACION = 16;
+
+/** Solo el nametag y la contraseña atraen a Cocuyo. */
+const esCampoVigilado = (el: Element | null): el is HTMLInputElement =>
+  el instanceof HTMLInputElement && (el.name === 'username' || el.name === 'password');
+
+/** Contraseña escrita y oculta: Cocuyo no mira. */
+const modoDeCampo = (campo: HTMLInputElement): Modo =>
+  campo.name === 'password' && campo.type === 'password' ? 'espaldas' : 'mirar';
 
 /**
- * Escena del acceso: Cocuyo acompaña el formulario de iniciar sesión y de crear cuenta.
- *  - Vuela en una trayectoria suave junto al formulario (un ocho tendido a su derecha o, en
- *    pantallas estrechas, un vaivén corto sobre él).
- *  - Al enfocar un campo, vuela a su lado y lo mira; en la contraseña se tapa los ojos.
- *  - Si aparece un error (cualquier aviso con `role="alert"`), se pone triste un momento.
- *  - Cuando la sesión se abre, celebra.
- * No toca la lógica de los formularios: observa el foco, los avisos y la sesión. Es decorativo
- * (`aria-hidden`), no captura clics y con «reducir movimiento» se queda quieto junto al formulario.
+ * Escena del acceso: Cocuyo acompaña el formulario de iniciar sesión y de crear cuenta, siempre
+ * por fuera de él (a la derecha; en pantallas estrechas, encima de las pestañas).
+ *  - En reposo se queda quieto junto al formulario, solo flotando un poco.
+ *  - Al tocar el nametag, se acerca a su altura y lo mira.
+ *  - En la contraseña: si está visible, la mira; si está oculta (o se oculta con «Ocultar»), se
+ *    voltea y cierra los ojos.
+ *  - Ante un error (aviso con `role="alert"`) se pone triste; cuando se abre la sesión, celebra.
+ * No toca la lógica de los formularios: observa el foco, el tipo del campo, los avisos y la
+ * sesión. Es decorativo (`aria-hidden`), no captura clics y con «reducir movimiento» no se anima.
  */
 export function EscenaAcceso({ children }: { children: ReactNode }) {
   const escena = useRef<HTMLDivElement>(null);
@@ -35,107 +37,79 @@ export function EscenaAcceso({ children }: { children: ReactNode }) {
   const { usuario, cargando } = useSesion();
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const [modo, setModo] = useState<Modo>('volar');
-  const [objetivo, setObjetivo] = useState<Punto | null>(null);
-  const [mira, setMira] = useState<'izquierda' | 'derecha' | undefined>(undefined);
+  const [modo, setModo] = useState<Modo>('reposo');
+  const [campo, setCampo] = useState<HTMLInputElement | null>(null);
   const [visible, setVisible] = useState(false);
+  const [lateral, setLateral] = useState(true);
   const [version, setVersion] = useState(0);
+  const campoActivo = useRef<HTMLInputElement | null>(null);
   const huboSinSesion = useRef(false);
-  const modoTrasTristeza = useRef<{ modo: Modo; objetivo: Punto | null }>({
-    modo: 'volar',
-    objetivo: null,
-  });
+  const temporal = useRef(false); // triste o celebrando: el foco no lo interrumpe
 
   const tamano = () => (window.innerWidth < 640 ? 36 : 46);
 
-  /** Rectángulo del formulario visible, relativo a la escena. */
-  const marco = () => {
-    const raiz = escena.current;
-    if (!raiz) return null;
-    const panel =
-      raiz.querySelector<HTMLElement>('[role="tabpanel"]:not([hidden])') ??
-      raiz.querySelector<HTMLElement>('form') ??
-      raiz.firstElementChild;
-    if (!(panel instanceof HTMLElement)) return null;
-    const base = raiz.getBoundingClientRect();
-    const r = panel.getBoundingClientRect();
-    return {
-      ancho: base.width,
-      izquierda: r.left - base.left,
-      derecha: r.right - base.left,
-      arriba: r.top - base.top,
-      alto: r.height,
-    };
-  };
-
-  /** Junto a un campo: a su derecha si hay sitio; si no, encima de su extremo derecho. */
-  const junto = (campo: HTMLElement): Punto | null => {
-    const raiz = escena.current;
-    if (!raiz) return null;
-    const base = raiz.getBoundingClientRect();
-    const r = campo.getBoundingClientRect();
-    const t = tamano();
-    const derecha = r.right - base.left + 14;
-    if (derecha + t < base.width - 4) {
-      return { x: derecha, y: r.top - base.top + r.height / 2 - t / 2 - 4 };
-    }
-    return { x: r.right - base.left - t - 6, y: r.top - base.top - t + 4 };
-  };
-
-  // Foco: mirar el campo, o taparse los ojos en la contraseña.
+  // Foco y visibilidad de la contraseña.
   useEffect(() => {
     const raiz = escena.current;
     if (!raiz) return;
     let salida: ReturnType<typeof setTimeout> | undefined;
-    const alEnfocar = (e: FocusEvent) => {
-      const campo = e.target;
-      if (!(campo instanceof HTMLInputElement || campo instanceof HTMLTextAreaElement)) return;
-      if (campo instanceof HTMLInputElement && ['checkbox', 'radio'].includes(campo.type)) return;
-      clearTimeout(salida);
-      const punto = junto(campo);
-      const nuevo: Modo = campo.type === 'password' ? 'tapar' : 'mirar';
-      modoTrasTristeza.current = { modo: nuevo, objetivo: punto };
-      setModo((actual) => (actual === 'triste' || actual === 'celebrar' ? actual : nuevo));
-      setObjetivo(punto);
+
+    /** ¿El foco está en un control junto al campo activo (el botón «Mostrar / Ocultar»)? */
+    const juntoAlCampo = (el: Element | null) => {
+      const actual = campoActivo.current;
+      return Boolean(
+        actual &&
+        el instanceof HTMLButtonElement &&
+        raiz.contains(el) &&
+        el.parentElement?.contains(actual),
+      );
     };
+
+    const fijarCampo = (nuevo: HTMLInputElement | null) => {
+      campoActivo.current = nuevo;
+      setCampo(nuevo);
+      if (!temporal.current) setModo(nuevo ? modoDeCampo(nuevo) : 'reposo');
+    };
+
+    const alEnfocar = (e: FocusEvent) => {
+      clearTimeout(salida);
+      const el = e.target instanceof Element ? e.target : null;
+      if (esCampoVigilado(el)) return fijarCampo(el);
+      // El botón «Mostrar / Ocultar» está junto a su campo: Cocuyo sigue en la contraseña.
+      if (juntoAlCampo(el)) return;
+      fijarCampo(null);
+    };
+
     const alDesenfocar = () => {
       clearTimeout(salida);
       salida = setTimeout(() => {
         const activo = document.activeElement;
-        if (activo instanceof HTMLInputElement && raiz.contains(activo)) return;
-        modoTrasTristeza.current = { modo: 'volar', objetivo: null };
-        setModo((actual) => (actual === 'triste' || actual === 'celebrar' ? actual : 'volar'));
-        setObjetivo(null);
-      }, 140);
+        if (esCampoVigilado(activo) && raiz.contains(activo)) return;
+        if (juntoAlCampo(activo)) return;
+        fijarCampo(null);
+      }, 150);
     };
-    // Mostrar u ocultar la contraseña cambia el tipo del campo con el foco puesto.
-    const alCambiarTipo = new MutationObserver((cambios) => {
+
+    // «Mostrar» / «Ocultar» cambian el tipo del campo de contraseña.
+    const tipos = new MutationObserver((cambios) => {
       for (const c of cambios) {
-        const campo = c.target;
-        if (campo instanceof HTMLInputElement && campo === document.activeElement) {
-          setModo((actual) =>
-            actual === 'triste' || actual === 'celebrar'
-              ? actual
-              : campo.type === 'password'
-                ? 'tapar'
-                : 'mirar',
-          );
+        if (c.target === campoActivo.current && !temporal.current) {
+          setModo(modoDeCampo(c.target as HTMLInputElement));
         }
       }
     });
-    alCambiarTipo.observe(raiz, { attributes: true, attributeFilter: ['type'], subtree: true });
+    tipos.observe(raiz, { attributes: true, attributeFilter: ['type'], subtree: true });
     raiz.addEventListener('focusin', alEnfocar);
     raiz.addEventListener('focusout', alDesenfocar);
     return () => {
       clearTimeout(salida);
-      alCambiarTipo.disconnect();
+      tipos.disconnect();
       raiz.removeEventListener('focusin', alEnfocar);
       raiz.removeEventListener('focusout', alDesenfocar);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo al montar
   }, []);
 
-  // Errores: cualquier aviso nuevo con role="alert" lo entristece un momento.
+  // Errores: un aviso nuevo con role="alert" lo entristece un momento.
   useEffect(() => {
     const raiz = escena.current;
     if (!raiz) return;
@@ -150,10 +124,12 @@ export function EscenaAcceso({ children }: { children: ReactNode }) {
       );
       if (!hayAlerta) return;
       clearTimeout(fin);
+      temporal.current = true;
       setModo('triste');
       fin = setTimeout(() => {
-        setModo(modoTrasTristeza.current.modo);
-        setObjetivo(modoTrasTristeza.current.objetivo);
+        temporal.current = false;
+        const actual = campoActivo.current;
+        setModo(actual ? modoDeCampo(actual) : 'reposo');
       }, DURACION_TRISTE);
     });
     observador.observe(raiz, { childList: true, subtree: true });
@@ -171,123 +147,91 @@ export function EscenaAcceso({ children }: { children: ReactNode }) {
       return;
     }
     if (!huboSinSesion.current) return;
-    const t = setTimeout(() => setModo('celebrar'), 0);
+    const t = setTimeout(() => {
+      temporal.current = true;
+      setModo('celebrar');
+    }, 0);
     return () => clearTimeout(t);
   }, [usuario, cargando]);
 
-  // Recalcular la trayectoria si cambia el tamaño (otra pestaña, otra pantalla).
+  // Recalcular la posición si cambia el tamaño (otra pestaña del formulario, otra pantalla).
   useEffect(() => {
     const raiz = escena.current;
     if (!raiz) return;
-    let marcoPendiente = 0;
+    let pendiente = 0;
     const observador = new ResizeObserver(() => {
-      cancelAnimationFrame(marcoPendiente);
-      marcoPendiente = requestAnimationFrame(() => setVersion((v) => v + 1));
+      cancelAnimationFrame(pendiente);
+      pendiente = requestAnimationFrame(() => setVersion((v) => v + 1));
     });
     observador.observe(raiz);
+    // Las entradas animadas del formulario lo desplazan un momento: al terminar, se vuelve a medir
+    // para que Cocuyo quede siempre fuera de él.
+    const remedir = () => {
+      cancelAnimationFrame(pendiente);
+      pendiente = requestAnimationFrame(() => setVersion((v) => v + 1));
+    };
+    raiz.addEventListener('animationend', remedir);
+    raiz.addEventListener('transitionend', remedir);
     return () => {
-      cancelAnimationFrame(marcoPendiente);
+      cancelAnimationFrame(pendiente);
       observador.disconnect();
+      raiz.removeEventListener('animationend', remedir);
+      raiz.removeEventListener('transitionend', remedir);
     };
   }, []);
 
-  // Vuelo.
+  // Posición: siempre fuera del formulario.
   useEffect(() => {
-    const m = marco();
-    if (!m) return;
+    const raiz = escena.current;
+    if (!raiz) return;
+    const panel =
+      raiz.querySelector<HTMLElement>('[role="tabpanel"]:not([hidden])') ??
+      raiz.querySelector<HTMLElement>('form');
+    if (!panel) return;
+    const base = raiz.getBoundingClientRect();
+    const r = panel.getBoundingClientRect();
     const t = tamano();
-    const estrecho = m.derecha + t + 70 > m.ancho;
-    // Sitio de reposo: junto a la esquina superior derecha del formulario.
-    const reposo: Punto = estrecho
-      ? { x: m.derecha - t - 4, y: m.arriba - t - 6 }
-      : { x: m.derecha + 18, y: m.arriba + 12 };
-    const inicio = setTimeout(() => setVisible(true), 0);
-    const controles: AnimationPlaybackControls[] = [];
-    const parar = () => controles.forEach((c) => c.stop());
-
-    if (reducir) {
-      x.set(objetivo?.x ?? reposo.x);
-      y.set(objetivo?.y ?? reposo.y);
-      return () => {
-        clearTimeout(inicio);
-        parar();
-      };
+    const derecha = r.right - base.left + SEPARACION;
+    const hayLado = derecha + t <= base.width - 4;
+    let destino: { x: number; y: number };
+    if (hayLado) {
+      // A la derecha del formulario: a la altura del campo elegido o junto a su parte de arriba.
+      const ref = campo && raiz.contains(campo) ? campo.getBoundingClientRect() : null;
+      const centro = ref ? ref.top - base.top + ref.height / 2 : r.top - base.top + 40;
+      destino = { x: derecha, y: centro - t / 2 };
+    } else {
+      // Sin sitio al lado: encima de las pestañas, en su extremo derecho.
+      const pestanas = raiz.querySelector<HTMLElement>('[role="tablist"]');
+      const arriba = (pestanas ?? panel).getBoundingClientRect();
+      destino = { x: arriba.right - base.left - t, y: arriba.top - base.top - t - 8 };
     }
-
-    if ((modo === 'mirar' || modo === 'tapar' || modo === 'triste') && objetivo) {
-      controles.push(animate(x, objetivo.x, RESORTE_VUELO), animate(y, objetivo.y, RESORTE_VUELO));
-      setTimeout(() => setMira(objetivo.x > m.derecha - t ? 'izquierda' : undefined), 0);
-      return () => {
-        clearTimeout(inicio);
-        parar();
-      };
+    const mostrar = setTimeout(() => {
+      setLateral(hayLado);
+      setVisible(true);
+    }, 0);
+    if (reducir || !visible) {
+      x.set(destino.x);
+      y.set(destino.y);
+      return () => clearTimeout(mostrar);
     }
-
-    if (modo === 'celebrar' || modo === 'triste') {
-      return () => clearTimeout(inicio);
-    }
-
-    // Trayectoria: un ocho tendido a la derecha del formulario, o un vaivén corto encima.
-    const ruta: Punto[] = estrecho
-      ? [
-          reposo,
-          { x: reposo.x - m.alto * 0.0 - 60, y: reposo.y - 10 },
-          { x: reposo.x - 120, y: reposo.y + 4 },
-          { x: reposo.x - 60, y: reposo.y + 12 },
-          reposo,
-        ]
-      : [
-          reposo,
-          { x: m.derecha + 58, y: m.arriba + m.alto * 0.3 },
-          { x: m.derecha + 24, y: m.arriba + m.alto * 0.55 },
-          { x: m.derecha + 64, y: m.arriba + m.alto * 0.78 },
-          { x: m.derecha + 30, y: m.arriba + m.alto * 0.42 },
-          reposo,
-        ];
-    let vigente = true;
-    const llegada = [animate(x, reposo.x, RESORTE_VUELO), animate(y, reposo.y, RESORTE_VUELO)];
-    controles.push(...llegada);
-    void Promise.all(llegada.map((c) => c.finished)).then(() => {
-      if (!vigente) return;
-      const duracion = estrecho ? 7 : 14;
-      controles.push(
-        animate(
-          x,
-          ruta.map((p) => p.x),
-          { duration: duracion, ease: 'easeInOut', repeat: Infinity },
-        ),
-        animate(
-          y,
-          ruta.map((p) => p.y),
-          { duration: duracion, ease: 'easeInOut', repeat: Infinity },
-        ),
-      );
-    });
+    const controles = [animate(x, destino.x, RESORTE), animate(y, destino.y, RESORTE)];
     return () => {
-      vigente = false;
-      clearTimeout(inicio);
-      parar();
+      clearTimeout(mostrar);
+      controles.forEach((c) => c.stop());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `x` e `y` son estables
-  }, [modo, objetivo, reducir, version]);
-
-  // Mientras vuela libre, mira hacia donde va (solo cambia al invertir el sentido).
-  useMotionValueEvent(x, 'change', () => {
-    if (modo !== 'volar') return;
-    const v = x.getVelocity();
-    if (Math.abs(v) < 4) return;
-    const sentido = v < 0 ? 'izquierda' : 'derecha';
-    if (sentido !== mira) setMira(sentido);
-  });
+  }, [campo, version, reducir, visible]);
 
   const expresion: ExpresionCocuyo | undefined =
-    modo === 'tapar'
-      ? 'tapado'
+    modo === 'espaldas'
+      ? 'cerrado'
       : modo === 'triste'
         ? 'triste'
         : modo === 'celebrar'
           ? 'feliz'
           : undefined;
+  // A la derecha del formulario mira hacia él; encima de las pestañas, al frente.
+  const mira = lateral && (modo === 'mirar' || modo === 'reposo') ? 'izquierda' : undefined;
 
   return (
     <div ref={escena} className={estilos.escena}>
@@ -300,7 +244,9 @@ export function EscenaAcceso({ children }: { children: ReactNode }) {
         aria-hidden="true"
       >
         <span className={estilos.cuerpo}>
-          <Cocuyo tamano={46} mira={mira} expresion={expresion} encendido={modo !== 'triste'} />
+          <span className={estilos.giro}>
+            <Cocuyo tamano={46} mira={mira} expresion={expresion} encendido={modo !== 'triste'} />
+          </span>
         </span>
         {modo === 'celebrar' && (
           <span className={estilos.chispas}>

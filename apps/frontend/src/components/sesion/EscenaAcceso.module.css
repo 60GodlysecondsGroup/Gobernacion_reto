@@ -26,7 +26,18 @@
   transform-origin: 50% 70%;
 }
 
-.cuerpo svg {
+.giro {
+  display: block;
+  /* Se voltea (de espaldas) cuando la contraseña está oculta. */
+  transition: transform 520ms cubic-bezier(0.32, 1.2, 0.5, 1);
+}
+
+.cocuyo[data-modo='espaldas'] .giro {
+  transform: perspective(200px) rotateY(180deg);
+}
+
+.giro svg {
+  display: block;
   width: 100%;
   height: 100%;
 }
@@ -49,9 +60,8 @@
     animation: celebrar 900ms cubic-bezier(0.32, 1.25, 0.5, 1) 2;
   }
 
-  /* Mirando un campo: se acerca un poco, curioso. */
-  .cocuyo[data-modo='mirar'] .cuerpo,
-  .cocuyo[data-modo='tapar'] .cuerpo {
+  /* Mirando un campo: un leve gesto curioso, sin desplazarse. */
+  .cocuyo[data-modo='mirar'] .cuerpo {
     animation: curiosear 2.4s ease-in-out infinite;
   }
 }
@@ -83,7 +93,7 @@
     transform: none;
   }
   50% {
-    transform: translateY(-3px) rotate(-4deg);
+    transform: translateY(-2px) rotate(-3deg);
   }
 }
 
