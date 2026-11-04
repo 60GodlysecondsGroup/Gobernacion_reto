@@ -1,7 +1,9 @@
 import { BookOpen, Compass, Home, LifeBuoy, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
+import { TextoRevelado } from '@/components/movimiento/TextoRevelado';
 import { BotonEnlace } from '@/components/ui';
 import estilos from './PaginaNoEncontrada.module.css';
+import { ValleExtraviado } from './ValleExtraviado';
 import { VolverAtras } from './VolverAtras';
 
 /** Secciones públicas: sirven con o sin sesión y no dependen del rol. */
@@ -20,12 +22,16 @@ export function PaginaNoEncontrada() {
     <section className={estilos.pagina} aria-labelledby="titulo-no-encontrada">
       <div className={estilos.tarjeta}>
         <p className={estilos.antetitulo}>Error 404</p>
-        <p className={estilos.codigo} aria-hidden="true">
-          404
-        </p>
-        <h1 id="titulo-no-encontrada" className={estilos.titulo}>
-          Página no encontrada
-        </h1>
+        <ValleExtraviado />
+        <p className={estilos.concepto}>Parece que te has perdido fuera del valle</p>
+        <TextoRevelado
+          as="h1"
+          id="titulo-no-encontrada"
+          className={estilos.titulo}
+          efecto="mascara"
+          retraso={1100}
+          tramos={['Página no encontrada']}
+        />
         <p className={estilos.texto}>
           La página que intentas visitar no existe o ya no está disponible. Puede que el enlace esté
           incompleto o que la dirección tenga un error.

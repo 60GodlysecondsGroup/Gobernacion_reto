@@ -172,3 +172,56 @@
     transform: scale(0.85);
   }
 }
+
+/* ── «Fuera del valle»: frase del concepto y entrada escalonada del resto ── */
+.concepto {
+  color: var(--color-primario);
+  font-family: var(--fuente-titulos);
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-fuerte);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .concepto {
+    animation: enfocarConcepto 700ms var(--curva-salida) 1s backwards;
+  }
+
+  .texto {
+    animation: enfocarConcepto 640ms var(--curva-salida) 1.3s backwards;
+  }
+
+  .acciones {
+    animation: llegarBloque 560ms var(--curva-salida) 1.45s backwards;
+  }
+
+  .sugerencias {
+    animation: llegarBloque 560ms var(--curva-salida) 1.6s backwards;
+  }
+
+  /* El filo de luz de las ventanas se descubre de izquierda a derecha. */
+  .tarjeta::before {
+    transform-origin: 0 50%;
+    animation: trazarFilo 1.2s var(--curva-salida) 200ms backwards;
+  }
+}
+
+@keyframes enfocarConcepto {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(8px);
+  }
+}
+
+@keyframes llegarBloque {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes trazarFilo {
+  from {
+    transform: scaleX(0);
+  }
+}

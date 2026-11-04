@@ -1,0 +1,202 @@
+/*
+ * «Fuera del valle»: composición por capas con entrada cinematográfica (colinas que se dibujan,
+ * el 404 que sube, la luna que se enciende y las casas que llegan una a una) y un paralaje
+ * ligero con el cursor. Con «reducir movimiento» se muestra la escena final, quieta.
+ */
+.escena {
+  --px: 0;
+  --py: 0;
+  position: relative;
+  width: min(100%, 30rem);
+  margin-block: calc(-1 * var(--espacio-2)) 0;
+}
+
+.lienzo {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.capa {
+  transition: transform 600ms var(--curva-salida);
+}
+
+/* Cada capa se desplaza distinto con el cursor: profundidad sin 3D costoso. */
+.lejos {
+  transform: translate(calc(var(--px) * -4px), calc(var(--py) * -2px));
+}
+
+.medio {
+  transform: translate(calc(var(--px) * 7px), calc(var(--py) * 4px));
+}
+
+.cerca {
+  transform: translate(calc(var(--px) * 12px), calc(var(--py) * 6px));
+}
+
+.colina {
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.digito {
+  font-family: var(--fuente-titulos);
+  font-size: 92px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  fill: var(--morado-800);
+}
+
+.haloLuna {
+  fill: var(--ambar, #f2a93b);
+  opacity: 0.16;
+}
+
+.luna,
+.haloLuna,
+.casa,
+.digito {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.luna,
+.haloLuna {
+  transform-origin: 50% 50%;
+}
+
+.cocuyo {
+  position: absolute;
+  top: 6%;
+  right: 8%;
+  translate: calc(var(--px) * 16px) calc(var(--py) * 10px);
+  transition: translate 700ms var(--curva-salida);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .colina {
+    stroke-dasharray: 900;
+    animation:
+      dibujarColina 1.4s var(--curva-salida) both,
+      rellenarColina 700ms ease-out 700ms both;
+  }
+
+  .digitoA {
+    animation: subirDigito 760ms var(--curva-salida) 420ms backwards;
+  }
+
+  .digitoB {
+    animation: subirDigito 760ms var(--curva-salida) 540ms backwards;
+  }
+
+  /* La luna (el cero) aparece girando y luego su halo respira despacio. */
+  .luna {
+    animation: encenderLuna 900ms var(--curva-salida) 300ms backwards;
+  }
+
+  .haloLuna {
+    animation: respirarHalo 4s ease-in-out 1.2s infinite alternate;
+  }
+
+  .casa {
+    animation: llegarCasa 620ms var(--curva-salida) backwards;
+    animation-delay: calc(900ms + var(--i) * 110ms);
+  }
+
+  .ventana {
+    animation: encenderVentana 1.8s ease-in-out infinite alternate;
+    animation-delay: calc(1.6s + var(--i) * 400ms);
+  }
+
+  /* Cocuyo entra volando desde fuera de la escena y se queda dando vueltas cortas. */
+  .cocuyo {
+    animation:
+      llegarCocuyo 1.1s var(--curva-salida) 1.1s backwards,
+      vagarCocuyo 7s ease-in-out 2.2s infinite;
+  }
+}
+
+@keyframes dibujarColina {
+  from {
+    stroke-dashoffset: 900;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes rellenarColina {
+  from {
+    fill-opacity: 0;
+  }
+  to {
+    fill-opacity: 1;
+  }
+}
+
+@keyframes subirDigito {
+  from {
+    opacity: 0;
+    transform: translateY(36px) rotate(-6deg);
+  }
+}
+
+@keyframes encenderLuna {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-120deg);
+  }
+}
+
+@keyframes respirarHalo {
+  to {
+    opacity: 0.3;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes llegarCasa {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.6);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.06);
+  }
+}
+
+@keyframes encenderVentana {
+  to {
+    opacity: 0.55;
+  }
+}
+
+@keyframes llegarCocuyo {
+  from {
+    opacity: 0;
+    transform: translate(60px, -40px) rotate(20deg) scale(0.6);
+  }
+}
+
+@keyframes vagarCocuyo {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  30% {
+    transform: translate(-10px, 6px) rotate(-6deg);
+  }
+  60% {
+    transform: translate(6px, -4px) rotate(5deg);
+  }
+}
+
+/* Móviles: la escena se ve completa pero sin el halo ni las ventanas latiendo. */
+@media (max-width: 39.99rem) {
+  .haloLuna,
+  .ventana {
+    animation: none;
+  }
+}
