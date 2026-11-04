@@ -1,0 +1,44 @@
+.brillo {
+  display: inline-block;
+  background-image: linear-gradient(
+    var(--brillo-angulo),
+    var(--brillo-color) 0%,
+    var(--brillo-color) 35%,
+    var(--brillo-luz-color) 50%,
+    var(--brillo-color) 65%,
+    var(--brillo-color) 100%
+  );
+  background-size: 200% auto;
+  background-position: 150% center;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .brillo:not([data-desactivado]) {
+    animation: barrido var(--brillo-duracion) linear var(--brillo-espera) infinite;
+  }
+
+  .brillo[data-direccion='right'] {
+    animation-direction: reverse;
+  }
+
+  .brillo[data-vaiven] {
+    animation-direction: alternate;
+  }
+
+  .brillo[data-pausa-hover]:hover {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes barrido {
+  from {
+    background-position: 150% center;
+  }
+  to {
+    background-position: -50% center;
+  }
+}

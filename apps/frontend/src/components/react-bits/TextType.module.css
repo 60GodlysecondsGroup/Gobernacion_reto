@@ -1,0 +1,29 @@
+.contenedor {
+  display: inline-block;
+  white-space: pre-wrap;
+}
+
+.texto {
+  display: inline;
+}
+
+.cursor {
+  display: inline-block;
+  margin-left: 0.06em;
+  animation: parpadeoCursor 1s ease-in-out infinite;
+}
+
+.oculto {
+  visibility: hidden;
+}
+
+@keyframes parpadeoCursor {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  55%,
+  100% {
+    opacity: 0;
+  }
+}
