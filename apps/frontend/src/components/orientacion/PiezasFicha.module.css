@@ -56,6 +56,30 @@
   overflow-wrap: anywhere;
 }
 
+/* En rejilla: rótulo encima del dato, en dos columnas (2 × 2) cuando hay espacio. */
+.rejilla {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-2);
+}
+
+@media (max-width: 29.99rem) {
+  .rejilla {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.rejilla > div {
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: var(--espacio-1);
+}
+
+.rejilla dt {
+  font-size: var(--texto-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 @media (max-width: 39.99rem) {
   .datos > div {
     grid-template-columns: minmax(0, 1fr);

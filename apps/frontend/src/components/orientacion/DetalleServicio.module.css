@@ -1,7 +1,21 @@
 /*
- * Ficha completa dentro del modal de consulta rápida. En móvil, una columna con el contacto
- * primero; en pantallas amplias, qué ofrece y la fuente a la izquierda y el contacto a la derecha.
+ * Ficha completa dentro del modal de consulta rápida. Jerarquía, de arriba abajo: estado y avisos,
+ * la descripción como texto principal, las tarjetas para usar el servicio (contacto, horario,
+ * ubicación) y, al final, la fuente. En móvil y tableta vertical todo va en una columna; en
+ * pantallas amplias, las tarjetas de uso se reparten en dos columnas.
  */
+.detalle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-5);
+  min-width: 0;
+}
+
+.encabezado {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
 .estado {
   display: flex;
   flex-wrap: wrap;
@@ -21,52 +35,100 @@
   color: var(--color-exito);
 }
 
-.distribucion {
+/* ── Qué ofrece: el texto principal de la ficha ───────── */
+.ofrece {
   display: grid;
-  grid-template-areas:
-    'contacto'
-    'ofrece'
-    'fuente';
+  gap: var(--espacio-3);
+}
+
+.rotuloSeccion,
+.rotulo {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rotuloSeccion {
+  color: var(--color-primario);
+}
+
+.descripcion {
+  max-width: 68ch;
+  font-size: var(--texto-md);
+  line-height: 1.65;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.temas {
+  display: grid;
+  gap: var(--espacio-2);
+  padding-top: var(--espacio-1);
+}
+
+/* ── Tarjetas de uso: contacto, horario, ubicación ───── */
+.columnas {
+  display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--espacio-4);
   align-items: start;
 }
 
-@media (min-width: 52rem) {
-  .distribucion {
-    grid-template-areas:
-      'ofrece contacto'
-      'fuente contacto';
-    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-    grid-template-rows: auto 1fr;
-    gap: var(--espacio-5);
-  }
-}
-
-.seccion,
-.contacto {
+.columna {
   display: grid;
-  align-content: start;
-  gap: var(--espacio-3);
+  gap: var(--espacio-4);
   min-width: 0;
 }
 
-.ofrece {
-  grid-area: ofrece;
+@media (min-width: 56rem) {
+  .dosColumnas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-.fuente {
-  grid-area: fuente;
+/* En una columna, siempre el mismo orden: contacto, horario y dónde queda. */
+@media (max-width: 55.99rem) {
+  .columna {
+    display: contents;
+  }
+
+  .ordenHorario {
+    order: 1;
+  }
+
+  .ordenUbicacion {
+    order: 2;
+  }
 }
 
-.contacto {
-  grid-area: contacto;
-  padding: var(--espacio-4);
-  border: 1px solid rgb(91 84 230 / 0.16);
+.tarjeta {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-4);
+  min-width: 0;
+  padding: var(--espacio-4) var(--espacio-5) var(--espacio-5);
+  border: 1px solid var(--color-borde);
   border-radius: var(--radio-lg);
+  background: var(--color-superficie-solida);
+  box-shadow: var(--sombra-1);
+}
+
+/* El contacto es lo primero que se busca: tarjeta con el tono de la marca. */
+.tarjetaContacto {
+  border-color: rgb(91 84 230 / 0.18);
   background:
     radial-gradient(18rem 10rem at 100% 0%, rgb(139 124 246 / 0.14), transparent 70%),
     var(--morado-50);
+}
+
+.cabeceraTarjeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-2) var(--espacio-3);
 }
 
 .tituloSeccion {
@@ -81,47 +143,28 @@
   color: var(--color-primario);
 }
 
-.rotulo {
-  color: var(--color-texto-suave);
-  font-size: var(--texto-xs);
-  font-weight: var(--peso-fuerte);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.bloque {
-  display: grid;
-  gap: var(--espacio-2);
-}
-
-.descripcion {
-  max-width: 62ch;
-  white-space: pre-line;
-  overflow-wrap: anywhere;
-}
-
-/* ── Contacto ────────────────────────────────────────── */
 .canal {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--espacio-2);
-}
-
-.valorCanal {
   display: inline-flex;
   align-items: center;
   gap: var(--espacio-1);
+  padding: 2px var(--espacio-3);
+  border: 1px solid rgb(91 84 230 / 0.2);
+  border-radius: var(--radio-total);
+  background: var(--color-superficie-solida);
+  color: var(--morado-800);
+  font-size: var(--texto-sm);
   font-weight: var(--peso-fuerte);
 }
 
-.valorCanal svg {
-  color: var(--color-primario);
+.sinDatos {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-sm);
 }
 
+/* ── Filas de contacto ───────────────────────────────── */
 .filas {
   display: grid;
-  gap: var(--espacio-2);
+  gap: var(--espacio-3);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -132,8 +175,8 @@
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--espacio-3);
-  min-height: 3.5rem;
-  padding: var(--espacio-2) var(--espacio-3);
+  min-height: 3.75rem;
+  padding: var(--espacio-3);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-md);
   background: var(--color-superficie-solida);
@@ -165,8 +208,7 @@
   outline-offset: 2px;
 }
 
-.iconoFila,
-.iconoHorario {
+.iconoFila {
   display: grid;
   place-items: center;
   width: 2.5rem;
@@ -183,6 +225,7 @@
 
 .textosFila {
   display: grid;
+  gap: 2px;
   min-width: 0;
 }
 
@@ -201,6 +244,7 @@
   color: #fff;
   font-size: var(--texto-sm);
   font-weight: var(--peso-fuerte);
+  white-space: nowrap;
 }
 
 .filaAccion:hover .accionFila {
@@ -208,32 +252,19 @@
 }
 
 .sinEnlace {
-  max-width: 9rem;
   color: var(--color-texto-tenue);
   font-size: var(--texto-xs);
-  text-align: right;
 }
 
-.horario {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: start;
-  gap: var(--espacio-3);
-  padding-top: var(--espacio-1);
+/* ── Fuente y nota final ─────────────────────────────── */
+.fuente {
+  padding-bottom: var(--espacio-4);
 }
 
-.textoHorario {
-  white-space: pre-line;
-  overflow-wrap: anywhere;
-}
-
-/* ── Nota final ──────────────────────────────────────── */
 .nota {
   display: flex;
   align-items: flex-start;
   gap: var(--espacio-2);
-  padding-top: var(--espacio-3);
-  border-top: 1px solid var(--color-borde);
   color: var(--color-texto-tenue);
   font-size: var(--texto-sm);
 }
@@ -249,15 +280,18 @@
   margin-right: auto;
 }
 
+/* ── Móvil ───────────────────────────────────────────── */
 @media (max-width: 39.99rem) {
-  .enlacePagina {
-    margin-right: 0;
+  .detalle {
+    gap: var(--espacio-4);
   }
 
-  .sinEnlace {
-    grid-column: 2 / -1;
-    max-width: none;
-    text-align: left;
+  .tarjeta {
+    padding: var(--espacio-4);
+  }
+
+  .enlacePagina {
+    margin-right: 0;
   }
 }
 
