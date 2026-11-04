@@ -58,7 +58,7 @@
   overflow: hidden;
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-md);
-  background: #fff;
+  background: var(--color-superficie-solida);
   box-shadow: var(--sombra-1);
 }
 
@@ -135,7 +135,7 @@
   padding: 1px var(--espacio-3);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-total);
-  background: rgb(255 255 255 / 0.8);
+  background: var(--velo-blanco-80);
   font-size: var(--texto-sm);
 }
 
@@ -159,7 +159,7 @@
   padding: 0 var(--espacio-4);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-total);
-  background: rgb(255 255 255 / 0.75);
+  background: color-mix(in srgb, var(--color-superficie-solida) 75%, transparent);
   color: var(--color-texto);
   font-size: var(--texto-sm);
   font-weight: var(--peso-fuerte);
@@ -170,7 +170,7 @@
 }
 
 .accion:hover {
-  background: #fff;
+  background: var(--color-superficie-solida);
   color: var(--color-texto);
 }
 

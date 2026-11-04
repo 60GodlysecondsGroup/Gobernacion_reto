@@ -93,7 +93,7 @@
 
 .opcion[aria-checked='true']:focus-visible {
   outline-color: #ffffff;
-  box-shadow: 0 0 0 6px var(--morado-800);
+  box-shadow: 0 0 0 6px var(--fondo-morado-800);
 }
 
 .contenido {

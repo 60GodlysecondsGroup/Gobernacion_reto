@@ -838,3 +838,26 @@ body::after {
     --tesela-23: 0;
   }
 }
+
+/*
+ * Cambio de tema: el nuevo tema se descubre con un círculo que crece desde el interruptor
+ * (View Transitions; `--tema-x` y `--tema-y` los pone el botón). Sin soporte, cambio directo.
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  animation: revelar-tema 560ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes revelar-tema {
+  from {
+    clip-path: circle(0 at var(--tema-x, 50%) var(--tema-y, 0));
+  }
+  to {
+    clip-path: circle(150vmax at var(--tema-x, 50%) var(--tema-y, 0));
+  }
+}

@@ -361,7 +361,7 @@
 }
 
 .datoAccion {
-  background: var(--color-primario);
+  background: var(--fondo-primario);
   color: #fff;
   text-decoration: none;
 }

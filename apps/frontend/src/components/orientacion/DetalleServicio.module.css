@@ -240,7 +240,7 @@
   gap: 2px;
   padding: var(--espacio-1) var(--espacio-3);
   border-radius: var(--radio-total);
-  background: var(--color-primario);
+  background: var(--fondo-primario);
   color: #fff;
   font-size: var(--texto-sm);
   font-weight: var(--peso-fuerte);

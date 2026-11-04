@@ -144,7 +144,7 @@
   padding: var(--espacio-3) var(--espacio-6) var(--espacio-3) var(--espacio-3);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-lg) var(--radio-lg) var(--radio-lg) var(--radio-sm);
-  background: #fff;
+  background: var(--color-superficie-solida);
   box-shadow: var(--sombra-2);
   transform-origin: bottom left;
   animation: aparecerGlobo 320ms var(--curva-salida);
@@ -159,7 +159,7 @@
   height: 12px;
   border-right: 1px solid var(--color-borde);
   border-bottom: 1px solid var(--color-borde);
-  background: #fff;
+  background: var(--color-superficie-solida);
   transform: rotate(45deg);
 }
 
@@ -476,7 +476,7 @@
 
 .caraVisible {
   border: 1px solid var(--color-borde);
-  background: #fff;
+  background: var(--color-superficie-solida);
   color: var(--tinta);
   font-size: var(--texto-sm);
   line-height: 1.3;

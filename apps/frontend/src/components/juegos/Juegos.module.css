@@ -187,7 +187,7 @@
 }
 
 .tarjeta:hover .jugar {
-  background: var(--color-primario);
+  background: var(--fondo-primario);
   color: #fff;
 }
 
@@ -295,7 +295,7 @@
   padding: var(--espacio-3) var(--espacio-4);
   border: 1.5px solid var(--color-borde);
   border-radius: var(--radio-md);
-  background: #fff;
+  background: var(--color-superficie-solida);
   color: var(--color-texto);
   font: inherit;
   text-align: left;
@@ -389,7 +389,7 @@
 .impacto {
   padding: 0 var(--espacio-2);
   border-radius: var(--radio-total);
-  background: rgb(255 255 255 / 0.7);
+  background: var(--velo-blanco-70);
   font-size: var(--texto-xs);
 }
 

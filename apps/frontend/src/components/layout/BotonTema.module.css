@@ -1,0 +1,61 @@
+/* Interruptor de tema: el sol y la luna se cruzan girando (solo `transform` y `opacity`). */
+.boton {
+  position: relative;
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-total);
+  background: var(--cristal-medio);
+  color: var(--color-primario);
+  cursor: pointer;
+  transition:
+    border-color var(--transicion),
+    background var(--transicion),
+    transform 200ms var(--curva-salida);
+}
+
+.boton:hover {
+  border-color: var(--color-borde-fuerte);
+}
+
+.boton:active {
+  transform: scale(0.92);
+}
+
+.boton:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.sol,
+.luna {
+  grid-area: 1 / 1;
+  transition:
+    opacity 260ms ease,
+    transform 520ms cubic-bezier(0.32, 1.25, 0.5, 1);
+}
+
+.luna {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.5);
+}
+
+.boton[data-oscuro] .sol {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.5);
+}
+
+.boton[data-oscuro] .luna {
+  opacity: 1;
+  transform: none;
+}
+
+@media (max-width: 39.99rem) {
+  .boton {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}

@@ -12,7 +12,12 @@
   overflow: hidden;
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-xl);
-  background: linear-gradient(160deg, #fff 0%, #fcfbff 60%, var(--morado-50) 100%);
+  background: linear-gradient(
+    160deg,
+    var(--color-superficie-solida) 0%,
+    color-mix(in srgb, var(--color-superficie-solida) 97%, var(--morado-50)) 60%,
+    var(--morado-50) 100%
+  );
   box-shadow: var(--sombra-2);
 }
 
@@ -24,7 +29,7 @@
   gap: var(--espacio-3);
   padding: var(--espacio-3) var(--padding-caja);
   border-bottom: 1px solid var(--color-borde);
-  background: rgb(255 255 255 / 0.7);
+  background: var(--velo-blanco-70);
 }
 .icono,
 .avatar {
@@ -262,7 +267,7 @@
   width: 0.42rem;
   height: 0.42rem;
   border-radius: 50%;
-  background: var(--color-primario);
+  background: var(--fondo-primario);
   animation: latido 1.1s ease-in-out infinite;
 }
 .puntos i:nth-child(2) {
@@ -328,7 +333,7 @@
 .accionesFallo button:first-child {
   border-color: transparent;
   color: var(--color-sobre-primario);
-  background: var(--color-primario);
+  background: var(--fondo-primario);
 }
 .accionesFallo button:hover:not(:disabled) {
   border-color: var(--color-primario);
@@ -559,7 +564,7 @@
 .irAlFinal[data-novedad] {
   border-color: transparent;
   color: var(--color-sobre-primario);
-  background: var(--color-primario);
+  background: var(--fondo-primario);
 }
 
 /* ── Pie: aviso de conexión, campo y nota ─────────────── */
@@ -659,7 +664,7 @@
   border: 0;
   border-radius: 50%;
   color: var(--color-sobre-primario);
-  background: var(--color-primario);
+  background: var(--fondo-primario);
   cursor: pointer;
   transition:
     background-color var(--transicion),

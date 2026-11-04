@@ -45,7 +45,11 @@
 }
 
 .personaje[data-personaje='chigui'] {
-  background: linear-gradient(135deg, #fbeee0, var(--morado-50));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, #fbeee0 var(--mezcla-calida, 100%), var(--color-superficie-solida)),
+    var(--morado-50)
+  );
 }
 
 .contenido {
@@ -98,7 +102,7 @@
 
 .accion {
   border: 0;
-  background: var(--color-primario);
+  background: var(--fondo-primario);
   color: #fff;
 }
 

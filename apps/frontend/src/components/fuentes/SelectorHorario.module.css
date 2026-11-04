@@ -190,13 +190,13 @@
   width: 1.125rem;
   height: 1.125rem;
   border-radius: 50%;
-  background: #fff;
+  background: var(--color-superficie-solida);
   box-shadow: var(--sombra-1);
   transition: transform 220ms var(--curva-resorte);
 }
 
 .interruptor input:checked + .pista {
-  background: var(--color-primario);
+  background: var(--fondo-primario);
 }
 
 .interruptor input:checked + .pista::after {
@@ -287,7 +287,7 @@
   padding: var(--espacio-1) var(--espacio-3);
   border: 1px solid var(--color-borde-fuerte);
   border-radius: var(--radio-md);
-  background: #fff;
+  background: var(--color-superficie-solida);
   color: var(--color-texto);
   font: inherit;
   font-variant-numeric: tabular-nums;
@@ -356,7 +356,7 @@
 
 .destino[aria-pressed='true'] {
   border-color: var(--color-primario);
-  background: var(--color-primario);
+  background: var(--fondo-primario);
   color: var(--color-sobre-primario);
 }
 

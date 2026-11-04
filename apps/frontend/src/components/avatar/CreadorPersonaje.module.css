@@ -91,7 +91,7 @@
   padding: var(--espacio-1) var(--espacio-3);
   border: 1px solid rgb(255 255 255 / 0.8);
   border-radius: var(--radio-total);
-  background: rgb(255 255 255 / 0.85);
+  background: color-mix(in srgb, var(--color-superficie-solida) 85%, transparent);
   color: var(--color-primario);
   font: inherit;
   font-size: var(--texto-sm);
@@ -222,7 +222,7 @@
   height: 3.25rem;
   border: 0;
   border-radius: 50%;
-  background: var(--color-primario);
+  background: var(--fondo-primario);
   color: var(--color-sobre-primario);
   box-shadow: var(--sombra-primario, var(--sombra-1));
   cursor: pointer;

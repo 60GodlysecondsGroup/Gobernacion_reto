@@ -47,6 +47,19 @@
   --coral: #c93a2f; /* solo «Necesito ayuda» */
 
   /* ── Roles de color ─────────────────────────────────── */
+  /* Fondos que deben seguir oscuros en ambos temas, y velos claros fijos (modo oscuro los
+     redefine). En claro son exactamente los valores de antes. */
+  --tinta-fondo: var(--tinta);
+  --fondo-morado-600: var(--morado-600);
+  --fondo-morado-700: var(--morado-700);
+  --fondo-morado-800: var(--morado-800);
+  --fondo-morado-950: var(--morado-950);
+  --velo-blanco-70: rgb(255 255 255 / 0.7);
+  --velo-blanco-80: rgb(255 255 255 / 0.8);
+  /* Colores de la palabra brillante del héroe (ShinyText). */
+  --brillo-base: #6d28d9;
+  --brillo-luz: #c084fc;
+
   --color-fondo: #f3f1fb;
   --color-fondo-secundario: #ebe7f8;
   /* Superficies de lectura: blanco casi opaco sobre la atmósfera (cristal sin desenfoque). */
@@ -62,6 +75,8 @@
   --color-texto-deshabilitado: #918cae;
 
   --color-primario: var(--morado-600);
+  /* Primario como relleno con texto blanco encima (en oscuro es más profundo que el de texto). */
+  --fondo-primario: var(--color-primario);
   --color-primario-hover: var(--morado-700);
   --color-primario-suave: var(--morado-100);
   --color-primario-oscuro: var(--morado-900);
@@ -116,7 +131,12 @@
     linear-gradient(160deg, var(--morado-900) 0%, var(--morado-950) 70%);
   --degradado-marca: linear-gradient(135deg, var(--morado-500) 0%, var(--morado-800) 100%);
   /* Morado con un toque de azul: acciones principales y elementos de identidad. */
-  --degradado-accion: linear-gradient(135deg, var(--morado-500) 0%, var(--morado-600) 55%, #4a4fe0 100%);
+  --degradado-accion: linear-gradient(
+    135deg,
+    var(--morado-500) 0%,
+    var(--morado-600) 55%,
+    #4a4fe0 100%
+  );
   --degradado-noche: var(--fondo-profundo);
   --degradado-ventanas: linear-gradient(
     90deg,
@@ -226,7 +246,6 @@
   --alto-burbuja-guia: 4.5rem;
 }
 
-
 /* Escritorio: encabezado algo más bajo para dejar más alto útil a la portada. */
 @media (min-width: 64rem) {
   :root {
@@ -267,5 +286,207 @@
     --cristal-medio: rgb(255 255 255 / 0.98);
     --cristal-lectura: #ffffff;
     --cristal-oscuro: rgb(11 27 63 / 0.97);
+  }
+}
+
+/*
+ * ─── Modo oscuro ───────────────────────────────────────────────────────────
+ * `data-tema="oscuro"` en <html> (lo pone el script del <head> antes de pintar, según la
+ * preferencia guardada) o, si la persona no eligió, cuando el sistema prefiere oscuro.
+ * `data-tema="claro"` fuerza el claro. Mismo bloque en ambos casos: solo cambian variables.
+ */
+:root[data-tema='oscuro'] {
+  color-scheme: dark;
+
+  /* Degradados de marca y fondos profundos se fijan antes de aclarar los morados profundos,
+     que en este tema pasan a usarse como texto legible. */
+  --fondo-profundo:
+    radial-gradient(40rem 24rem at 15% 0%, rgb(139 92 246 / 0.32), transparent 65%),
+    radial-gradient(36rem 24rem at 100% 100%, rgb(61 111 245 / 0.2), transparent 65%),
+    linear-gradient(160deg, #1d1040 0%, #0d0820 70%);
+  --degradado-noche: var(--fondo-profundo);
+  --degradado-marca: linear-gradient(135deg, #8b5cf6 0%, #5b21b6 100%);
+  --degradado-accion: linear-gradient(135deg, #a855f7 0%, #8b5cf6 55%, #6366f1 100%);
+  --tinta-fondo: #0b0a14;
+  --fondo-morado-600: #7c3aed;
+  --fondo-morado-700: #6d28d9;
+  --fondo-morado-800: #33198a;
+  --fondo-morado-950: #1a0f45;
+
+  --tinta: #fafafa;
+  --morado-950: #f5f3ff;
+  --morado-900: #ede9fe;
+  --morado-800: #ddd6fe;
+  --morado-700: #c4b5fd;
+  --morado-600: #a78bfa;
+  --morado-500: #8b5cf6;
+  --morado-400: #7c5ce6;
+  --morado-300: #5b45a8;
+  --morado-100: #241a40;
+  --morado-50: #1a1430;
+  --azul-950: #e0e7ff;
+  --azul-900: #c7d2fe;
+  --azul-800: #a5b4fc;
+  --azul-700: #93a8ff;
+  --azul-600: #7b9bff;
+  --azul-100: #172040;
+  --azul-50: #111830;
+
+  --color-fondo: #09090b;
+  --color-fondo-secundario: #18181b;
+  --color-superficie: rgb(24 24 27 / 0.84);
+  --color-superficie-solida: #18181b;
+  --color-superficie-suave: rgb(39 39 42 / 0.75);
+  --color-superficie-elevada: rgb(39 39 42 / 0.92);
+  --color-borde: rgb(168 85 247 / 0.2);
+  --color-borde-fuerte: rgb(168 85 247 / 0.38);
+  --color-texto: #fafafa;
+  --color-texto-suave: #a1a1aa;
+  --color-texto-tenue: #a1a1aa;
+  --color-texto-deshabilitado: #63636e;
+
+  --color-primario: #a78bfa;
+  --color-primario-hover: #c4b5fd;
+  --fondo-primario: #7c3aed;
+  --color-primario-suave: rgb(139 92 246 / 0.16);
+  --color-primario-oscuro: #2e1065;
+  --color-sobre-primario: #ffffff;
+
+  --color-acento: #f0716a;
+  --color-acento-hover: #f58b85;
+  --color-acento-suave: rgb(240 113 106 / 0.14);
+  --color-exito: #34d399;
+  --color-exito-suave: rgb(52 211 153 / 0.14);
+  --color-advertencia: #fbbf24;
+  --color-advertencia-suave: rgb(251 191 36 / 0.13);
+  --color-peligro: #f87171;
+  --color-peligro-suave: rgb(248 113 113 / 0.14);
+  --color-info: #7b9bff;
+  --color-info-suave: rgb(123 155 255 / 0.14);
+  --color-carga: rgb(255 255 255 / 0.06);
+  --color-foco: #a855f7;
+
+  --atmosfera:
+    radial-gradient(60rem 36rem at 8% -10%, rgb(139 92 246 / 0.18), transparent 62%),
+    radial-gradient(48rem 32rem at 98% 0%, rgb(61 111 245 / 0.1), transparent 60%),
+    radial-gradient(44rem 30rem at 70% 60%, rgb(168 85 247 / 0.08), transparent 60%),
+    linear-gradient(180deg, #0c0b12 0%, #09090b 40%, #0d0c12 100%);
+
+  --cristal-fino: rgb(24 24 27 / 0.58);
+  --cristal-medio: rgb(24 24 27 / 0.74);
+  --cristal-lectura: rgb(24 24 27 / 0.88);
+  --cristal-borde: rgb(168 85 247 / 0.2);
+  --velo-blanco-70: rgb(24 24 27 / 0.7);
+  --velo-blanco-80: rgb(24 24 27 / 0.8);
+
+  --cristal-sombra: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px -12px rgb(0 0 0 / 0.6);
+  --sombra-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --sombra-2: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -10px rgb(0 0 0 / 0.55);
+  --sombra-3: 0 2px 8px rgb(0 0 0 / 0.45), 0 24px 56px -16px rgb(0 0 0 / 0.65);
+  --sombra-primario: 0 8px 22px -8px rgb(139 92 246 / 0.55);
+  --sombra-foco: 0 0 0 4px rgb(168 85 247 / 0.3);
+  --anillo-interior: inset 0 1px 0 rgb(255 255 255 / 0.06);
+
+  --brillo-base: #a78bfa;
+  --brillo-luz: #f0abfc;
+  --mezcla-calida: 12%;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema='claro']) {
+    color-scheme: dark;
+
+    /* Degradados de marca y fondos profundos se fijan antes de aclarar los morados profundos,
+       que en este tema pasan a usarse como texto legible. */
+    --fondo-profundo:
+      radial-gradient(40rem 24rem at 15% 0%, rgb(139 92 246 / 0.32), transparent 65%),
+      radial-gradient(36rem 24rem at 100% 100%, rgb(61 111 245 / 0.2), transparent 65%),
+      linear-gradient(160deg, #1d1040 0%, #0d0820 70%);
+    --degradado-noche: var(--fondo-profundo);
+    --degradado-marca: linear-gradient(135deg, #8b5cf6 0%, #5b21b6 100%);
+    --degradado-accion: linear-gradient(135deg, #a855f7 0%, #8b5cf6 55%, #6366f1 100%);
+    --tinta-fondo: #0b0a14;
+    --fondo-morado-600: #7c3aed;
+    --fondo-morado-700: #6d28d9;
+    --fondo-morado-800: #33198a;
+    --fondo-morado-950: #1a0f45;
+
+    --tinta: #fafafa;
+    --morado-950: #f5f3ff;
+    --morado-900: #ede9fe;
+    --morado-800: #ddd6fe;
+    --morado-700: #c4b5fd;
+    --morado-600: #a78bfa;
+    --morado-500: #8b5cf6;
+    --morado-400: #7c5ce6;
+    --morado-300: #5b45a8;
+    --morado-100: #241a40;
+    --morado-50: #1a1430;
+    --azul-950: #e0e7ff;
+    --azul-900: #c7d2fe;
+    --azul-800: #a5b4fc;
+    --azul-700: #93a8ff;
+    --azul-600: #7b9bff;
+    --azul-100: #172040;
+    --azul-50: #111830;
+
+    --color-fondo: #09090b;
+    --color-fondo-secundario: #18181b;
+    --color-superficie: rgb(24 24 27 / 0.84);
+    --color-superficie-solida: #18181b;
+    --color-superficie-suave: rgb(39 39 42 / 0.75);
+    --color-superficie-elevada: rgb(39 39 42 / 0.92);
+    --color-borde: rgb(168 85 247 / 0.2);
+    --color-borde-fuerte: rgb(168 85 247 / 0.38);
+    --color-texto: #fafafa;
+    --color-texto-suave: #a1a1aa;
+    --color-texto-tenue: #a1a1aa;
+    --color-texto-deshabilitado: #63636e;
+
+    --color-primario: #a78bfa;
+    --color-primario-hover: #c4b5fd;
+    --fondo-primario: #7c3aed;
+    --color-primario-suave: rgb(139 92 246 / 0.16);
+    --color-primario-oscuro: #2e1065;
+    --color-sobre-primario: #ffffff;
+
+    --color-acento: #f0716a;
+    --color-acento-hover: #f58b85;
+    --color-acento-suave: rgb(240 113 106 / 0.14);
+    --color-exito: #34d399;
+    --color-exito-suave: rgb(52 211 153 / 0.14);
+    --color-advertencia: #fbbf24;
+    --color-advertencia-suave: rgb(251 191 36 / 0.13);
+    --color-peligro: #f87171;
+    --color-peligro-suave: rgb(248 113 113 / 0.14);
+    --color-info: #7b9bff;
+    --color-info-suave: rgb(123 155 255 / 0.14);
+    --color-carga: rgb(255 255 255 / 0.06);
+    --color-foco: #a855f7;
+
+    --atmosfera:
+      radial-gradient(60rem 36rem at 8% -10%, rgb(139 92 246 / 0.18), transparent 62%),
+      radial-gradient(48rem 32rem at 98% 0%, rgb(61 111 245 / 0.1), transparent 60%),
+      radial-gradient(44rem 30rem at 70% 60%, rgb(168 85 247 / 0.08), transparent 60%),
+      linear-gradient(180deg, #0c0b12 0%, #09090b 40%, #0d0c12 100%);
+
+    --cristal-fino: rgb(24 24 27 / 0.58);
+    --cristal-medio: rgb(24 24 27 / 0.74);
+    --cristal-lectura: rgb(24 24 27 / 0.88);
+    --cristal-borde: rgb(168 85 247 / 0.2);
+    --velo-blanco-70: rgb(24 24 27 / 0.7);
+    --velo-blanco-80: rgb(24 24 27 / 0.8);
+
+    --cristal-sombra: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 32px -12px rgb(0 0 0 / 0.6);
+    --sombra-1: 0 1px 2px rgb(0 0 0 / 0.4);
+    --sombra-2: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -10px rgb(0 0 0 / 0.55);
+    --sombra-3: 0 2px 8px rgb(0 0 0 / 0.45), 0 24px 56px -16px rgb(0 0 0 / 0.65);
+    --sombra-primario: 0 8px 22px -8px rgb(139 92 246 / 0.55);
+    --sombra-foco: 0 0 0 4px rgb(168 85 247 / 0.3);
+    --anillo-interior: inset 0 1px 0 rgb(255 255 255 / 0.06);
+
+    --brillo-base: #a78bfa;
+    --brillo-luz: #f0abfc;
+    --mezcla-calida: 12%;
   }
 }

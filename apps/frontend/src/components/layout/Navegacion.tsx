@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { useSesion } from '@/components/sesion/ProveedorSesion';
 import { enlacesNavegacion, type EnlaceNavegacion } from '@/config/navegacion';
 import { useBarrasAlDesplazar } from '@/lib/hooks/useBarrasAlDesplazar';
+import { BotonTema } from './BotonTema';
 import estilos from './Encabezado.module.css';
 import { MenuCuenta } from './MenuCuenta';
 
@@ -81,6 +82,7 @@ export function Navegacion() {
       </nav>
 
       <div className={estilos.acciones}>
+        <BotonTema />
         {/* Siempre visible, con o sin sesión, también en móvil (F18, RF20). */}
         <Link
           href="/ayuda"

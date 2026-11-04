@@ -125,7 +125,7 @@
 
 .etapa[data-estado='actual']::before,
 .etapa[data-estado='hecha']::before {
-  background: var(--color-primario);
+  background: var(--fondo-primario);
 }
 
 .botonEtapa {
@@ -180,7 +180,7 @@ button.botonEtapa:focus-visible {
 
 .etapa[data-estado='actual'] .punto {
   border-color: var(--color-primario);
-  background: var(--color-primario);
+  background: var(--fondo-primario);
   color: var(--color-sobre-primario);
   box-shadow: 0 0 0 4px var(--color-primario-suave);
 }
@@ -385,7 +385,7 @@ button.botonEtapa:focus-visible {
 
 .chip[aria-pressed='true'] {
   border-color: var(--color-primario);
-  background: var(--color-primario);
+  background: var(--fondo-primario);
   color: var(--color-sobre-primario);
   font-weight: var(--peso-fuerte);
 }

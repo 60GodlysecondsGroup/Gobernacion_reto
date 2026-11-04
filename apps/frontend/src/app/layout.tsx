@@ -10,6 +10,7 @@ import { PiePagina } from '@/components/layout/PiePagina';
 import { ProveedorMovimiento } from '@/components/layout/ProveedorMovimiento';
 import { ProveedorSesion } from '@/components/sesion/ProveedorSesion';
 import { ProveedorNotificaciones } from '@/components/ui/Notificaciones';
+import { SCRIPT_TEMA } from '@/lib/tema';
 import '@/styles/tokens.css';
 import './globals.css';
 
@@ -50,7 +51,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#f3f1fb',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f3f1fb' },
+    { media: '(prefers-color-scheme: dark)', color: '#09090b' },
+  ],
   // Ocupa toda la pantalla y activa `env(safe-area-inset-*)`: los márgenes, la barra inferior,
   // las hojas y la sala inmersiva ya los respetan (sin esto valen 0).
   viewportFit: 'cover',
@@ -58,7 +62,16 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={`${atkinson.variable} ${bricolage.variable}`}>
+    // `suppressHydrationWarning`: el script del tema pone `data-tema` en <html> antes de hidratar.
+    <html
+      lang="es"
+      className={`${atkinson.variable} ${bricolage.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        {/* Script fijo, sin datos del usuario: aplica el tema guardado antes de pintar. */}
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA }} />
+      </head>
       <body>
         <a href="#contenido" className="saltar-contenido">
           Saltar al contenido

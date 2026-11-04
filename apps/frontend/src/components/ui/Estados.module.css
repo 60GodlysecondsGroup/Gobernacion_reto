@@ -55,7 +55,7 @@
   padding: var(--espacio-2) var(--espacio-5);
   border: 1px solid var(--color-borde-fuerte);
   border-radius: var(--radio-total);
-  background: #fff;
+  background: var(--color-superficie-solida);
   color: var(--color-texto);
   font: inherit;
   font-weight: var(--peso-fuerte);

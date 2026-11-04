@@ -30,7 +30,7 @@
   padding: 6px 14px 6px 10px;
   border: 1px solid rgb(91 53 213 / 0.18);
   border-radius: var(--radio-total);
-  background: rgb(255 255 255 / 0.7);
+  background: var(--velo-blanco-70);
   color: var(--morado-800);
   font-size: var(--texto-xs);
   font-weight: var(--peso-fuerte);
@@ -119,7 +119,7 @@
   padding: clamp(0.75rem, 0.5rem + 1vw, 1.25rem);
   border: 1px solid rgb(255 255 255 / 0.8);
   border-radius: var(--radio-xl);
-  background: rgb(255 255 255 / 0.88);
+  background: color-mix(in srgb, var(--color-superficie-solida) 88%, transparent);
   box-shadow: var(--cristal-brillo), var(--sombra-3);
 }
 
@@ -131,7 +131,7 @@
   padding: 8px 12px;
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-total);
-  background: #fff;
+  background: var(--color-superficie-solida);
   color: var(--morado-800);
   font-size: var(--texto-xs);
   font-weight: var(--peso-fuerte);
@@ -200,7 +200,7 @@
   padding: var(--espacio-4) var(--padding-caja);
   border: 1px solid rgb(201 58 47 / 0.22);
   border-radius: var(--radio-lg);
-  background: rgb(253 236 234 / 0.85);
+  background: color-mix(in srgb, var(--color-acento-suave) 85%, transparent);
   box-shadow: var(--cristal-brillo), var(--sombra-1);
   color: var(--color-texto);
   text-decoration: none;
@@ -270,7 +270,8 @@
   border-radius: var(--radio-xl);
   background:
     radial-gradient(28rem 14rem at 0% 100%, rgb(115 80 234 / 0.16), transparent 70%),
-    radial-gradient(24rem 14rem at 100% 0%, rgb(61 111 245 / 0.1), transparent 70%), #fff;
+    radial-gradient(24rem 14rem at 100% 0%, rgb(61 111 245 / 0.1), transparent 70%),
+    var(--color-superficie-solida);
   box-shadow: var(--sombra-2);
 }
 

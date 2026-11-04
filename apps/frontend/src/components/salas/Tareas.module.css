@@ -76,7 +76,7 @@
   padding: var(--espacio-2) var(--espacio-3);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-md);
-  background: #fff;
+  background: var(--color-superficie-solida);
   color: var(--tinta);
   font: inherit;
   font-size: var(--texto-sm);
@@ -136,7 +136,7 @@
   padding: var(--espacio-2) var(--espacio-2) var(--espacio-2) var(--espacio-3);
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-md);
-  background: #fff;
+  background: var(--color-superficie-solida);
 }
 
 .pasoOrden[data-estado='bien'] {

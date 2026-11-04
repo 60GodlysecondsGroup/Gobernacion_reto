@@ -212,7 +212,7 @@
 }
 
 .item[data-abierta] .indicador {
-  background: var(--color-primario);
+  background: var(--fondo-primario);
   color: #fff;
 }
 

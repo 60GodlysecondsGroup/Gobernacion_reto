@@ -91,7 +91,7 @@
 
 .lienzoOscuro {
   border-color: transparent;
-  background: var(--tinta);
+  background: var(--tinta-fondo);
 }
 
 .tamanosMarca {
@@ -105,7 +105,7 @@
   display: inline-grid;
   padding: var(--espacio-3);
   border-radius: var(--radio-md);
-  background: var(--tinta);
+  background: var(--tinta-fondo);
 }
 
 .archivosMarca {

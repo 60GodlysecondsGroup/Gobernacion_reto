@@ -71,11 +71,11 @@
   width: 9px;
   height: 9px;
   border-radius: 2px;
-  background: rgb(255 255 255 / 0.55);
+  background: color-mix(in srgb, var(--color-superficie-solida) 55%, transparent);
 }
 
 .puestos span[data-ocupado] {
-  background: var(--tinta);
+  background: var(--tinta-fondo);
   box-shadow: 0 0 0 1px rgb(255 255 255 / 0.6);
 }
 

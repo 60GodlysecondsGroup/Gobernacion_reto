@@ -61,7 +61,7 @@
   align-items: center;
   padding: 1px var(--espacio-2);
   border-radius: var(--radio-total);
-  background: var(--color-primario);
+  background: var(--fondo-primario);
   color: var(--color-sobre-primario);
   font-size: var(--texto-xs);
   font-weight: var(--peso-fuerte);
