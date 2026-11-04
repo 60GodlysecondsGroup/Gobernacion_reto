@@ -10,9 +10,9 @@ const ESTADOS_VISIBLES: EstadoFuente[] = ['activo', 'requiere_revision'];
 const NECESIDADES_AYUDA = ['lineas_ayuda', 'hablar_con_alguien'];
 
 /**
- * Ficha pública de un servicio (11.3 y B.6): institución, servicio, información, canal,
- * dirección y ubicación (si es presencial), fuente, fecha de verificación y estado. Sin notas
- * internas ni responsables.
+ * Ficha pública de un servicio (11.3 y B.6): institución, servicio, información, canal, horario
+ * (el texto y, si se configuró, el horario semanal por días), dirección y ubicación (si es
+ * presencial), fuente, fecha de verificación y estado. Sin notas internas ni responsables.
  */
 export type FichaServicio = Pick<
   FuenteRegistrada,
@@ -24,6 +24,7 @@ export type FichaServicio = Pick<
   | 'telefono'
   | 'enlace'
   | 'horario'
+  | 'horarioSemanal'
   | 'direccion'
   | 'ubicacion'
   | 'fuenteOriginal'
@@ -42,6 +43,7 @@ const aFicha = (fuente: FuenteRegistrada): FichaServicio => ({
   telefono: fuente.telefono,
   enlace: fuente.enlace,
   horario: fuente.horario,
+  horarioSemanal: fuente.horarioSemanal,
   direccion: fuente.direccion,
   ubicacion: fuente.ubicacion,
   fuenteOriginal: fuente.fuenteOriginal,

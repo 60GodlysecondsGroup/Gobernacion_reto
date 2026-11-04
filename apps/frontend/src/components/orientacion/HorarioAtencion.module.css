@@ -1,0 +1,100 @@
+/*
+ * Horario de atención por días: el día a la izquierda y sus jornadas a la derecha, una por línea.
+ * Se adapta a su propio ancho (no al de la pantalla): en un espacio estrecho (móvil, columna
+ * angosta), las jornadas pasan debajo del día para que ninguna hora se corte.
+ */
+.horario {
+  display: grid;
+  gap: var(--espacio-2);
+  container-type: inline-size;
+}
+
+.dias {
+  display: grid;
+  margin: 0;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-solida);
+  overflow: hidden;
+}
+
+.fila {
+  display: grid;
+  /* Las horas nunca se cortan: su columna mide al menos su contenido; el día se ajusta. */
+  grid-template-columns: minmax(0, 0.8fr) minmax(max-content, 1.2fr);
+  align-items: baseline;
+  gap: var(--espacio-1) var(--espacio-3);
+  padding: var(--espacio-3) var(--espacio-4);
+}
+
+.fila + .fila {
+  border-top: 1px solid var(--color-borde);
+}
+
+.dia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2);
+  font-weight: var(--peso-fuerte);
+}
+
+.horas {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.jornada {
+  white-space: nowrap;
+}
+
+/* Hoy: fondo suave de la marca y una etiqueta pequeña junto al día. */
+.hoy {
+  background: var(--morado-50);
+  box-shadow: inset 3px 0 0 var(--color-primario);
+}
+
+.marcaHoy {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px var(--espacio-2);
+  border-radius: var(--radio-total);
+  background: var(--color-primario);
+  color: var(--color-sobre-primario);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: 0.02em;
+}
+
+.sinAtencion .dia,
+.sinAtencion .horas {
+  color: var(--color-texto-tenue);
+  font-weight: var(--peso-normal);
+}
+
+.nota {
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+}
+
+/* Fuentes registradas antes del horario semanal: su texto, tal cual. */
+.textoLibre {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+@container (max-width: 23rem) {
+  .fila {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--espacio-3);
+  }
+}
+
+/* Muy estrecho (pantallas de 320 px con letra grande): la jornada también puede partirse. */
+@container (max-width: 14rem) {
+  .jornada {
+    white-space: normal;
+  }
+}

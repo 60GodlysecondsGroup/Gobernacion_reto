@@ -1,4 +1,5 @@
 import type { EstadoFuente, TipoCanal } from '@/config/fuentes';
+import type { HorarioSemanal } from '@/lib/horarios';
 import type { UbicacionFuente } from '@/lib/mapas';
 import { api } from './cliente';
 
@@ -13,7 +14,13 @@ export type FichaServicio = {
   tipoCanal: TipoCanal;
   telefono: string | null;
   enlace: string | null;
+  /** Texto legible del horario (con horario semanal, derivado de él). */
   horario: string | null;
+  /**
+   * Horario por días, si la fuente lo configuró. null en las fuentes registradas antes del
+   * horario semanal: entonces solo hay `horario` (texto) y se muestra tal cual.
+   */
+  horarioSemanal: HorarioSemanal | null;
   /** Dirección escrita por la fuente (puede existir sin ubicación en el mapa). */
   direccion: string | null;
   /** Punto en el mapa, para atención presencial o híbrida. null si no se registró. */
