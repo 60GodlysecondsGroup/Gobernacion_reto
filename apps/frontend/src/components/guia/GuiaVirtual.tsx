@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { ACOMPANANTES, mensajesDeRuta } from '@/config/acompanantes';
+import { RESORTE_PANEL } from '@/lib/movimiento';
 import { ChatCocuyo, useConversacionCocuyo } from './ChatCocuyo';
 import { Cocuyo } from './Cocuyo';
 import estilos from './Guia.module.css';
@@ -177,10 +178,17 @@ export function GuiaVirtual() {
               aria-modal="false"
               aria-labelledby="guia-titulo"
               className={estilos.ventana}
-              initial={{ opacity: 0, y: 12, scale: 0.98 }}
+              // Crece desde el lanzador (esquina inferior derecha) con un resorte, como en iOS.
+              style={{ transformOrigin: '100% 100%' }}
+              initial={{ opacity: 0, y: 16, scale: 0.92 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 12, scale: 0.98 }}
-              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              exit={{
+                opacity: 0,
+                y: 12,
+                scale: 0.95,
+                transition: { duration: 0.18, ease: [0.4, 0, 1, 1] },
+              }}
+              transition={RESORTE_PANEL}
             >
               <CabeceraGuia alCerrar={cerrar} minimizar={false} />
               {chat}

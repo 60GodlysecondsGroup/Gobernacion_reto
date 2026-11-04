@@ -28,6 +28,11 @@
 }
 
 .lanzador:hover {
+  transform: translateY(-2px);
+}
+
+.lanzador:active {
+  transform: translateY(0) scale(0.96);
 }
 
 .lanzador:focus-visible {
@@ -639,4 +644,159 @@
   color: var(--color-texto-suave);
   font-size: var(--texto-xs);
   line-height: 1.4;
+}
+
+/* ─── Movimiento de Cocuyo y su conversación ─────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  /* Cocuyo llega volando a su sitio poco después de cargar la página. */
+  .lanzador {
+    animation: llegarCocuyo 760ms var(--curva-salida) 700ms backwards;
+  }
+
+  /* Al abrir la guía, Cocuyo da una pequeña vuelta de saludo. */
+  .lanzador[aria-expanded='true'] svg {
+    animation: saludarCocuyo 640ms var(--curva-salida);
+  }
+
+  /* Al presionarlo, Cocuyo se aplasta un poco (squash) como un botón vivo. */
+  .lanzador:active svg {
+    animation: aplastarCocuyo 140ms ease-out forwards;
+  }
+
+  /* Cada mensaje entra desde su lado: Cocuyo desde la izquierda, la persona desde la derecha. */
+  .mensajeCocuyo {
+    animation: mensajeDesdeIzquierda 420ms var(--curva-salida) backwards;
+  }
+
+  .mensajeCocuyo .avatarCocuyo {
+    animation: aparecerAvatar 460ms var(--curva-salida) backwards;
+  }
+
+  .mensajePersona {
+    transform-origin: 100% 100%;
+    animation: mensajeDesdeDerecha 380ms var(--curva-salida) backwards;
+  }
+
+  /* Escritura progresiva: la respuesta se descubre párrafo a párrafo, de izquierda a derecha.
+     Es solo visual: el texto completo está en la página desde el primer momento. */
+  .respuesta > * {
+    animation: escribirParrafo 560ms var(--curva-salida) backwards;
+    animation-delay: calc(var(--n, 0) * 140ms);
+  }
+
+  .respuesta > :nth-child(2) {
+    --n: 1;
+  }
+  .respuesta > :nth-child(3) {
+    --n: 2;
+  }
+  .respuesta > :nth-child(4) {
+    --n: 3;
+  }
+  .respuesta > :nth-child(5) {
+    --n: 4;
+  }
+  .respuesta > :nth-child(n + 6) {
+    --n: 5;
+  }
+
+  /* Mientras prepara la respuesta, su luz late como la de una luciérnaga. */
+  .escribiendo span {
+    position: relative;
+    animation: luzLuciernaga 1.3s ease-in-out infinite;
+  }
+
+  .escribiendo span::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--atardecer);
+    animation: ondaLuciernaga 1.3s ease-out infinite;
+  }
+}
+
+@keyframes llegarCocuyo {
+  from {
+    opacity: 0;
+    transform: translate(18px, 22px) scale(0.85) rotate(-6deg);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(-2px, -3px) scale(1.02) rotate(1deg);
+  }
+}
+
+/* Anticipación (se agacha), salto con estiramiento y asentamiento. */
+@keyframes saludarCocuyo {
+  18% {
+    transform: scale(1.12, 0.86) translateY(1px);
+  }
+  45% {
+    transform: rotate(-14deg) scale(0.94, 1.14) translateY(-3px);
+  }
+  72% {
+    transform: rotate(8deg) scale(1.03, 0.97);
+  }
+}
+
+@keyframes aplastarCocuyo {
+  to {
+    transform: scale(1.14, 0.84) translateY(1px);
+  }
+}
+
+@keyframes mensajeDesdeIzquierda {
+  from {
+    opacity: 0;
+    transform: translateX(-12px) translateY(6px);
+  }
+}
+
+@keyframes aparecerAvatar {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+@keyframes mensajeDesdeDerecha {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.94);
+  }
+}
+
+@keyframes escribirParrafo {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes luzLuciernaga {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes ondaLuciernaga {
+  from {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.6);
+  }
 }
