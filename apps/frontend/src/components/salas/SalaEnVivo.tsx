@@ -1,5 +1,6 @@
 'use client';
 
+import { Volume2, VolumeX } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Avatar } from '@/components/avatar/Avatar';
 import { BotonReportar } from '@/components/comunidad/BotonReportar';
@@ -13,6 +14,7 @@ import { useTeclasMovimiento } from './controles/useTeclasMovimiento';
 import { Escenario2D, geometriaEscenario } from './Escenario2D';
 import { PanelAyudaSala } from './PanelAyudaSala';
 import { MundoSala } from './MundoSala';
+import { usePasosSonoros } from './usePasosSonoros';
 import { VidaSala } from './VidaSala';
 import estilos from './Salas.module.css';
 import type { EstadoSalaEnVivo } from './useSalaEnVivo';
@@ -22,6 +24,12 @@ const PARED_SALA = 34;
 
 const ID_INSTRUCCIONES = 'instrucciones-movimiento';
 
+/** Timbre del suelo por sala (0.85–1.25): cada sala suena un poco distinta al caminar. */
+function timbreDeSuelo(nombre: string) {
+  let suma = 0;
+  for (const letra of nombre) suma = (suma + letra.charCodeAt(0)) % 41;
+  return 0.85 + suma / 100;
+}
 
 const TEXTO_RECHAZO = {
   limite: 'Llegaste al borde de la sala.',
@@ -49,6 +57,8 @@ export function SalaEnVivo({
   const [destino, setDestino] = useState<{ x: number; y: number; vez: number } | null>(null);
   const { escenario, participantes, yo, rechazo } = estado;
   const propio = participantes.find((p) => p.id === yo);
+  // Pasos sonoros (apagados por defecto); el timbre cambia un poco según la sala.
+  const sonido = usePasosSonoros(participantes, yo, timbreDeSuelo(sala.nombre));
 
   const ocupadas = useMemo(
     () => new Set(escenario?.obstaculos.map((o) => `${o.x},${o.y}`)),
@@ -177,7 +187,20 @@ export function SalaEnVivo({
               Necesito ayuda
             </Boton>
             <BotonReportar tipoContenido="sala" idContenido={sala.id} />
-
+            <Boton
+              variante="secundario"
+              tamano="sm"
+              aria-pressed={sonido.activo}
+              onClick={sonido.alternar}
+              title={sonido.activo ? 'Silenciar los pasos' : 'Escuchar los pasos al caminar'}
+            >
+              {sonido.activo ? (
+                <Volume2 aria-hidden="true" size={16} />
+              ) : (
+                <VolumeX aria-hidden="true" size={16} />
+              )}
+              Sonido de pasos
+            </Boton>
           </div>
           {ayudaAbierta && <PanelAyudaSala />}
         </section>
