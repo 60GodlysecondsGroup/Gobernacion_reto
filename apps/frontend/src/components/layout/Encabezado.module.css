@@ -428,10 +428,11 @@
 }
 
 /*
- * Barras que se turnan al desplazarse (móvil y tableta, ver `useBarrasAlDesplazar`): hacia abajo
- * se va el encabezado y queda la barra inferior; hacia arriba, al revés. Solo `transform` y
- * `opacity`: el encabezado sigue ocupando su sitio y el contenido no salta. En escritorio no
- * cambia nada.
+ * Barras que se turnan al desplazarse (ver `useBarrasAlDesplazar`): hacia abajo se va el
+ * encabezado y queda la barra inferior; hacia arriba, al revés. En escritorio no hay barra
+ * inferior: el encabezado se esconde al bajar y vuelve al subir. Solo `transform` y `opacity`:
+ * el encabezado sigue ocupando su sitio y el contenido no salta. Cerca del inicio, con el foco
+ * del teclado dentro o con el menú de la cuenta abierto, siempre está visible.
  *
  * Movimiento al estilo de las barras de iOS: al volver, la barra desacelera hasta su sitio como
  * un resorte amortiguado (sin rebote) y recupera la opacidad enseguida; al irse, arranca suave,
@@ -442,7 +443,7 @@
  * semitransparente, `backdrop-filter` deja de ver el fondo y el cristal se volvería nítido
  * durante el fundido.
  */
-@media (max-width: 63.99rem) {
+@media all {
   .encabezado,
   .barraInferior {
     --barra-aparecer: 440ms cubic-bezier(0.25, 1, 0.5, 1);
@@ -589,6 +590,12 @@
 @keyframes entrarItemMenu {
   from {
     opacity: 0;
-    transform: translateY(-3px);
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(-6px);
+    transform: none;
   }
 }

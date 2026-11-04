@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 
-/** Mismo punto de quiebre que la barra inferior (`Encabezado.module.css`): solo existe por debajo. */
+/** Punto de quiebre de la barra inferior: al cruzarlo, el estado se reinicia. */
 const CONSULTA_MOVIL = '(max-width: 63.99rem)';
 /** Recorrido mínimo en un mismo sentido antes de cambiar de barra: ignora roces y temblores. */
 const UMBRAL = 24;
@@ -14,8 +14,9 @@ const ESPERA_INICIAL = 500;
 const ATRIBUTO = 'data-desplazamiento';
 
 /**
- * En móvil y tableta, el encabezado y la barra inferior se turnan según el sentido del
- * desplazamiento: hacia abajo queda la barra inferior, hacia arriba el encabezado. Solo escribe
+ * El encabezado y la barra inferior se turnan según el sentido del desplazamiento: hacia abajo
+ * queda la barra inferior (móvil y tableta), hacia arriba el encabezado. En escritorio solo hay
+ * encabezado: se esconde al bajar y vuelve al subir, como las barras de Safari en iOS. Solo escribe
  * `data-desplazamiento` en `<html>`; el CSS decide qué se oculta y lo anima. Cada página empieza
  * con las dos barras a la vista. Montar una sola vez (lo hace `BarraInferior`).
  */
@@ -67,7 +68,7 @@ export function useBarrasAlDesplazar() {
       if (!marco) marco = requestAnimationFrame(actualizar);
     };
 
-    // Se (re)engancha al montar y al cruzar el punto de quiebre; en escritorio no escucha nada.
+    // Se (re)engancha al montar y al cruzar el punto de quiebre (reinicia el estado).
     const activar = () => {
       window.removeEventListener('scroll', alDesplazar);
       cancelAnimationFrame(marco);
@@ -76,7 +77,7 @@ export function useBarrasAlDesplazar() {
       anterior = posicion();
       recorrido = 0;
       listaEn = performance.now() + ESPERA_INICIAL;
-      if (consulta.matches) window.addEventListener('scroll', alDesplazar, { passive: true });
+      window.addEventListener('scroll', alDesplazar, { passive: true });
     };
 
     activar();
