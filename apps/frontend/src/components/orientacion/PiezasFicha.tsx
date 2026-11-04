@@ -27,15 +27,20 @@ export function TemasRelacionados({ necesidades }: { necesidades: FichaServicio[
   );
 }
 
-/** Institución, fuente, fecha de verificación y estado: el orden de transparencia (B.6). */
+/**
+ * Institución, fuente, fecha de verificación y estado: el orden de transparencia (B.6).
+ * Con `enRejilla`, cada dato es una celda con su rótulo encima (más compacto en pantallas amplias).
+ */
 export function DatosVerificacion({
   servicio,
+  enRejilla = false,
 }: {
   servicio: Pick<FichaServicio, 'institucion' | 'fuenteOriginal' | 'fechaVerificacion' | 'estado'>;
+  enRejilla?: boolean;
 }) {
   const estado = ESTADOS_FUENTE[servicio.estado];
   return (
-    <dl className={estilos.datos}>
+    <dl className={enRejilla ? `${estilos.datos} ${estilos.rejilla}` : estilos.datos}>
       <div>
         <dt>Institución</dt>
         <dd>{servicio.institucion}</dd>

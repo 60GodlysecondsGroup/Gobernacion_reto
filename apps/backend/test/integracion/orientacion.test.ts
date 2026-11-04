@@ -90,6 +90,8 @@ describe('TRL-09 · Orientación institucional', () => {
       telefono: '000 000 0000',
       enlace: null,
       horario: 'Horario de demostración',
+      // Fuente registrada antes del horario semanal: solo el texto (la ficha lo muestra tal cual).
+      horarioSemanal: null,
       // Fuente registrada antes de la ubicación: sin dirección ni mapa, y sigue funcionando.
       direccion: null,
       ubicacion: null,
@@ -321,10 +323,10 @@ describe('TRL-12 · Actualización de fuente trazable', () => {
       ]);
       expect(recuperada.horarioSemanal.miercoles).toEqual([]);
 
-      // La ficha pública sigue recibiendo el texto, sin la estructura.
+      // La ficha pública recibe el texto y la estructura por días (para mostrarlo día a día).
       const ficha = await gestor.get(`/api/orientacion/servicios/${fuente.id}`);
       expect(ficha.body.servicio.horario).toBe(texto);
-      expect(ficha.body.servicio).not.toHaveProperty('horarioSemanal');
+      expect(ficha.body.servicio.horarioSemanal).toEqual(recuperada.horarioSemanal);
 
       // Guardar lo mismo que devolvió la base (jsonb reordena claves) no agrega entradas.
       const repetida = await gestor.put(ruta, {

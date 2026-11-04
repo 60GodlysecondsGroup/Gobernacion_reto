@@ -92,19 +92,25 @@
   min-width: 0;
 }
 
+/* Suele ser el nombre de la entidad: se lee completo (hasta dos líneas), sin cortarlo con «…». */
 .antetitulo {
+  display: -webkit-box;
   overflow: hidden;
   color: var(--color-primario);
   font-size: var(--texto-xs);
   font-weight: var(--peso-fuerte);
   letter-spacing: 0.04em;
-  text-overflow: ellipsis;
+  line-height: 1.35;
   text-transform: uppercase;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .titulo {
   font-size: var(--texto-xl);
+  line-height: 1.2;
   overflow-wrap: anywhere;
 }
 
@@ -218,8 +224,22 @@
     transform: translateX(-50%);
   }
 
+  /* En la hoja, márgenes laterales más cortos: más ancho útil para teléfonos, mapa y horario. */
   .cabecera {
-    padding-top: var(--espacio-6);
+    gap: var(--espacio-3);
+    padding: var(--espacio-6) var(--espacio-4) var(--espacio-4);
+  }
+
+  .cuerpo {
+    padding: var(--espacio-4);
+  }
+
+  .pie {
+    padding: var(--espacio-3) var(--espacio-4);
+  }
+
+  .titulo {
+    font-size: var(--texto-lg);
   }
 
   .pie > * {

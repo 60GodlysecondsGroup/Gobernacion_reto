@@ -6,10 +6,13 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
+  agruparDias,
   borradorDesde,
+  diaSemanaEnColombia,
   borradorVacio,
   formatearHora,
   formatearHorario,
+  formatearIntervalo,
   horarioDesde,
   validarHorario,
   type BorradorHorario,
@@ -116,5 +119,54 @@ describe('horario semanal: texto legible', () => {
     const siempre = [de('00:00', '24:00')];
     const todos = con(Object.fromEntries(Object.keys(borradorVacio()).map((d) => [d, siempre])));
     assert.equal(formatearHorario(horarioDesde(todos)!), 'Lunes a domingo: 24 horas');
+  });
+});
+
+describe('horario semanal: lectura en la ficha pública', () => {
+  it('agrupa días seguidos con sus intervalos y los días que incluye', () => {
+    const horario = horarioDesde(
+      con({
+        lunes: oficina,
+        martes: oficina,
+        miercoles: oficina,
+        jueves: [de('08:00', '12:00'), de('14:00', '18:00')],
+        sabado: [de('09:00', '13:00')],
+      }),
+    )!;
+    assert.deepEqual(agruparDias(horario), [
+      {
+        dias: 'Lunes a miércoles',
+        texto: '8:00 a. m. – 5:00 p. m.',
+        incluye: ['lunes', 'martes', 'miercoles'],
+        intervalos: oficina,
+      },
+      {
+        dias: 'Jueves',
+        texto: '8:00 a. m. – 12:00 p. m. y 2:00 p. m. – 6:00 p. m.',
+        incluye: ['jueves'],
+        intervalos: [de('08:00', '12:00'), de('14:00', '18:00')],
+      },
+      { dias: 'Viernes', texto: 'sin atención', incluye: ['viernes'], intervalos: [] },
+      {
+        dias: 'Sábado',
+        texto: '9:00 a. m. – 1:00 p. m.',
+        incluye: ['sabado'],
+        intervalos: [de('09:00', '13:00')],
+      },
+      { dias: 'Domingo', texto: 'sin atención', incluye: ['domingo'], intervalos: [] },
+    ]);
+  });
+
+  it('formatea un intervalo suelto, con «24 horas» para el día entero', () => {
+    assert.equal(formatearIntervalo(de('14:00', '18:30')), '2:00 p. m. – 6:30 p. m.');
+    assert.equal(formatearIntervalo(de('22:00', '24:00')), '10:00 p. m. – medianoche');
+    assert.equal(formatearIntervalo(de('00:00', '24:00')), '24 horas');
+  });
+
+  it('toma el día de la semana en hora de Colombia, no la del dispositivo', () => {
+    // Martes 3 de noviembre de 2026, 2:00 a. m. UTC = lunes 2, 9:00 p. m. en Colombia (UTC−5).
+    assert.equal(diaSemanaEnColombia(new Date('2026-11-03T02:00:00Z')), 'lunes');
+    assert.equal(diaSemanaEnColombia(new Date('2026-11-03T15:00:00Z')), 'martes');
+    assert.equal(diaSemanaEnColombia(new Date('2026-11-08T12:00:00Z')), 'domingo');
   });
 });

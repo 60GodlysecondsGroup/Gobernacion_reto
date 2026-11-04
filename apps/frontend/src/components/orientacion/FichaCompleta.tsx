@@ -22,6 +22,7 @@ import { formatearFecha } from '@/lib/fechas';
 import comun from '../comun.module.css';
 import { ContactoServicio, IconoCanal } from './ContactoServicio';
 import estilos from './FichaCompleta.module.css';
+import { HorarioAtencion, tieneHorario } from './HorarioAtencion';
 import { ModalFicha } from './ModalFicha';
 import { AVISO_PLATAFORMA, DatosVerificacion, TemasRelacionados } from './PiezasFicha';
 import { UbicacionServicio } from './UbicacionServicio';
@@ -230,13 +231,13 @@ export function FichaCompleta() {
             <UbicacionServicio servicio={servicio} compacta />
           </div>
         )}
-        {servicio.horario && (
+        {tieneHorario(servicio) && (
           <div className={estilos.bloque}>
             <p className={estilos.rotulo}>
               <Clock aria-hidden="true" size={16} />
-              Horario
+              Horario de atención
             </p>
-            <p>{servicio.horario}</p>
+            <HorarioAtencion servicio={servicio} />
           </div>
         )}
         {servicio.estado === 'requiere_revision' && (

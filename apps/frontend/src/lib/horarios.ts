@@ -127,36 +127,74 @@ export function formatearHora(hora: string): string {
   return `${h % 12 === 0 ? 12 : h % 12}:${m} ${h < 12 ? 'a. m.' : 'p. m.'}`;
 }
 
+/** Un intervalo legible: «8:00 a. m. – 12:00 p. m.»; «24 horas» si cubre el día entero. */
+export const formatearIntervalo = ({ apertura, cierre }: Intervalo) =>
+  apertura === '00:00' && cierre === '24:00'
+    ? '24 horas'
+    : `${formatearHora(apertura)} – ${formatearHora(cierre)}`;
+
 export function formatearIntervalos(intervalos: Intervalo[]): string {
   if (intervalos.length === 0) return 'sin atención';
-  const [primero] = intervalos;
-  if (intervalos.length === 1 && primero!.apertura === '00:00' && primero!.cierre === '24:00') {
-    return '24 horas';
-  }
-  const partes = intervalos.map((i) => `${formatearHora(i.apertura)} – ${formatearHora(i.cierre)}`);
+  // «00:00–24:00» ocupa el día entero: si aparece, es el único intervalo («24 horas»).
+  const partes = intervalos.map(formatearIntervalo);
   return partes.length === 1
     ? partes[0]!
     : `${partes.slice(0, -1).join(', ')} y ${partes[partes.length - 1]}`;
 }
 
+/** Un grupo de días seguidos con el mismo horario. */
+export type GrupoDias = {
+  /** «Lunes a viernes», «Sábado y domingo», «Miércoles». */
+  dias: string;
+  /** El horario del grupo en una línea: «8:00 a. m. – 12:00 p. m. y …», «sin atención». */
+  texto: string;
+  /** Los días del grupo, en orden. */
+  incluye: DiaSemana[];
+  /** Los intervalos del grupo (iguales en todos sus días). Vacío: sin atención. */
+  intervalos: Intervalo[];
+};
+
 /** Días seguidos con el mismo horario: «Lunes a viernes», «Sábado y domingo». */
-export function agruparDias(horario: HorarioSemanal): { dias: string; texto: string }[] {
-  const grupos: { desde: DiaSemana; hasta: DiaSemana; texto: string }[] = [];
+export function agruparDias(horario: HorarioSemanal): GrupoDias[] {
+  const grupos: { incluye: DiaSemana[]; texto: string; intervalos: Intervalo[] }[] = [];
   for (const dia of DIAS_SEMANA) {
-    const texto = formatearIntervalos(horario[dia] ?? []);
+    const intervalos = horario[dia] ?? [];
+    const texto = formatearIntervalos(intervalos);
     const ultimo = grupos[grupos.length - 1];
-    if (ultimo && ultimo.texto === texto) ultimo.hasta = dia;
-    else grupos.push({ desde: dia, hasta: dia, texto });
+    if (ultimo && ultimo.texto === texto) ultimo.incluye.push(dia);
+    else grupos.push({ incluye: [dia], texto, intervalos });
   }
-  return grupos.map(({ desde, hasta, texto }) => {
-    const distancia = DIAS_SEMANA.indexOf(hasta) - DIAS_SEMANA.indexOf(desde);
+  return grupos.map(({ incluye, texto, intervalos }) => {
+    const desde = incluye[0]!;
+    const hasta = incluye[incluye.length - 1]!;
     const dias =
-      distancia === 0
+      incluye.length === 1
         ? NOMBRE_DIA[desde]
-        : `${NOMBRE_DIA[desde]} ${distancia === 1 ? 'y' : 'a'} ${NOMBRE_DIA[hasta].toLowerCase()}`;
-    return { dias, texto };
+        : `${NOMBRE_DIA[desde]} ${incluye.length === 2 ? 'y' : 'a'} ${NOMBRE_DIA[hasta].toLowerCase()}`;
+    return { dias, texto, incluye, intervalos };
   });
 }
+
+const diaEnColombia = new Intl.DateTimeFormat('en-US', {
+  weekday: 'long',
+  timeZone: 'America/Bogota',
+});
+const DIA_EN_INGLES: Record<string, DiaSemana> = {
+  Monday: 'lunes',
+  Tuesday: 'martes',
+  Wednesday: 'miercoles',
+  Thursday: 'jueves',
+  Friday: 'viernes',
+  Saturday: 'sabado',
+  Sunday: 'domingo',
+};
+
+/**
+ * Día de la semana en Colombia (los horarios de las fuentes son hora local), sin importar la zona
+ * horaria del dispositivo. Solo señala el día: no dice si un servicio está abierto (festivos).
+ */
+export const diaSemanaEnColombia = (fecha: Date = new Date()): DiaSemana =>
+  DIA_EN_INGLES[diaEnColombia.format(fecha)]!;
 
 /** El mismo texto que guarda el backend en `horario` y muestra la ficha pública. */
 export const formatearHorario = (horario: HorarioSemanal) =>
