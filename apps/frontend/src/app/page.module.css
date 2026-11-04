@@ -312,12 +312,90 @@
 }
 
 .listaJuegos li {
-  padding: 4px 12px;
+  padding: 5px 14px;
   border-radius: var(--radio-total);
   background: var(--morado-50);
+  border: 1px solid transparent;
   color: var(--morado-800);
   font-size: var(--texto-xs);
   font-weight: var(--peso-fuerte);
+  transition:
+    transform 200ms var(--curva-salida),
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease;
+}
+
+.listaJuegos li:hover {
+  transform: translateY(-2px);
+  background: #ede9fe;
+  border-color: rgba(91, 53, 213, 0.25);
+  color: var(--morado-900);
+}
+
+/* ── Modo oscuro: la tarjeta de salas se integra sin fondos blancos ── */
+:global(:root[data-tema='oscuro']) .juegos {
+  border-color: rgb(168 85 247 / 0.28);
+  background:
+    radial-gradient(32rem 16rem at 0% 100%, rgb(139 92 246 / 0.18), transparent 70%),
+    radial-gradient(28rem 16rem at 100% 0%, rgb(61 111 245 / 0.14), transparent 70%),
+    #18181b;
+  box-shadow:
+    0 1px 3px rgb(0 0 0 / 0.5),
+    0 20px 48px -16px rgb(0 0 0 / 0.7);
+}
+
+:global(:root[data-tema='oscuro']) .personajeJuegos {
+  background:
+    radial-gradient(circle at 35% 30%, rgb(168 85 247 / 0.25), transparent 70%),
+    #1f1638;
+  border: 2px solid rgb(168 85 247 / 0.35);
+  box-shadow: 0 8px 24px -8px rgb(0 0 0 / 0.6);
+}
+
+:global(:root[data-tema='oscuro']) .listaJuegos li {
+  background: #251c3d;
+  border: 1px solid rgb(168 85 247 / 0.3);
+  color: #f5f3ff;
+}
+
+:global(:root[data-tema='oscuro']) .listaJuegos li:hover {
+  background: rgba(168, 85, 247, 0.3);
+  border-color: rgb(168 85 247 / 0.55);
+  color: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-tema='claro'])) .juegos {
+    border-color: rgb(168 85 247 / 0.28);
+    background:
+      radial-gradient(32rem 16rem at 0% 100%, rgb(139 92 246 / 0.18), transparent 70%),
+      radial-gradient(28rem 16rem at 100% 0%, rgb(61 111 245 / 0.14), transparent 70%),
+      #18181b;
+    box-shadow:
+      0 1px 3px rgb(0 0 0 / 0.5),
+      0 20px 48px -16px rgb(0 0 0 / 0.7);
+  }
+
+  :global(:root:not([data-tema='claro'])) .personajeJuegos {
+    background:
+      radial-gradient(circle at 35% 30%, rgb(168 85 247 / 0.25), transparent 70%),
+      #1f1638;
+    border: 2px solid rgb(168 85 247 / 0.35);
+    box-shadow: 0 8px 24px -8px rgb(0 0 0 / 0.6);
+  }
+
+  :global(:root:not([data-tema='claro'])) .listaJuegos li {
+    background: #251c3d;
+    border: 1px solid rgb(168 85 247 / 0.3);
+    color: #f5f3ff;
+  }
+
+  :global(:root:not([data-tema='claro'])) .listaJuegos li:hover {
+    background: rgba(168, 85, 247, 0.3);
+    border-color: rgb(168 85 247 / 0.55);
+    color: #ffffff;
+  }
 }
 
 .irJuegos {
@@ -531,7 +609,7 @@
   }
 }
 
-/* Salas: la tarjeta se acerca desde la profundidad, Chigüi salta y las actividades llegan
+/* Salas: la tarjeta se acerca desde la profundidad con desvanecimiento, Chigüi salta y las actividades llegan
    una a una mientras se desplaza la página. */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
@@ -592,6 +670,10 @@
     opacity: 0;
     transform: translateY(40px) scale(0.96);
   }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @keyframes saltoChigui {
@@ -602,6 +684,21 @@
   70% {
     opacity: 1;
     transform: translateY(-4px) scale(1.04) rotate(3deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes llegarChip {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
