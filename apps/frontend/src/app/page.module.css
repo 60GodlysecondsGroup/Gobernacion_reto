@@ -374,8 +374,25 @@
 
 /* ── Puntos de quiebre ───────────────────────────────── */
 @media (min-width: 64rem) {
+  /* En escritorio la portada ocupa la pantalla disponible bajo el encabezado, sin cortarse:
+     menos aire vertical y una ilustración algo más contenida. */
   .heroe {
     grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+    gap: clamp(1.5rem, 1rem + 2vw, 3rem);
+    min-height: calc(100svh - var(--alto-encabezado) - var(--espacio-6));
+    padding-top: 0;
+  }
+
+  .textoHeroe {
+    gap: clamp(0.875rem, 0.7rem + 0.6vw, 1.25rem);
+  }
+
+  .visual {
+    padding-block: var(--espacio-2);
+  }
+
+  .ilustracion {
+    max-width: 28rem;
   }
 }
 

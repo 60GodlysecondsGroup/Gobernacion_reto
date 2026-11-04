@@ -227,6 +227,13 @@
 }
 
 
+/* Escritorio: encabezado algo más bajo para dejar más alto útil a la portada. */
+@media (min-width: 64rem) {
+  :root {
+    --alto-encabezado: 4.25rem;
+  }
+}
+
 /* En móviles el desenfoque es más ligero: menos coste de GPU con el mismo efecto. */
 @media (max-width: 47.99rem) {
   :root {

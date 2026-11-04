@@ -11,13 +11,15 @@ html {
 }
 
 /*
- * Escala de la interfaz en pantallas anchas: todo se mide en rem, así que bajar la raíz al 90 %
- * da el aire de un zoom reducido sin pedirle a nadie que cambie su navegador. Es un porcentaje:
- * si la persona agrandó la letra en su navegador, se respeta.
+ * Escala de la interfaz en escritorio: todo se mide en rem, así que bajar la raíz equivale a un
+ * zoom reducido sin pedirle a nadie que cambie su navegador. 82 % es un punto medio: más
+ * compacto que antes pero con letra cómoda de leer; el espacio vertical que falta para que la
+ * portada quepa se recupera en el encabezado y el héroe. Desde 64rem (1024 px); tabletas y
+ * móviles conservan su tamaño. Es un porcentaje: si la persona agrandó la letra, se respeta.
  */
-@media (min-width: 80rem) {
+@media (min-width: 64rem) {
   html {
-    font-size: 90%;
+    font-size: 82%;
   }
 }
 
