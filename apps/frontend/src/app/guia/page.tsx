@@ -4,6 +4,7 @@ import { PreguntasFrecuentes } from '@/components/guia/PreguntasFrecuentes';
 import { ComoFunciona } from '@/components/inicio/ComoFunciona';
 import estilos from '@/components/guia/GuiaPagina.module.css';
 import { EncabezadoPagina } from '@/components/layout/EncabezadoPagina';
+import { TextoRevelado } from '@/components/movimiento/TextoRevelado';
 import { PRESENTACION_GUIA, TEMAS_GUIA } from '@/config/guia';
 
 export const metadata: Metadata = { title: 'Cómo funciona' };
@@ -24,7 +25,13 @@ export default function PaginaGuia() {
       <div className={estilos.ancho}>
         <ComoFunciona />
       </div>
-      <h2 className={estilos.subtitulo}>Preguntas frecuentes</h2>
+      <TextoRevelado
+        as="h2"
+        className={estilos.subtitulo}
+        efecto="desenfoque"
+        cuando="scroll"
+        tramos={['Preguntas frecuentes']}
+      />
       <PreguntasFrecuentes temas={TEMAS_GUIA} />
     </div>
   );
