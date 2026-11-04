@@ -706,3 +706,61 @@
     display: none;
   }
 }
+
+/* ─── Modo oscuro: el valle de noche ────────────────────────────────────────
+   Una capa translúcida con degradado nocturno (índigo arriba, casi negro abajo) cubre el pixel
+   art sin tocar sus colores: queda debajo de las etiquetas y de Cocuyo, y es barata (sin filtros
+   ni mezclas que se recalculen en cada fotograma de la escena animada). Los botones de las casas
+   A, B, C y D y el de reiniciar pasan a fondos translúcidos con borde fino. El botón elegido
+   conserva su degradado de acción. */
+:global(:root[data-tema='oscuro']) .escena {
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+}
+
+:global(:root[data-tema='oscuro']) .escena::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgb(30 27 75 / 0.42) 0%,
+    rgb(24 24 27 / 0.28) 55%,
+    rgb(9 9 11 / 0.48) 100%
+  );
+  pointer-events: none;
+}
+
+:global(:root[data-tema='oscuro'])
+  :is(.botonCasa:not([aria-pressed='true']), .reiniciar):not(:hover) {
+  border-color: rgb(255 255 255 / 0.1);
+  background: rgb(39 39 42 / 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-tema='claro'])) .escena {
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+  }
+
+  :global(:root:not([data-tema='claro'])) .escena::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+    background: linear-gradient(
+      180deg,
+      rgb(30 27 75 / 0.42) 0%,
+      rgb(24 24 27 / 0.28) 55%,
+      rgb(9 9 11 / 0.48) 100%
+    );
+    pointer-events: none;
+  }
+
+  :global(:root:not([data-tema='claro']))
+    :is(.botonCasa:not([aria-pressed='true']), .reiniciar):not(:hover) {
+    border-color: rgb(255 255 255 / 0.1);
+    background: rgb(39 39 42 / 0.5);
+  }
+}
