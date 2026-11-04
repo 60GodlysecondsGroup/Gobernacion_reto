@@ -11,9 +11,16 @@ import { CURVA_SALIDA, DURACION } from '@/lib/movimiento';
 export default function Plantilla({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: DURACION.contexto, ease: CURVA_SALIDA }}
+      // Cada vista llega desde un poco más atrás (escala) y abajo, y se asienta con un resorte
+      // amortiguado: profundidad sin retrasar los clics ni ocultar el contenido mucho tiempo.
+      initial={{ opacity: 0, y: 14, scale: 0.985 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{
+        type: 'spring',
+        stiffness: 300,
+        damping: 32,
+        opacity: { duration: DURACION.contexto, ease: CURVA_SALIDA },
+      }}
     >
       {children}
     </motion.div>

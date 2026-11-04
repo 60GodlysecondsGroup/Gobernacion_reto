@@ -8,13 +8,28 @@ const contenedor: Variants = {
   visible: { transition: { staggerChildren: PASO_ESCALONADO, delayChildren: 0.04 } },
 };
 
+// Cada elemento se levanta sobre su base, como una tarjeta que se pone de pie, en vez de un
+// simple fundido. Solo `transform` y `opacity`; con «reducir movimiento» Motion lo omite.
 const elemento: Variants = {
-  oculto: { opacity: 0, y: DESPLAZAMIENTO_ENTRADA, scale: 0.985 },
+  oculto: {
+    opacity: 0,
+    y: DESPLAZAMIENTO_ENTRADA + 6,
+    rotateX: -14,
+    scale: 0.97,
+    transformPerspective: 900,
+  },
   visible: {
     opacity: 1,
     y: 0,
+    rotateX: 0,
     scale: 1,
-    transition: { duration: DURACION.contexto, ease: CURVA_SALIDA },
+    transition: {
+      type: 'spring',
+      stiffness: 260,
+      damping: 26,
+      mass: 0.8,
+      opacity: { duration: DURACION.contexto, ease: CURVA_SALIDA },
+    },
   },
 };
 
