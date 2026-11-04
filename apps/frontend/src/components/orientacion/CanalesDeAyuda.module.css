@@ -1,0 +1,66 @@
+/*
+ * «Necesito ayuda»: entrada propia de la página. El aviso se descubre con una máscara que
+ * avanza de izquierda a derecha (su icono llega con un impulso) y la fila final acompaña al
+ * scroll. Las tarjetas de canales usan la llegada 3D de `Orientacion.module.css`.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .ayuda > [role='status'],
+  .ayuda > [role='alert'] {
+    animation: descubrirAviso 900ms var(--curva-salida) 260ms backwards;
+  }
+
+  .ayuda > [role='status'] > svg:first-child,
+  .ayuda > [role='alert'] > svg:first-child {
+    animation: impulsoIconoAviso 620ms var(--curva-salida) 620ms backwards;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .ayuda > :last-child {
+      animation:
+        subirFila linear both,
+        salirFila linear forwards;
+      animation-timeline: view(), view();
+      animation-range:
+        entry 0% entry 80%,
+        exit 40% exit 100%;
+    }
+  }
+}
+
+@keyframes descubrirAviso {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0 round var(--radio-lg));
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0 round var(--radio-lg));
+  }
+}
+
+@keyframes impulsoIconoAviso {
+  from {
+    opacity: 0;
+    transform: scale(0.5) rotate(-20deg);
+  }
+  65% {
+    opacity: 1;
+    transform: scale(1.15) rotate(5deg);
+  }
+}
+
+@keyframes subirFila {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+@keyframes salirFila {
+  to {
+    opacity: 0.3;
+    transform: translateY(-12px);
+  }
+}

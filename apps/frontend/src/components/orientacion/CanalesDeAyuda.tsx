@@ -7,6 +7,7 @@ import { AVISO_LIMITES } from '@/config/textos';
 import { mensajeDeError } from '@/lib/api/cliente';
 import { obtenerCanalesDeAyuda, type FichaServicio } from '@/lib/api/orientacion';
 import comun from '../comun.module.css';
+import estilos from './CanalesDeAyuda.module.css';
 import { RejillaServicios } from './RejillaServicios';
 
 /**
@@ -28,7 +29,7 @@ export function CanalesDeAyuda() {
   }, []);
 
   return (
-    <div className={comun.paginaAncha}>
+    <div className={`${comun.paginaAncha} ${estilos.ayuda}`}>
       <EncabezadoPagina
         antetitulo="Necesito ayuda"
         titulo="Canales de ayuda institucionales"

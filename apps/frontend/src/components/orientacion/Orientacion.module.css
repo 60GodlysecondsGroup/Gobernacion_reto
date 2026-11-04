@@ -417,3 +417,129 @@
   padding: 0;
   list-style: none;
 }
+
+/* ─── Movimiento de Orientación ───────────────────────────────────────────── */
+.iconoCanal {
+  transition: transform 360ms var(--curva-resorte, var(--curva-salida));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tarjeta:hover .iconoCanal {
+    transform: translateY(-2px) rotate(-6deg) scale(1.06);
+  }
+}
+
+/* Respuesta inmediata al pulsar una tarjeta (táctil o ratón). */
+.tarjetaConModal:active {
+  transform: translateY(0) scale(0.985);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Entrada coordinada: el edificio sube con profundidad y la ruleta gira a su sitio. */
+  .edificio {
+    animation: llegarEdificio 720ms var(--curva-salida) 240ms backwards;
+  }
+
+  .zonaRuleta {
+    animation: llegarRuleta 820ms var(--curva-salida) 380ms backwards;
+  }
+
+  /* Al cambiar de tema, el rótulo se recompone en cascada (se vuelve a montar con cada tema). */
+  .rotulo > * {
+    animation: enfocarRotulo 520ms var(--curva-salida) backwards;
+  }
+
+  .rotulo > :nth-child(2) {
+    animation-delay: 60ms;
+  }
+
+  .rotulo > :nth-child(3) {
+    animation-delay: 120ms;
+  }
+}
+
+@keyframes llegarEdificio {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.96);
+  }
+}
+
+@keyframes llegarRuleta {
+  from {
+    opacity: 0;
+    transform: rotate(-18deg) scale(0.9);
+  }
+}
+
+@keyframes enfocarRotulo {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translateY(6px);
+  }
+}
+
+/* Cada tarjeta se levanta en 3D al entrar en pantalla y se aleja al salir por arriba. La
+   transformación se suma (`add`) a la del hover, así la tarjeta sigue respondiendo al cursor. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .tarjeta {
+      view-timeline-name: --tarjeta;
+      animation:
+        opacidadTarjeta linear both,
+        levantarTarjeta linear both,
+        alejarTarjeta linear forwards;
+      animation-composition: replace, add, add;
+      animation-timeline: --tarjeta, --tarjeta, --tarjeta;
+      animation-range:
+        entry 0% entry 55%,
+        entry 0% entry 70%,
+        exit 50% exit 100%;
+    }
+
+    /* El icono del canal da un pequeño impulso cuando la tarjeta termina de llegar. */
+    .tarjeta .iconoCanal {
+      animation: impulsoIcono linear both;
+      animation-composition: add;
+      animation-timeline: --tarjeta;
+      animation-range: entry 40% entry 100%;
+    }
+  }
+}
+
+@keyframes opacidadTarjeta {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes levantarTarjeta {
+  from {
+    transform: perspective(900px) translateY(34px) rotateX(14deg) scale(0.96);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes alejarTarjeta {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateY(-14px) scale(0.96);
+  }
+}
+
+@keyframes impulsoIcono {
+  from {
+    transform: scale(0.6) rotate(-18deg);
+  }
+  70% {
+    transform: scale(1.1) rotate(4deg);
+  }
+  to {
+    transform: none;
+  }
+}

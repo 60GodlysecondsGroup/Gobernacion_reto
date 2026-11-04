@@ -250,14 +250,14 @@
 @keyframes entrar {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.97);
+    transform: perspective(1000px) translateY(20px) rotateX(9deg) scale(0.95);
   }
 }
 
 @keyframes salir {
   to {
     opacity: 0;
-    transform: translateY(8px) scale(0.98);
+    transform: perspective(1000px) translateY(10px) rotateX(-6deg) scale(0.96);
   }
 }
 
@@ -290,6 +290,7 @@
 @keyframes asentar {
   from {
     opacity: 0;
+    filter: blur(4px);
     transform: translateY(6px);
   }
 }

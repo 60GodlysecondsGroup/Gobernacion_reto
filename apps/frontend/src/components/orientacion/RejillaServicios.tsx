@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { ElementoEscalonado, ListaEscalonada } from '@/components/movimiento/Escalonado';
+import { Inclinable } from '@/components/movimiento/Inclinable';
+import { InerciaScroll } from '@/components/movimiento/InerciaScroll';
 import type { FichaServicio } from '@/lib/api/orientacion';
 import { ModalServicio } from './DetalleServicio';
 import estilos from './Orientacion.module.css';
@@ -31,13 +33,18 @@ export function RejillaServicios({
 
   return (
     <>
-      <ListaEscalonada className={estilos.rejillaServicios} aria-label={etiqueta}>
-        {servicios.map((servicio) => (
-          <ElementoEscalonado key={servicio.id}>
-            <TarjetaServicio servicio={servicio} alAbrir={abrir} />
-          </ElementoEscalonado>
-        ))}
-      </ListaEscalonada>
+      <InerciaScroll>
+        <ListaEscalonada className={estilos.rejillaServicios} aria-label={etiqueta}>
+          {servicios.map((servicio) => (
+            <ElementoEscalonado key={servicio.id}>
+              {/* Inclinación 3D moderada con el cursor (solo ratón). */}
+              <Inclinable maximo={3}>
+                <TarjetaServicio servicio={servicio} alAbrir={abrir} />
+              </Inclinable>
+            </ElementoEscalonado>
+          ))}
+        </ListaEscalonada>
+      </InerciaScroll>
 
       {elegido && (
         // Una instancia por ficha: al cambiar de ficha, el modal empieza arriba y sin estado previo.
