@@ -531,7 +531,9 @@
   overflow: hidden;
   border-radius: 50%;
   background: var(--morado-50);
-  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--morado-300);
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 4px var(--morado-300);
 }
 
 .textoIdentidad {
@@ -672,5 +674,102 @@
     flex: 1 1 0;
     height: auto;
     min-height: 5rem;
+  }
+}
+
+/* ─── Avatares vivos ──────────────────────────────────────────────────────────
+   Respiran en reposo, dan un pequeño salto con aplastamiento en cada paso (el grupo se vuelve a
+   montar con cada movimiento), dejan dos motas de polvo y, al llegar, abren un anillo de luz.
+   Todo es `transform` y `opacity` sobre grupos SVG; con «reducir movimiento» quedan quietos. */
+.cuerpo,
+.paso,
+.polvo rect,
+.llegada {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.polvo rect {
+  fill: rgb(255 255 255 / 0.75);
+  opacity: 0;
+}
+
+.llegada {
+  transform-origin: 50% 50%;
+  stroke: var(--color-primario);
+  stroke-width: 1.2;
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .cuerpo {
+    animation: respirarAvatar 2.6s ease-in-out infinite;
+  }
+
+  .paso {
+    animation: pisar 220ms ease-out;
+  }
+
+  .polvo rect {
+    animation: levantarPolvo 460ms ease-out;
+  }
+
+  .polvo rect:first-child {
+    --polvo-x: -2px;
+  }
+
+  .polvo rect:last-child {
+    --polvo-x: 2px;
+  }
+
+  .llegada {
+    animation: anilloLlegada 1s ease-out;
+  }
+}
+
+@keyframes respirarAvatar {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: translateY(-0.4px) scale(1, 1.02);
+  }
+}
+
+@keyframes pisar {
+  0% {
+    transform: none;
+  }
+  35% {
+    transform: translateY(-1.6px) scale(0.95, 1.05);
+  }
+  70% {
+    transform: translateY(0) scale(1.05, 0.95);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes levantarPolvo {
+  0% {
+    opacity: 0.9;
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--polvo-x, 0), -2px) scale(0.3);
+  }
+}
+
+@keyframes anilloLlegada {
+  0% {
+    opacity: 1;
+    transform: scale(0.2);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
   }
 }

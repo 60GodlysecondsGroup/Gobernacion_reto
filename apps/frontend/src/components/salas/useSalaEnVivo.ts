@@ -21,15 +21,28 @@ export type EntradaChat =
     }
   | { tipo: 'aviso'; id: string; texto: string };
 
+/**
+ * Participante con datos solo visuales, calculados aquí a partir de los eventos del servidor:
+ * hacia dónde mira (según el último paso), cuántos pasos dio (cada uno reinicia la animación de
+ * pisar) y si acaba de llegar (destello de entrada). El servidor no sabe nada de esto.
+ */
+export type ParticipanteVivo = ParticipanteEnSala & {
+  mira?: 'izquierda' | 'derecha';
+  pasos?: number;
+  llego?: boolean;
+};
+
 export type EstadoSalaEnVivo = {
   /** «reconectando»: la conexión se cortó y se vuelve a abrir sola, sin perder lo que se ve. */
   fase: 'conectando' | 'dentro' | 'reconectando' | 'fuera';
   yo: string | null;
   escenario: { ancho: number; alto: number; obstaculos: Obstaculo[] } | null;
   capacidad: number;
-  participantes: ParticipanteEnSala[];
+  participantes: ParticipanteVivo[];
   ocupacion: number;
   chat: EntradaChat[];
+  /** Última persona que entró; `vez` cambia en cada llegada para volver a anunciarla. */
+  llegada: { alias: string; vez: number } | null;
   /** Último movimiento rechazado; `vez` cambia en cada rechazo para volver a anunciarlo. */
   rechazo: { motivo: MotivoRechazo; vez: number } | null;
   /** Aviso del DLP: solo lo recibe quien escribió el mensaje. */
@@ -52,6 +65,7 @@ const INICIAL: EstadoSalaEnVivo = {
   participantes: [],
   ocupacion: 0,
   chat: [],
+  llegada: null,
   rechazo: null,
   bloqueo: null,
   errorChat: null,
@@ -143,9 +157,13 @@ function alRecibir(estado: EstadoSalaEnVivo, mensaje: MensajeServidor): EstadoSa
         ...estado,
         participantes: [
           ...estado.participantes.filter((p) => p.id !== mensaje.participante.id),
-          mensaje.participante,
+          { ...mensaje.participante, llego: true },
         ],
         ocupacion: mensaje.ocupacion,
+        llegada:
+          mensaje.participante.id === estado.yo
+            ? estado.llegada
+            : { alias: mensaje.participante.alias, vez: (estado.llegada?.vez ?? 0) + 1 },
         chat: conChat(estado.chat, {
           tipo: 'aviso',
           id: idAviso(),
@@ -166,9 +184,12 @@ function alRecibir(estado: EstadoSalaEnVivo, mensaje: MensajeServidor): EstadoSa
     case 'movio':
       return {
         ...estado,
-        participantes: estado.participantes.map((p) =>
-          p.id === mensaje.id ? { ...p, x: mensaje.x, y: mensaje.y } : p,
-        ),
+        participantes: estado.participantes.map((p) => {
+          if (p.id !== mensaje.id) return p;
+          const dx = mensaje.x - p.x;
+          const mira = dx < 0 ? 'izquierda' : dx > 0 ? 'derecha' : p.mira;
+          return { ...p, x: mensaje.x, y: mensaje.y, mira, pasos: (p.pasos ?? 0) + 1 };
+        }),
         rechazo: mensaje.id === estado.yo ? null : estado.rechazo,
       };
     case 'movimiento_rechazado':

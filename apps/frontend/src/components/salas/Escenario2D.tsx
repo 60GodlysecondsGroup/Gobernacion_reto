@@ -146,7 +146,12 @@ export function Escenario2D({
   ancho: number;
   alto: number;
   obstaculos: Obstaculo[];
-  participantes: ParticipanteEnSala[];
+  /** Con datos visuales opcionales (mirada, pasos, llegada) que calcula la sala en vivo. */
+  participantes: (ParticipanteEnSala & {
+    mira?: 'izquierda' | 'derecha';
+    pasos?: number;
+    llego?: boolean;
+  })[];
   yo: string | null;
   /** Texto alternativo del escenario (posición propia y ocupación). */
   descripcion: string;
@@ -208,7 +213,14 @@ export function Escenario2D({
       {/* Friso de la pared: da profundidad cuando la pared es alta */}
       {PARED > 20 && (
         <>
-          <rect x="-6" y={-PARED - 4} width={anchoPx + 12} height="3" fill={paleta.zocalo} opacity="0.55" />
+          <rect
+            x="-6"
+            y={-PARED - 4}
+            width={anchoPx + 12}
+            height="3"
+            fill={paleta.zocalo}
+            opacity="0.55"
+          />
           <rect x="-6" y="-9" width={anchoPx + 12} height="6" fill="rgb(255 255 255 / 0.18)" />
         </>
       )}
@@ -262,8 +274,24 @@ export function Escenario2D({
               strokeWidth="1"
             />
           )}
-          <g transform="translate(1.5 -1.5)">
-            <Avatar apariencia={p.avatar} tamano={13} />
+          {/* Destello al entrar a la sala: un anillo de luz que se abre una sola vez. */}
+          {p.llego && <circle className={estilos.llegada} cx="8" cy="10" r="6" fill="none" />}
+          {/* Cada paso vuelve a montar este grupo: reinicia el «pisar» y deja polvo en el suelo. */}
+          <g key={p.pasos ?? 0} className={estilos.paso}>
+            {p.pasos ? (
+              <g className={estilos.polvo}>
+                <rect x="2" y="13.5" width="2" height="2" />
+                <rect x="12" y="13.5" width="2" height="2" />
+              </g>
+            ) : null}
+            <g className={estilos.cuerpo}>
+              {/* Mira hacia donde caminó por última vez (volteo horizontal). */}
+              <g transform={p.mira === 'izquierda' ? 'translate(16 0) scale(-1 1)' : undefined}>
+                <g transform="translate(1.5 -1.5)">
+                  <Avatar apariencia={p.avatar} tamano={13} />
+                </g>
+              </g>
+            </g>
           </g>
         </g>
       ))}
