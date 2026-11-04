@@ -137,7 +137,9 @@
   font-weight: var(--peso-fuerte);
   box-shadow: var(--sombra-2);
   white-space: nowrap;
-  animation: llegarChip 600ms var(--curva-salida) backwards;
+  animation:
+    llegarChip 600ms var(--curva-salida) backwards,
+    flotarChip 5.5s ease-in-out infinite alternate;
 }
 
 .chip svg {
@@ -147,13 +149,13 @@
 .chipA {
   top: 2%;
   left: -2%;
-  animation-delay: 500ms;
+  animation-delay: 500ms, 1.1s;
 }
 
 .chipB {
   top: 6%;
   right: -2%;
-  animation-delay: 650ms;
+  animation-delay: 650ms, 2.4s;
 }
 
 /* ── Secciones ───────────────────────────────────────── */
@@ -452,6 +454,7 @@
 @keyframes asentarse {
   from {
     opacity: 0;
+    filter: blur(6px);
     transform: translateY(12px);
   }
 }
@@ -459,21 +462,154 @@
 @keyframes llegarIlustracion {
   from {
     opacity: 0;
-    transform: translateY(18px) scale(0.97);
+    transform: perspective(1200px) translateX(24px) rotateY(-14deg) scale(0.95);
   }
 }
 
 @keyframes llegarChip {
   from {
     opacity: 0;
-    transform: translateY(8px) scale(0.9);
+    transform: translateY(10px) scale(0.7) rotate(-6deg);
+  }
+}
+
+@keyframes flotarChip {
+  to {
+    transform: translateY(-7px);
+  }
+}
+
+/* ── Movimiento de la portada ───────────────────────── */
+
+/* El título y la entradilla se revelan por palabras (TextoRevelado); el resto llega después. */
+.textoHeroe > :nth-child(1),
+.textoHeroe > :nth-child(2) {
+  animation: none;
+}
+
+.textoHeroe > :nth-child(3) {
+  animation-delay: 640ms;
+}
+
+.textoHeroe > :nth-child(4) {
+  animation: none;
+}
+
+.garantias li {
+  animation: asentarse 520ms var(--curva-salida) backwards;
+  animation-delay: 780ms;
+}
+
+.garantias li:nth-child(2) {
+  animation-delay: 850ms;
+}
+
+.garantias li:nth-child(3) {
+  animation-delay: 920ms;
+}
+
+/* Contenedor del magnetismo de los botones: misma disposición que `.acciones`. */
+.magnetico {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-3);
+}
+
+/* El degradado del resalte recorre las palabras muy despacio, con los mismos colores. */
+.resalte {
+  background-size: 220% 100%;
+  animation: brilloResalte 7s ease-in-out 1.4s infinite alternate;
+}
+
+@keyframes brilloResalte {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
+}
+
+/* Salas: la tarjeta se acerca desde la profundidad, Chigüi salta y las actividades llegan
+   una a una mientras se desplaza la página. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .entradaJuegos {
+      view-timeline-name: --salas;
+      animation: profundidadSalas linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 45%;
+    }
+
+    .entradaJuegos .personajeJuegos {
+      animation: saltoChigui linear both;
+      animation-timeline: --salas;
+      animation-range: entry 20% entry 70%;
+    }
+
+    .entradaJuegos .textoJuegos > p:not(.antetituloSeccion) {
+      animation: asentarse linear both;
+      animation-timeline: --salas;
+      animation-range: entry 30% entry 75%;
+    }
+
+    .entradaJuegos .listaJuegos li {
+      animation: llegarChip linear both;
+      animation-timeline: --salas;
+      animation-range: entry calc(40% + var(--n, 0) * 4%) entry calc(70% + var(--n, 0) * 4%);
+    }
+
+    .listaJuegos li:nth-child(2) {
+      --n: 1;
+    }
+    .listaJuegos li:nth-child(3) {
+      --n: 2;
+    }
+    .listaJuegos li:nth-child(4) {
+      --n: 3;
+    }
+    .listaJuegos li:nth-child(5) {
+      --n: 4;
+    }
+    .listaJuegos li:nth-child(6) {
+      --n: 5;
+    }
+    .listaJuegos li:nth-child(n + 7) {
+      --n: 6;
+    }
+
+    .entradaJuegos .irJuegos {
+      animation: asentarse linear both;
+      animation-timeline: --salas;
+      animation-range: entry 50% entry 90%;
+    }
+  }
+}
+
+@keyframes profundidadSalas {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.96);
+  }
+}
+
+@keyframes saltoChigui {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.7) rotate(-10deg);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.04) rotate(3deg);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .textoHeroe > *,
   .ilustracion,
-  .chip {
+  .chip,
+  .garantias li,
+  .resalte {
     animation: none;
   }
 }
@@ -494,5 +630,61 @@
 
   .estado[open]::details-content {
     block-size: auto;
+  }
+}
+
+/* ── Pila con scroll (escritorio con alto suficiente) ─────────────────────
+   «Cómo funciona» se queda fija bajo el encabezado y la tarjeta de las salas sube por encima;
+   mientras la cubre, la capa de abajo se reduce y se atenúa (ligado al scroll, reversible). */
+.pila {
+  display: grid;
+  gap: var(--separacion-seccion);
+  /* La línea de tiempo de la tarjeta de salas (--salas) también la usa su hermana. */
+  timeline-scope: --salas;
+}
+
+@media (min-width: 64rem) and (min-height: 46rem) {
+  .pilaCapa {
+    position: sticky;
+    top: calc(var(--alto-encabezado) + var(--espacio-4));
+    z-index: 0;
+    transform-origin: 50% 0%;
+  }
+
+  .pila > .juegos {
+    z-index: 1;
+    box-shadow: 0 -18px 40px -24px rgb(38 20 99 / 0.35);
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .pila > .pilaCapa {
+        animation:
+          entrarPila linear both,
+          cederPila linear forwards;
+        animation-timeline: view(), --salas;
+        animation-range:
+          entry 0% entry 45%,
+          cover 25% cover 60%;
+      }
+    }
+  }
+}
+
+@keyframes entrarPila {
+  from {
+    opacity: 0;
+    transform: translateY(36px) scale(0.95);
+  }
+}
+
+@keyframes cederPila {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0.5;
+    transform: translateY(-10px) scale(0.93);
   }
 }

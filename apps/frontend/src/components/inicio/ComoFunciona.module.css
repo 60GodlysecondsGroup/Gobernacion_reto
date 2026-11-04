@@ -563,3 +563,62 @@
     transition: none;
   }
 }
+
+/* ─── Movimiento entre etapas ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  /* El número del paso elegido se enciende con un pequeño resorte. */
+  .paso[aria-selected='true'] .numero {
+    animation: encenderNumero 420ms var(--curva-salida);
+  }
+
+  /* Cada etapa nueva se compone por capas: primero la ilustración, desde el fondo, y luego
+     el texto en cascada (el contenido se vuelve a montar al cambiar de etapa). */
+  .contenidoPanel .ilustracion {
+    animation: ilustracionProfundidad 560ms var(--curva-salida) 40ms backwards;
+  }
+
+  .contenidoPanel > :not(.ilustracion) {
+    animation: capaTexto 460ms var(--curva-salida) backwards;
+    animation-delay: calc(120ms + var(--n, 0) * 50ms);
+  }
+
+  .contenidoPanel > :nth-child(3) {
+    --n: 1;
+  }
+  .contenidoPanel > :nth-child(4) {
+    --n: 2;
+  }
+  .contenidoPanel > :nth-child(5) {
+    --n: 3;
+  }
+  .contenidoPanel > :nth-child(n + 6) {
+    --n: 4;
+  }
+}
+
+@keyframes encenderNumero {
+  from {
+    transform: scale(0.8);
+  }
+  60% {
+    transform: scale(1.16);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes ilustracionProfundidad {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.92);
+  }
+}
+
+@keyframes capaTexto {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(10px);
+  }
+}

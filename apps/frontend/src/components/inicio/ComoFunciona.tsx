@@ -24,6 +24,7 @@ import {
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { TextoRevelado } from '@/components/movimiento/TextoRevelado';
 import estilos from './ComoFunciona.module.css';
 
 type Etapa = {
@@ -83,11 +84,16 @@ const ETAPAS: Etapa[] = [
     texto:
       'Dentro de cada sala hay objetos que puedes tocar: una pizarra, un tablero de ideas, una máquina de café… Cada uno abre una actividad de pocos segundos. Son opcionales y tus resultados no se guardan.',
     puntos: [
-      { icono: Gamepad2, texto: 'Conectar ideas, ordenar ideas, estado de ánimo, ¿Qué harías? y más' },
+      {
+        icono: Gamepad2,
+        texto: 'Conectar ideas, ordenar ideas, estado de ánimo, ¿Qué harías? y más',
+      },
       { icono: Sparkles, texto: 'Dos bots con mensajes automáticos: no son personas ni una IA' },
     ],
     enlace: { texto: 'Explorar las salas', href: '/salas' },
-    ilustracion: <IlustracionIconos iconos={[Signpost, ScanSearch, Blocks, Layers]} destacado={1} />,
+    ilustracion: (
+      <IlustracionIconos iconos={[Signpost, ScanSearch, Blocks, Layers]} destacado={1} />
+    ),
   },
   {
     id: 'orientacion',
@@ -151,10 +157,21 @@ export function ComoFunciona() {
   return (
     <section id="como-funciona" className={estilos.seccion} aria-labelledby={`${base}-titulo`}>
       <div className={estilos.guia}>
-        <p className={estilos.antetitulo}>Cómo funciona</p>
-        <h2 id={`${base}-titulo`} className={estilos.titulo}>
-          Seis pasos para sentirte en casa
-        </h2>
+        <TextoRevelado
+          as="p"
+          className={estilos.antetitulo}
+          efecto="letras"
+          cuando="scroll"
+          tramos={['Cómo funciona']}
+        />
+        <TextoRevelado
+          as="h2"
+          id={`${base}-titulo`}
+          className={estilos.titulo}
+          efecto="inclinado"
+          cuando="scroll"
+          tramos={['Seis pasos para sentirte en casa']}
+        />
 
         <div
           className={`${estilos.pasos} ${estilos.pasosVidrio}`}
@@ -187,7 +204,9 @@ export function ComoFunciona() {
                 <motion.span
                   layoutId="paso-activo"
                   className={estilos.fondoActivo}
-                  transition={reducir ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 36 }}
+                  transition={
+                    reducir ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 36 }
+                  }
                 />
               )}
               <span className={estilos.numero} aria-hidden="true">
@@ -209,46 +228,46 @@ export function ComoFunciona() {
         className={estilos.panel}
       >
         <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={etapa.id}
-          className={estilos.contenidoPanel}
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8, transition: { duration: reducir ? 0 : 0.14 } }}
-          transition={resorte}
-        >
-          <div className={estilos.ilustracion} aria-hidden="true">
-            {etapa.ilustracion}
-          </div>
-          <p className={estilos.etapa}>
-            Paso {activa + 1} de {ETAPAS.length}
-          </p>
-          <h3 className={estilos.tituloPanel}>{etapa.titulo}</h3>
-          <p className={estilos.texto}>{etapa.texto}</p>
-          <ul className={estilos.puntos}>
-            {etapa.puntos.map(({ icono: Icono, texto }) => (
-              <li key={texto}>
-                <Icono aria-hidden="true" size={18} />
-                {texto}
-              </li>
-            ))}
-          </ul>
-          <div className={estilos.accionesPanel}>
-            <Link href={etapa.enlace.href} className={estilos.enlace}>
-              {etapa.enlace.texto}
-              <ArrowRight aria-hidden="true" size={16} />
-            </Link>
-            {activa < ETAPAS.length - 1 && (
-              <button
-                type="button"
-                className={estilos.siguiente}
-                onClick={() => setActiva(activa + 1)}
-              >
-                Siguiente paso
-              </button>
-            )}
-          </div>
-        </motion.div>
+          <motion.div
+            key={etapa.id}
+            className={estilos.contenidoPanel}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8, transition: { duration: reducir ? 0 : 0.14 } }}
+            transition={resorte}
+          >
+            <div className={`${estilos.ilustracion} mosaico`} aria-hidden="true">
+              {etapa.ilustracion}
+            </div>
+            <p className={estilos.etapa}>
+              Paso {activa + 1} de {ETAPAS.length}
+            </p>
+            <h3 className={estilos.tituloPanel}>{etapa.titulo}</h3>
+            <p className={estilos.texto}>{etapa.texto}</p>
+            <ul className={estilos.puntos}>
+              {etapa.puntos.map(({ icono: Icono, texto }) => (
+                <li key={texto}>
+                  <Icono aria-hidden="true" size={18} />
+                  {texto}
+                </li>
+              ))}
+            </ul>
+            <div className={estilos.accionesPanel}>
+              <Link href={etapa.enlace.href} className={estilos.enlace}>
+                {etapa.enlace.texto}
+                <ArrowRight aria-hidden="true" size={16} />
+              </Link>
+              {activa < ETAPAS.length - 1 && (
+                <button
+                  type="button"
+                  className={estilos.siguiente}
+                  onClick={() => setActiva(activa + 1)}
+                >
+                  Siguiente paso
+                </button>
+              )}
+            </div>
+          </motion.div>
         </AnimatePresence>
       </div>
     </section>
