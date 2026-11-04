@@ -13,6 +13,7 @@ import { useTeclasMovimiento } from './controles/useTeclasMovimiento';
 import { Escenario2D, geometriaEscenario } from './Escenario2D';
 import { PanelAyudaSala } from './PanelAyudaSala';
 import { MundoSala } from './MundoSala';
+import { VidaSala } from './VidaSala';
 import estilos from './Salas.module.css';
 import type { EstadoSalaEnVivo } from './useSalaEnVivo';
 
@@ -20,6 +21,7 @@ import type { EstadoSalaEnVivo } from './useSalaEnVivo';
 const PARED_SALA = 34;
 
 const ID_INSTRUCCIONES = 'instrucciones-movimiento';
+
 
 const TEXTO_RECHAZO = {
   limite: 'Llegaste al borde de la sala.',
@@ -121,6 +123,16 @@ export function SalaEnVivo({
               personas={participantes}
             />
           )}
+          {escenario && (
+            <VidaSala
+              ancho={escenario.ancho}
+              alto={escenario.alto}
+              pared={PARED_SALA}
+              participantes={participantes}
+              chat={estado.chat}
+              llegada={estado.llegada}
+            />
+          )}
           {/* Región estable: el espacio final alterno hace que se anuncie también un rechazo repetido. */}
           <p className={estilos.rechazo} role="status">
             {rechazo && (
@@ -165,6 +177,7 @@ export function SalaEnVivo({
               Necesito ayuda
             </Boton>
             <BotonReportar tipoContenido="sala" idContenido={sala.id} />
+
           </div>
           {ayudaAbierta && <PanelAyudaSala />}
         </section>
