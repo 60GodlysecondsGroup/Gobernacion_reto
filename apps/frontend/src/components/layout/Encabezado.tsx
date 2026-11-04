@@ -8,7 +8,7 @@ export function Encabezado() {
     <header className={estilos.encabezado}>
       <div className={`contenedor ${estilos.barra}`}>
         <Link href="/" className={estilos.marca} aria-label="Comunidad Protegida, inicio">
-          <MarcaCompleta tamano={38} subtitulo="Prototipo · datos sintéticos" compactaEnMovil />
+          <MarcaCompleta tamano={38} compactaEnMovil />
         </Link>
         <Navegacion />
       </div>
