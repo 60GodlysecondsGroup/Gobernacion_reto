@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
+import Script from 'next/script';
 import { Suspense } from 'react';
 import { GuiaVirtual } from '@/components/guia/GuiaVirtual';
 import { Encabezado } from '@/components/layout/Encabezado';
@@ -68,11 +69,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       className={`${atkinson.variable} ${bricolage.variable}`}
       suppressHydrationWarning
     >
-      <head>
-        {/* Script fijo, sin datos del usuario: aplica el tema guardado antes de pintar. */}
-        <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA }} />
-      </head>
       <body>
+        {/* Script fijo, sin datos del usuario: aplica el tema guardado antes de pintar.
+            `beforeInteractive` lo coloca en el <head> del HTML y lo ejecuta antes de hidratar,
+            sin un <script> renderizado por React (que causaba el error de hidratación). */}
+        <Script id="tema-inicial" strategy="beforeInteractive">
+          {SCRIPT_TEMA}
+        </Script>
         <a href="#contenido" className="saltar-contenido">
           Saltar al contenido
         </a>
