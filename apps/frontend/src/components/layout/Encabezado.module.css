@@ -599,3 +599,33 @@
     transform: none;
   }
 }
+
+/* ─── Móvil vertical: encabezado más compacto para que respire ───────────── */
+@media (max-width: 39.99rem) {
+  .barra {
+    gap: var(--espacio-2);
+    min-height: 3.25rem;
+    padding: 6px 6px 6px var(--espacio-3);
+  }
+
+  .acciones {
+    gap: 6px;
+  }
+
+  .ayuda {
+    gap: 6px;
+    min-height: 2.25rem;
+    padding: 0 var(--espacio-3);
+    font-size: var(--texto-xs);
+  }
+
+  .ayuda svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .entrar {
+    min-height: 2.25rem;
+    padding: 0 10px;
+  }
+}

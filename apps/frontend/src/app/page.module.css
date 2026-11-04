@@ -716,3 +716,33 @@
   color: var(--color-primario);
   font-weight: 400;
 }
+
+/* ─── Móvil vertical: más aire y mejor jerarquía en el héroe ─────────────────
+   Título un punto más pequeño con más interlineado, entradilla algo menor y separación
+   regular entre título, entradilla y botón. Al final del héroe se deja el alto de la barra
+   inferior para que el asistente y la navegación flotante no tapen las garantías. */
+@media (max-width: 39.99rem) {
+  .heroe {
+    gap: var(--espacio-6);
+    padding-top: var(--espacio-5);
+    padding-bottom: calc(var(--alto-barra-inferior) + var(--espacio-2));
+  }
+
+  .textoHeroe {
+    gap: var(--espacio-4);
+  }
+
+  .titulo {
+    font-size: clamp(1.875rem, 1.45rem + 2.2vw, 2.125rem);
+    line-height: 1.15;
+  }
+
+  .entradilla {
+    font-size: var(--texto-sm);
+    line-height: 1.6;
+  }
+
+  .acciones {
+    margin-top: var(--espacio-1);
+  }
+}
