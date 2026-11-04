@@ -1,15 +1,24 @@
 import estilos from './Cocuyo.module.css';
 
+/** Expresiones opcionales: sin ellas, Cocuyo se dibuja exactamente igual que siempre. */
+export type ExpresionCocuyo = 'feliz' | 'triste' | 'tapado';
+
 /**
  * Cocuyo, la guía virtual del proyecto: una luciérnaga del llano en pixel art, dibujada por código
  * (recurso original, RF28). No representa a la Gobernación del Meta ni a ninguna institución.
+ * `mira` desplaza los ojos un píxel hacia un lado; `expresion` añade unos pocos píxeles (sonrisa,
+ * lágrima o las alas sobre los ojos) sin cambiar el personaje.
  */
 export function Cocuyo({
   tamano = 40,
   encendido = true,
+  mira,
+  expresion,
 }: {
   tamano?: number;
   encendido?: boolean;
+  mira?: 'izquierda' | 'derecha';
+  expresion?: ExpresionCocuyo;
 }) {
   return (
     <svg
@@ -27,10 +36,22 @@ export function Cocuyo({
       <rect x="10" y="1" width="1" height="2" fill="#1e2152" />
       {/* Cabeza */}
       <rect x="5" y="3" width="6" height="3" fill="#1e2152" />
-      <g className={estilos.ojos}>
-        <rect x="6" y="4" width="1" height="1" fill="#fff" />
-        <rect x="9" y="4" width="1" height="1" fill="#fff" />
+      <g
+        transform={
+          mira === 'izquierda'
+            ? 'translate(-1 0)'
+            : mira === 'derecha'
+              ? 'translate(1 0)'
+              : undefined
+        }
+      >
+        <g className={estilos.ojos}>
+          <rect x="6" y="4" width="1" height="1" fill="#fff" />
+          <rect x="9" y="4" width="1" height="1" fill="#fff" />
+        </g>
       </g>
+      {expresion === 'feliz' && <rect x="7" y="5" width="2" height="1" fill="#f4a3b4" />}
+      {expresion === 'triste' && <rect x="7" y="5" width="2" height="1" fill="#8a8fd6" />}
       {/* Alas */}
       <g className={`${estilos.ala} ${estilos.alaIzquierda}`}>
         <rect x="1" y="5" width="4" height="4" fill="#c7cbf5" />
@@ -42,6 +63,17 @@ export function Cocuyo({
       </g>
       {/* Cuerpo */}
       <rect x="5" y="6" width="6" height="4" fill="#3b3fa8" />
+      {/* Triste: una lágrima bajo el ojo, sobre el cuerpo. */}
+      {expresion === 'triste' && <rect x="6" y="6" width="1" height="1" fill="#9fd3ff" />}
+      {/* Tapado: las puntas de las alas suben a cubrir los ojos. */}
+      {expresion === 'tapado' && (
+        <>
+          <rect x="4" y="4" width="3" height="2" fill="#c7cbf5" />
+          <rect x="9" y="4" width="3" height="2" fill="#c7cbf5" />
+          <rect x="5" y="4" width="1" height="1" fill="#e7e8fa" />
+          <rect x="10" y="4" width="1" height="1" fill="#e7e8fa" />
+        </>
+      )}
       {/* Luz */}
       {encendido && (
         <rect
