@@ -1,41 +1,77 @@
-/* Interruptor de tema: el sol y la luna se cruzan girando (solo `transform` y `opacity`). */
+/*
+ * Interruptor de tema (claro / oscuro).
+ *
+ * Microinteracciones refinadas y coherentes con la identidad «Refugio · Cristal»:
+ * - Modo claro: hover en violeta suave (#ede9fe), eliminando destellos blancos intensos.
+ * - Modo oscuro: hover con elevación sutil y tono morado oscuro translúcido.
+ * - Microanimación de rotación y escala suave en los iconos de sol y luna.
+ * - Estados active y focus accesibles sobre la paleta de marca.
+ */
+
 .boton {
+  --boton-tema-bg: var(--cristal-medio);
+  --boton-tema-bg-hover: #ede9fe;
+  --boton-tema-bg-active: #ddd6fe;
+  --boton-tema-borde: var(--color-borde);
+  --boton-tema-borde-hover: rgba(91, 53, 213, 0.24);
+  --boton-tema-borde-active: rgba(91, 53, 213, 0.36);
+  --boton-tema-color: var(--color-primario);
+  --boton-tema-color-hover: var(--morado-700);
+  --boton-tema-sombra-hover: 0 2px 8px -2px rgb(91 53 213 / 0.14), 0 0 0 1px rgba(115, 80, 234, 0.08);
+
   position: relative;
   display: grid;
   flex-shrink: 0;
   place-items: center;
   width: 2.75rem;
   height: 2.75rem;
-  border: 1px solid var(--color-borde);
+  border: 1px solid var(--boton-tema-borde);
   border-radius: var(--radio-total);
-  background: var(--cristal-medio);
-  color: var(--color-primario);
+  background: var(--boton-tema-bg);
+  color: var(--boton-tema-color);
   cursor: pointer;
+  box-shadow: 0 1px 2px rgb(38 20 99 / 0.04);
   transition:
-    border-color var(--transicion),
-    background var(--transicion),
-    transform 200ms var(--curva-salida);
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    box-shadow 220ms ease,
+    transform 180ms var(--curva-salida);
 }
 
 .boton:hover {
-  border-color: var(--color-borde-fuerte);
+  background-color: var(--boton-tema-bg-hover);
+  border-color: var(--boton-tema-borde-hover);
+  color: var(--boton-tema-color-hover);
+  box-shadow: var(--boton-tema-sombra-hover);
 }
 
 .boton:active {
-  transform: scale(0.92);
+  transform: scale(0.94);
+  background-color: var(--boton-tema-bg-active);
+  border-color: var(--boton-tema-borde-active);
 }
 
 .boton:focus-visible {
-  outline: 3px solid var(--color-foco);
+  outline: 2px solid var(--color-foco);
   outline-offset: 2px;
+  box-shadow: 0 0 0 3px var(--color-primario-suave);
 }
 
+/* ── Iconos (sol y luna) ─────────────────────────────────── */
 .sol,
 .luna {
   grid-area: 1 / 1;
+  pointer-events: none;
   transition:
     opacity 260ms ease,
-    transform 520ms cubic-bezier(0.32, 1.25, 0.5, 1);
+    transform 400ms var(--curva-resorte),
+    color 220ms ease;
+}
+
+.sol {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
 }
 
 .luna {
@@ -43,16 +79,113 @@
   transform: rotate(-90deg) scale(0.5);
 }
 
+/* Microanimación sutil al posar el cursor en modo claro */
+.boton:hover .sol {
+  transform: rotate(15deg) scale(1.08);
+}
+
+.boton:active .sol {
+  transform: rotate(8deg) scale(0.96);
+}
+
+/* ── Modo oscuro: adaptación visual del toggle ───────────── */
+:global(:root[data-tema='oscuro']) .boton,
+.boton[data-oscuro] {
+  --boton-tema-bg: var(--cristal-medio);
+  --boton-tema-bg-hover: rgba(168, 85, 247, 0.14);
+  --boton-tema-bg-active: rgba(168, 85, 247, 0.22);
+  --boton-tema-borde: var(--color-borde);
+  --boton-tema-borde-hover: var(--color-borde-fuerte);
+  --boton-tema-borde-active: rgba(168, 85, 247, 0.45);
+  --boton-tema-color: var(--color-primario);
+  --boton-tema-color-hover: var(--color-primario-hover);
+  --boton-tema-sombra-hover: 0 2px 10px -2px rgb(0 0 0 / 0.5), 0 0 0 1px rgba(168, 85, 247, 0.18);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+}
+
+:global(:root[data-tema='oscuro']) .boton .sol,
 .boton[data-oscuro] .sol {
   opacity: 0;
   transform: rotate(90deg) scale(0.5);
 }
 
+:global(:root[data-tema='oscuro']) .boton .luna,
 .boton[data-oscuro] .luna {
   opacity: 1;
-  transform: none;
+  transform: rotate(0deg) scale(1);
 }
 
+/* Microanimación sutil al posar el cursor en modo oscuro */
+:global(:root[data-tema='oscuro']) .boton:hover .luna,
+.boton[data-oscuro]:hover .luna {
+  transform: rotate(-12deg) scale(1.08);
+}
+
+:global(:root[data-tema='oscuro']) .boton:active .luna,
+.boton[data-oscuro]:active .luna {
+  transform: rotate(-6deg) scale(0.96);
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-tema='claro'])) .boton {
+    --boton-tema-bg: var(--cristal-medio);
+    --boton-tema-bg-hover: rgba(168, 85, 247, 0.14);
+    --boton-tema-bg-active: rgba(168, 85, 247, 0.22);
+    --boton-tema-borde: var(--color-borde);
+    --boton-tema-borde-hover: var(--color-borde-fuerte);
+    --boton-tema-borde-active: rgba(168, 85, 247, 0.45);
+    --boton-tema-color: var(--color-primario);
+    --boton-tema-color-hover: var(--color-primario-hover);
+    --boton-tema-sombra-hover: 0 2px 10px -2px rgb(0 0 0 / 0.5), 0 0 0 1px rgba(168, 85, 247, 0.18);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  }
+
+  :global(:root:not([data-tema='claro'])) .boton .sol {
+    opacity: 0;
+    transform: rotate(90deg) scale(0.5);
+  }
+
+  :global(:root:not([data-tema='claro'])) .boton .luna {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+
+  :global(:root:not([data-tema='claro'])) .boton:hover .luna {
+    transform: rotate(-12deg) scale(1.08);
+  }
+
+  :global(:root:not([data-tema='claro'])) .boton:active .luna {
+    transform: rotate(-6deg) scale(0.96);
+  }
+}
+
+/* ── Reducción de movimiento ─────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .boton,
+  .sol,
+  .luna {
+    transition:
+      opacity var(--transicion),
+      background-color var(--transicion),
+      border-color var(--transicion),
+      color var(--transicion);
+  }
+
+  .boton:active {
+    transform: none;
+  }
+
+  .boton:hover .sol,
+  .boton:active .sol,
+  .boton[data-oscuro]:hover .luna,
+  .boton[data-oscuro]:active .luna,
+  :global(:root[data-tema='oscuro']) .boton:hover .luna,
+  :global(:root[data-tema='oscuro']) .boton:active .luna {
+    transform: none;
+  }
+}
+
+/* ── Móvil vertical ──────────────────────────────────────── */
 @media (max-width: 39.99rem) {
   .boton {
     width: 2.25rem;
