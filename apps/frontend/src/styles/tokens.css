@@ -50,6 +50,10 @@
   /* Fondos que deben seguir oscuros en ambos temas, y velos claros fijos (modo oscuro los
      redefine). En claro son exactamente los valores de antes. */
   --tinta-fondo: var(--tinta);
+  /* Esqueletos de carga (en oscuro, grises profundos en lugar de blancos). */
+  --esqueleto-base: rgb(255 255 255 / 0.45);
+  --esqueleto-brillo: rgb(227 235 255 / 0.95);
+  --esqueleto-brillo-2: rgb(255 255 255 / 0.9);
   --fondo-morado-600: var(--morado-600);
   --fondo-morado-700: var(--morado-700);
   --fondo-morado-800: var(--morado-800);
@@ -308,6 +312,9 @@
   --degradado-marca: linear-gradient(135deg, #8b5cf6 0%, #5b21b6 100%);
   --degradado-accion: linear-gradient(135deg, #a855f7 0%, #8b5cf6 55%, #6366f1 100%);
   --tinta-fondo: #0b0a14;
+  --esqueleto-base: rgb(39 39 42 / 0.55);
+  --esqueleto-brillo: rgb(76 64 112 / 0.55);
+  --esqueleto-brillo-2: rgb(63 63 70 / 0.6);
   --fondo-morado-600: #7c3aed;
   --fondo-morado-700: #6d28d9;
   --fondo-morado-800: #33198a;
@@ -406,6 +413,9 @@
     --degradado-marca: linear-gradient(135deg, #8b5cf6 0%, #5b21b6 100%);
     --degradado-accion: linear-gradient(135deg, #a855f7 0%, #8b5cf6 55%, #6366f1 100%);
     --tinta-fondo: #0b0a14;
+    --esqueleto-base: rgb(39 39 42 / 0.55);
+    --esqueleto-brillo: rgb(76 64 112 / 0.55);
+    --esqueleto-brillo-2: rgb(63 63 70 / 0.6);
     --fondo-morado-600: #7c3aed;
     --fondo-morado-700: #6d28d9;
     --fondo-morado-800: #33198a;
