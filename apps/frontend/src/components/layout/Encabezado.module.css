@@ -643,3 +643,46 @@
     padding: 0 10px;
   }
 }
+
+/* ─── Entrada del navbar al cargar ───────────────────────────────────────────
+   La barra baja a su sitio con todo su contenido (logo, secciones, tema, ayuda y cuenta):
+   el navbar aparece una sola vez. Viene completo desde el servidor, así que nada llega tarde. */
+
+@media (prefers-reduced-motion: no-preference) {
+  .barra {
+    animation: bajarBarra 620ms var(--curva-salida) backwards;
+  }
+
+  /* Junto a la elevación del cristal ligada al scroll (más arriba), sin sustituirla. */
+  @supports (animation-timeline: scroll()) {
+    .barra {
+      animation:
+        bajarBarra 620ms var(--curva-salida) backwards,
+        elevarBarra linear both;
+      animation-timeline: auto, scroll(root);
+      animation-range:
+        normal,
+        0 120px;
+    }
+  }
+
+  /* La barra baja con todo su contenido dentro: una sola entrada, sin piezas que lleguen
+     después (en móvil, la barra inferior sube de la misma forma). */
+  .barraInferior {
+    animation: subirBarraInferior 560ms var(--curva-salida) backwards;
+  }
+}
+
+@keyframes bajarBarra {
+  from {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.98);
+  }
+}
+
+@keyframes subirBarraInferior {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+}

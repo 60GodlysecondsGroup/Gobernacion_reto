@@ -17,12 +17,15 @@ import { MenuCuenta } from './MenuCuenta';
  */
 function useSecciones() {
   const ruta = usePathname();
-  const { cargando, usuario, puede } = useSesion();
+  const { usuario, puede } = useSesion();
+  // El navbar llega completo desde el servidor (forma «sin sesión»): entra una sola vez, junto
+  // con la barra. Si hay sesión, las secciones cambian en cuanto se confirma.
+  const listo = true;
 
   const visibles = enlacesNavegacion.filter(
     (enlace) =>
       (!enlace.requiereSesion || usuario) &&
-      (!enlace.soloSinSesion || (!cargando && !usuario)) &&
+      (!enlace.soloSinSesion || !usuario) &&
       (!enlace.permiso || puede(enlace.permiso)) &&
       (!enlace.requiereComunidad || usuario?.comunidad),
   );
@@ -38,10 +41,10 @@ function useSecciones() {
   // «Inicio» va siempre primero; si sobran secciones, se recortan las del medio, nunca Inicio.
   const inicio = visibles.find((e) => e.href === '/')!;
   const entrar: EnlaceNavegacion = { href: '/acceso', etiqueta: 'Entrar', icono: LogIn };
-  const resto = [...visibles.filter((e) => e !== inicio), ...(!cargando && !usuario ? [entrar] : [])];
+  const resto = [...visibles.filter((e) => e !== inicio), ...(!usuario ? [entrar] : [])];
   const inferiores = [inicio, ...resto.slice(-4)];
 
-  return { ruta, cargando, usuario, activo, principales, inferiores };
+  return { ruta, listo, usuario, activo, principales, inferiores };
 }
 
 /**
@@ -50,11 +53,11 @@ function useSecciones() {
  * la barra inferior (`BarraInferior`).
  */
 export function Navegacion() {
-  const { ruta, cargando, usuario, activo, principales } = useSecciones();
+  const { ruta, listo, usuario, activo, principales } = useSecciones();
 
   return (
     <>
-      <nav aria-label="Principal" className={estilos.navEscritorio}>
+      <nav aria-label="Principal" className={estilos.navEscritorio} data-listo={listo || undefined}>
         <ul className={estilos.menu}>
           {principales.map(({ href, etiqueta, icono: Icono, tambienActivoEn }) => {
             const actual = activo(href, tambienActivoEn);
@@ -81,7 +84,7 @@ export function Navegacion() {
         </ul>
       </nav>
 
-      <div className={estilos.acciones}>
+      <div className={estilos.acciones} data-listo={listo || undefined}>
         <BotonTema />
         {/* Siempre visible, con o sin sesión, también en móvil (F18, RF20). */}
         <Link
@@ -92,15 +95,14 @@ export function Navegacion() {
           <LifeBuoy aria-hidden="true" size={18} strokeWidth={2.25} />
           Necesito ayuda
         </Link>
-        {!cargando &&
-          (usuario ? (
-            <MenuCuenta />
-          ) : (
-            <Link href="/acceso" className={estilos.entrar} aria-label="Entrar">
-              <LogIn aria-hidden="true" size={18} />
-              <span className={estilos.textoEntrar}>Entrar</span>
-            </Link>
-          ))}
+        {usuario ? (
+          <MenuCuenta />
+        ) : (
+          <Link href="/acceso" className={estilos.entrar} aria-label="Entrar">
+            <LogIn aria-hidden="true" size={18} />
+            <span className={estilos.textoEntrar}>Entrar</span>
+          </Link>
+        )}
       </div>
     </>
   );
@@ -112,11 +114,11 @@ export function Navegacion() {
  * Se monta una sola vez, así que también turna las dos barras al desplazarse (solo en móvil).
  */
 export function BarraInferior() {
-  const { activo, inferiores } = useSecciones();
+  const { activo, inferiores, listo } = useSecciones();
   useBarrasAlDesplazar();
 
   return (
-    <nav aria-label="Secciones" className={estilos.barraInferior}>
+    <nav aria-label="Secciones" className={estilos.barraInferior} data-listo={listo || undefined}>
       <ul>
         {inferiores.map(({ href, etiqueta, etiquetaCorta, icono: Icono, tambienActivoEn }) => {
           const actual = activo(href, tambienActivoEn);
