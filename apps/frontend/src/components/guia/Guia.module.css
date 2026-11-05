@@ -11,16 +11,16 @@
 .lanzador {
   display: inline-flex;
   align-items: center;
-  gap: var(--espacio-2);
-  min-height: 3rem;
-  padding: var(--espacio-1) var(--espacio-4) var(--espacio-1) var(--espacio-2);
+  gap: var(--espacio-1);
+  min-height: 2.75rem;
+  padding: var(--espacio-1) var(--espacio-3);
   border: 0;
   border-radius: var(--radio-total);
   background: linear-gradient(135deg, var(--fondo-morado-800), var(--fondo-morado-950));
   box-shadow: 0 10px 28px -10px rgb(38 20 99 / 0.6);
   color: #fff;
   font: inherit;
-  font-size: var(--texto-sm);
+  font-size: var(--texto-xs);
   font-weight: var(--peso-fuerte);
   box-shadow: var(--sombra-2);
   cursor: pointer;
@@ -158,8 +158,8 @@
     position: relative;
     justify-self: end;
     justify-content: center;
-    width: 3.5rem;
-    height: 3.5rem;
+    width: 3.25rem;
+    height: 3.25rem;
     padding: 0;
     border-radius: 50%;
     box-shadow:

@@ -208,7 +208,7 @@ export function GuiaVirtual() {
             setAbierta((a) => !a);
           }}
         >
-          <Cocuyo tamano={30} encendido={!abierta} />
+          <Cocuyo tamano={26} encendido={!abierta} />
           <span className={estilos.textoLanzador}>
             {abierta ? 'Cerrar guía' : '¿Cómo funciona?'}
           </span>
