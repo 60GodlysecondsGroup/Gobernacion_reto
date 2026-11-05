@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
-import Script from 'next/script';
 import { Suspense } from 'react';
 import { GuiaVirtual } from '@/components/guia/GuiaVirtual';
 import { Encabezado } from '@/components/layout/Encabezado';
@@ -11,7 +10,8 @@ import { PiePagina } from '@/components/layout/PiePagina';
 import { ProveedorMovimiento } from '@/components/layout/ProveedorMovimiento';
 import { ProveedorSesion } from '@/components/sesion/ProveedorSesion';
 import { ProveedorNotificaciones } from '@/components/ui/Notificaciones';
-import { SCRIPT_TEMA } from '@/lib/tema';
+import { cookies } from 'next/headers';
+import { COOKIE_TEMA, esTema } from '@/lib/tema';
 import '@/styles/tokens.css';
 import './globals.css';
 
@@ -61,21 +61,20 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // El tema elegido viaja en una cookie: el servidor lo pinta en <html> y no hace falta ningún
+  // <script> (React 19 no los ejecuta dentro de componentes). Sin elección, manda el sistema.
+  const guardado = (await cookies()).get(COOKIE_TEMA)?.value;
+  const tema = esTema(guardado) ? guardado : undefined;
   return (
-    // `suppressHydrationWarning`: el script del tema pone `data-tema` en <html> antes de hidratar.
+    // `suppressHydrationWarning`: el interruptor cambia `data-tema` en el cliente.
     <html
       lang="es"
       className={`${atkinson.variable} ${bricolage.variable}`}
+      data-tema={tema}
       suppressHydrationWarning
     >
       <body>
-        {/* Script fijo, sin datos del usuario: aplica el tema guardado antes de pintar.
-            `beforeInteractive` lo coloca en el <head> del HTML y lo ejecuta antes de hidratar,
-            sin un <script> renderizado por React (que causaba el error de hidratación). */}
-        <Script id="tema-inicial" strategy="beforeInteractive">
-          {SCRIPT_TEMA}
-        </Script>
         <a href="#contenido" className="saltar-contenido">
           Saltar al contenido
         </a>

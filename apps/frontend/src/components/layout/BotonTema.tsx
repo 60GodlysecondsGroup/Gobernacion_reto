@@ -1,8 +1,8 @@
 'use client';
 
 import { Moon, Sun } from 'lucide-react';
-import { useSyncExternalStore, type MouseEvent } from 'react';
-import { CLAVE_TEMA } from '@/lib/tema';
+import { useEffect, useSyncExternalStore, type MouseEvent } from 'react';
+import { CLAVE_TEMA, esTema, guardarCookieTema } from '@/lib/tema';
 import estilos from './BotonTema.module.css';
 
 type Tema = 'claro' | 'oscuro';
@@ -49,7 +49,20 @@ type DocumentoConTransicion = Document & { startViewTransition?: (cambio: () => 
  * Transitions). Con «reducir movimiento» el cambio es inmediato. Es un botón de alternancia
  * accesible: «Modo oscuro» con `aria-pressed`.
  */
+/** Elecciones antiguas guardadas solo en este navegador: se aplican y se copian a la cookie. */
+function migrarTemaAntiguo() {
+  try {
+    const antiguo = localStorage.getItem(CLAVE_TEMA);
+    if (!esTema(antiguo) || document.cookie.includes('cp-tema=')) return;
+    document.documentElement.setAttribute('data-tema', antiguo);
+    guardarCookieTema(antiguo);
+  } catch {
+    // Sin almacenamiento: nada que migrar.
+  }
+}
+
 export function BotonTema() {
+  useEffect(migrarTemaAntiguo, []);
   const tema = useSyncExternalStore(suscribir, temaActual, enServidor);
   const oscuro = tema === 'oscuro';
 
@@ -60,6 +73,7 @@ export function BotonTema() {
       raiz.setAttribute('data-tema', siguiente);
       try {
         localStorage.setItem(CLAVE_TEMA, siguiente);
+        guardarCookieTema(siguiente);
       } catch {
         // Sin almacenamiento (modo privado estricto): el tema vale para esta visita.
       }
