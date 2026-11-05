@@ -1,26 +1,24 @@
-import { ArrowRight, Check, LifeBuoy, ShieldCheck, Sparkles, Users } from 'lucide-react';
+import { ArrowRight, LifeBuoy, ShieldCheck, Sparkles, Users } from 'lucide-react';
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
 import { Chigui } from '@/components/guia/Chigui';
 import { AtajosOrientacion } from '@/components/inicio/AtajosOrientacion';
+import { CabeceraOrientacion } from '@/components/inicio/CabeceraOrientacion';
 import { ComoFunciona } from '@/components/inicio/ComoFunciona';
+import { SeccionOrientacion } from '@/components/inicio/SeccionOrientacion';
+import { MensajesGarantia } from '@/components/inicio/MensajesGarantia';
+import { TextoLuminosa } from '@/components/inicio/TextoLuminosa';
 import { TituloHeroe } from '@/components/inicio/TituloHeroe';
 import { ValleComunidades } from '@/components/inicio/ValleComunidades';
 import { Inclinable } from '@/components/movimiento/Inclinable';
 import { Magnetico } from '@/components/movimiento/Magnetico';
 import { Paralaje } from '@/components/movimiento/Paralaje';
-import { TextoRevelado } from '@/components/movimiento/TextoRevelado';
+import FoldText from '@/components/react-bits/FoldText';
 import { AccionesInicio } from '@/components/sesion/AccionesInicio';
 import { OBJETOS_SALA } from '@/config/salas-mundo';
 import estilos from './page.module.css';
 
 const ACTIVIDADES = OBJETOS_SALA.map((o) => o.titulo);
-
-const GARANTIAS = [
-  'Participas con alias, sin datos personales',
-  'Cada fuente indica cuándo se verificó',
-  'Gratis y sin anuncios',
-];
 
 export default function Inicio() {
   return (
@@ -29,29 +27,16 @@ export default function Inicio() {
       <section className={estilos.heroe} aria-labelledby="titulo-inicio">
         <div className={estilos.textoHeroe}>
           <TituloHeroe />
-          <TextoRevelado
-            as="p"
+          <TextoLuminosa
             className={estilos.entradilla}
-            efecto="desenfoque"
-            retraso={420}
-            paso={14}
-            tramos={[
-              'Una comunidad digital para jóvenes de 10 a 22 años, donde puedes encontrar orientación, participar de forma segura y compartir experiencias.',
-            ]}
+            texto="Una comunidad digital para jóvenes de 10 a 22 años, donde puedes encontrar orientación, participar de forma segura y compartir experiencias."
           />
           <div className={estilos.acciones}>
             <Magnetico fuerza={0.12} className={estilos.magnetico}>
               <AccionesInicio />
             </Magnetico>
           </div>
-          <ul className={estilos.garantias}>
-            {GARANTIAS.map((texto) => (
-              <li key={texto}>
-                <Check aria-hidden="true" size={15} strokeWidth={2.6} />
-                {texto}
-              </li>
-            ))}
-          </ul>
+          <MensajesGarantia className={estilos.garantias} />
         </div>
 
         <Paralaje className={estilos.visual} distancia={40}>
@@ -74,27 +59,11 @@ export default function Inicio() {
       </section>
 
       {/* ── Orientación ───────────────────────────────── */}
-      <section className={estilos.seccion} aria-labelledby="titulo-orientacion">
-        <div className={estilos.cabeceraSeccion}>
-          <TextoRevelado
-            as="p"
-            className={estilos.antetituloSeccion}
-            efecto="letras"
-            cuando="scroll"
-            tramos={['Orientación']}
-          />
-          <TextoRevelado
-            as="h2"
-            id="titulo-orientacion"
-            efecto="desenfoque"
-            cuando="scroll"
-            tramos={['¿Qué información buscas hoy?']}
-          />
-          <p>
-            No necesitas iniciar sesión. Aquí no hay preguntas sobre ti ni resultados: solo
-            información de instituciones.
-          </p>
-        </div>
+      <SeccionOrientacion className={estilos.seccion} aria-labelledby="titulo-orientacion">
+        <CabeceraOrientacion
+          className={estilos.cabeceraSeccion}
+          antetituloClassName={estilos.antetituloSeccion}
+        />
         <AtajosOrientacion />
         <Link href="/ayuda" className={`${estilos.ayuda} revelar-lateral`}>
           <span className={estilos.iconoAyuda} aria-hidden="true">
@@ -109,7 +78,7 @@ export default function Inicio() {
             <ArrowRight aria-hidden="true" size={18} />
           </span>
         </Link>
-      </section>
+      </SeccionOrientacion>
 
       {/* ── Cómo funciona ─────────────────────────────── */}
       {/* Pila: «Cómo funciona» se queda fija y la tarjeta de las salas se desliza encima. */}
@@ -131,13 +100,30 @@ export default function Inicio() {
               <Sparkles aria-hidden="true" size={16} />
               Salas de tu comunidad
             </p>
-            <TextoRevelado
-              as="h2"
-              id="titulo-salas"
-              efecto="mascara"
-              cuando="scroll"
-              tramos={['Cada sala es un pequeño mundo para descubrir']}
-            />
+            {/* FoldText (React Bits): las letras se despliegan como papel al llegar a la sección.
+                Hereda el tamaño, el peso, el interlineado y el color del título. */}
+            <h2 id="titulo-salas">
+              <FoldText
+                text="Cada sala es un pequeño mundo para descubrir"
+                foldStyle="paper"
+                splitBy="char"
+                hinge="top"
+                trigger="scroll"
+                foldAngle={92}
+                duration={0.65}
+                stagger={0.03}
+                staggerFrom="start"
+                ease="power3.out"
+                hoverRefold
+                refoldRadius={140}
+                refoldAngle={45}
+                perspective={700}
+                creaseShading={0.55}
+                fontSize="inherit"
+                fontWeight="inherit"
+                style={{ lineHeight: 'inherit', letterSpacing: 'inherit' }}
+              />
+            </h2>
             <p>
               Entra con tu avatar y toca los objetos de la sala: una pizarra, un tablero de ideas,
               una máquina de café… Cada uno abre una actividad corta, y dos bots te acompañan. Todo

@@ -1,0 +1,42 @@
+.texto {
+  --luz-x: 50%;
+  --luz-y: 50%;
+  --luz-opacidad: 0;
+}
+
+.texto[data-luminosa] {
+  position: relative;
+  color: color-mix(in srgb, var(--color-texto-suave) 72%, var(--color-fondo) 28%);
+  touch-action: pan-y;
+}
+
+.texto[data-luminosa]::after {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  color: var(--color-texto);
+  content: attr(data-texto);
+  mask-image: radial-gradient(
+    circle 5em at var(--luz-x) var(--luz-y),
+    #000 0%,
+    #000 28%,
+    rgb(0 0 0 / 0.7) 56%,
+    transparent 100%
+  );
+  -webkit-mask-image: radial-gradient(
+    circle 5em at var(--luz-x) var(--luz-y),
+    #000 0%,
+    #000 28%,
+    rgb(0 0 0 / 0.7) 56%,
+    transparent 100%
+  );
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  opacity: var(--luz-opacidad);
+  pointer-events: none;
+}
+
+.palabra {
+  display: inline-block;
+  white-space: nowrap;
+}

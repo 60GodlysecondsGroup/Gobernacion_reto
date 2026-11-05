@@ -1,0 +1,22 @@
+.texto {
+  display: grid;
+  min-width: 0;
+}
+
+.medida,
+.mensaje {
+  grid-area: 1 / 1;
+}
+
+.medida {
+  visibility: hidden;
+}
+
+.mensaje {
+  white-space: normal;
+}
+
+.letra {
+  display: inline-block;
+  white-space: pre;
+}

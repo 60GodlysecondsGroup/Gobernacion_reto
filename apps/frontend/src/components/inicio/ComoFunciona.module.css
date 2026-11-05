@@ -21,9 +21,7 @@
   position: absolute;
   inset: -8% 0;
   z-index: -1;
-  background:
-    radial-gradient(40% 50% at 12% 60%, rgb(149 121 243 / 0.28), transparent 70%),
-    radial-gradient(30% 40% at 40% 10%, rgb(143 211 255 / 0.22), transparent 70%);
+  background: radial-gradient(40% 50% at 12% 60%, rgb(149 121 243 / 0.28), transparent 70%);
   pointer-events: none;
 }
 

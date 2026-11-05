@@ -1,17 +1,29 @@
 'use client';
 
-import { ElementoEscalonado, ListaEscalonada } from '@/components/movimiento/Escalonado';
 import { ArrowUpRight } from 'lucide-react';
+import { motion } from 'motion/react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { EstadoError } from '@/components/ui';
 import { iconoNecesidad, tonoNecesidad } from '@/config/necesidades';
 import { mensajeDeError } from '@/lib/api/cliente';
 import { obtenerNecesidades, type Necesidad } from '@/lib/api/orientacion';
 import ventanas from '@/styles/ventanas.module.css';
+import { useEstiloScrollOrientacion } from './SeccionOrientacion';
 import estilos from './AtajosOrientacion.module.css';
 
 /** Las seis necesidades del navegador (F04), con su número real de servicios. */
+function ElementoAtajoScroll({ indice, children }: { indice: number; children: ReactNode }) {
+  // Las tarjetas de una misma fila entran con un pequeño desfase entre ellas.
+  const { ref, style } = useEstiloScrollOrientacion((indice % 3) * 0.07);
+
+  return (
+    <motion.li ref={ref as React.RefObject<HTMLLIElement | null>} style={style}>
+      {children}
+    </motion.li>
+  );
+}
+
 export function AtajosOrientacion() {
   const [necesidades, setNecesidades] = useState<Necesidad[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -43,22 +55,18 @@ export function AtajosOrientacion() {
   }
 
   return (
-    <ListaEscalonada
-      key={necesidades ? 'datos' : 'carga'}
-      className={estilos.lista}
-      aria-busy={!necesidades}
-    >
+    <ul className={estilos.lista} aria-busy={!necesidades}>
       {(necesidades ?? Array.from({ length: 6 }, () => null)).map((necesidad, i) => {
         if (!necesidad) {
           return (
-            <ElementoEscalonado key={i}>
+            <ElementoAtajoScroll key={i} indice={i}>
               <span className={`esqueleto ${estilos.esqueleto}`} />
-            </ElementoEscalonado>
+            </ElementoAtajoScroll>
           );
         }
         const Icono = iconoNecesidad(necesidad.codigo);
         return (
-          <ElementoEscalonado key={necesidad.codigo}>
+          <ElementoAtajoScroll key={necesidad.codigo} indice={i}>
             <Link href={`/orientacion/${necesidad.codigo}`} className={`${estilos.atajo} con-luz`}>
               <span
                 className={`${ventanas.ficha} ${ventanas[tonoNecesidad(necesidad.codigo)]}`}
@@ -74,9 +82,9 @@ export function AtajosOrientacion() {
               </span>
               <ArrowUpRight aria-hidden="true" size={20} className={estilos.flecha} />
             </Link>
-          </ElementoEscalonado>
+          </ElementoAtajoScroll>
         );
       })}
-    </ListaEscalonada>
+    </ul>
   );
 }

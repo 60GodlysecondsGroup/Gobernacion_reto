@@ -76,7 +76,8 @@
 
 .garantias {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
   gap: var(--espacio-2) var(--espacio-4);
   margin: 0;
   padding: 0;
