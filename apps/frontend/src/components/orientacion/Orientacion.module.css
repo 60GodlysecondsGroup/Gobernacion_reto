@@ -435,14 +435,7 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  /* Entrada coordinada: el edificio sube con profundidad y la ruleta gira a su sitio. */
-  .edificio {
-    animation: llegarEdificio 720ms var(--curva-salida) 240ms backwards;
-  }
-
-  .zonaRuleta {
-    animation: llegarRuleta 820ms var(--curva-salida) 380ms backwards;
-  }
+  /* La entrada coordinada de ruleta y edificio la lleva Motion (`movimientoExplorador.ts`). */
 
   /* Al cambiar de tema, el rótulo se recompone en cascada (se vuelve a montar con cada tema). */
   .rotulo > * {
@@ -455,20 +448,6 @@
 
   .rotulo > :nth-child(3) {
     animation-delay: 120ms;
-  }
-}
-
-@keyframes llegarEdificio {
-  from {
-    opacity: 0;
-    transform: translateY(26px) scale(0.96);
-  }
-}
-
-@keyframes llegarRuleta {
-  from {
-    opacity: 0;
-    transform: rotate(-18deg) scale(0.9);
   }
 }
 
@@ -541,5 +520,251 @@
   }
   to {
     transform: none;
+  }
+}
+
+/* ─── Explorador: contenedor de la tarjeta y resplandor de la ruleta ─────────── */
+.contenedorEdificio {
+  display: grid;
+  grid-area: edificio;
+  justify-self: center;
+  width: 100%;
+  max-width: 36rem;
+}
+
+.contenedorEdificio > .edificio {
+  max-width: none;
+}
+
+.giroRuleta {
+  position: relative;
+  width: 100%;
+}
+
+/* Al encajar, un anillo de luz violeta se abre detrás del disco y se apaga. */
+.giroRuleta::after {
+  content: '';
+  position: absolute;
+  inset: 4%;
+  z-index: -1;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .giroRuleta[data-encajada]::after {
+    animation: destelloRuleta 1.1s var(--curva-salida);
+  }
+}
+
+@keyframes destelloRuleta {
+  0% {
+    opacity: 1;
+    box-shadow:
+      0 0 0 0 rgb(139 92 246 / 0.55),
+      0 0 40px 6px rgb(168 85 247 / 0.45);
+    transform: scale(0.96);
+  }
+  100% {
+    opacity: 0;
+    box-shadow:
+      0 0 0 22px rgb(139 92 246 / 0),
+      0 0 70px 18px rgb(168 85 247 / 0);
+    transform: scale(1.06);
+  }
+}
+
+@media (min-width: 64rem) and (max-height: 62rem) {
+  .paginaOrientacion {
+    gap: var(--espacio-4);
+  }
+
+  .explorador {
+    grid-template-columns: minmax(18rem, 22rem) minmax(0, 1fr);
+    gap: var(--espacio-6);
+  }
+
+  .contenedorEdificio {
+    max-width: 27rem;
+  }
+}
+
+/* ─── Coreografía de /orientacion ───────────────────────────────────────────
+   1. Encabezado: antetítulo, título por palabras y descripción (EncabezadoPagina), sin la
+      cascada genérica de bloques, que lo recortaba con una máscara a mitad de su entrada.
+   2. Explorador: espiral de la ruleta + barrido de la tarjeta → edificio con resorte → rótulo.
+   3. Aviso de límites: el último, ligado al scroll (máscara lateral e impulso del icono). */
+.paginaOrientacion.paginaOrientacion > :is(header, div:not([class])) {
+  animation: none;
+}
+
+/* Esqueleto con la forma del explorador. */
+.esqueletoRuleta {
+  width: min(100%, 19.5rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+
+.esqueletoEscena {
+  aspect-ratio: 160 / 110;
+  border-radius: var(--radio-lg);
+}
+
+.esqueletoLinea {
+  height: 0.85rem;
+  border-radius: var(--radio-total);
+}
+
+.edificioCargando {
+  pointer-events: none;
+}
+
+.edificioCargando .esqueletoLinea:nth-child(2) {
+  height: 1.2rem;
+  margin-top: var(--espacio-1);
+}
+
+/* Aviso de límites. Sin animaciones ligadas al scroll: entra con un retraso, tras el resto. */
+@media (prefers-reduced-motion: no-preference) {
+  .paginaOrientacion > .avisoLimites {
+    animation: avisoLateral 700ms var(--curva-salida) 1.1s backwards;
+  }
+
+  .avisoLimites svg {
+    animation: avisoIcono 600ms var(--curva-salida) 1.4s backwards;
+  }
+
+  @supports (animation-timeline: view()) {
+    .paginaOrientacion > .avisoLimites {
+      animation: avisoLateral linear both;
+      animation-timeline: view();
+      animation-range: entry 5% entry 75%;
+    }
+
+    .avisoLimites svg {
+      animation: avisoIcono linear both;
+      animation-timeline: view();
+      animation-range: entry 40% entry 95%;
+    }
+  }
+}
+
+@keyframes avisoLateral {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0 round var(--radio-md));
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(-8px round var(--radio-md));
+    transform: none;
+  }
+}
+
+@keyframes avisoIcono {
+  from {
+    opacity: 0;
+    transform: scale(0.5) rotate(-24deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.12) rotate(4deg);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* Microinteracciones de la tarjeta del edificio. */
+.nombreTema {
+  transition: color var(--transicion);
+}
+
+.entrarTema {
+  transition:
+    background var(--transicion),
+    transform 220ms var(--curva-salida);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .edificio:hover .entrarTema {
+    transform: translateX(2px);
+  }
+
+  .edificio:hover .nombreTema {
+    color: var(--color-primario);
+  }
+}
+
+.edificio:active .entrarTema {
+  transform: scale(0.97);
+}
+
+/* ─── Composición centrada que cabe en pantalla ──────────────────────────────
+   Ruleta y tarjeta forman un solo bloque centrado. Su tamaño crece con la pantalla pero se
+   limita por su alto, para que el explorador entero quepa bajo el encabezado de la página sin
+   salirse por abajo ni del padding lateral. */
+.explorador {
+  justify-content: center;
+  justify-items: center;
+}
+
+.contenedorEdificio {
+  justify-self: center;
+}
+
+/* Móvil: la tarjeta ocupa el ancho disponible (dentro del padding) y la ruleta, centrada, se
+   ajusta para dejar ver la tarjeta y el disco a la vez. */
+@media (max-width: 47.99rem) {
+  .contenedorEdificio {
+    max-width: 100%;
+  }
+
+  .zonaRuleta > :is(.giroRuleta, .esqueletoRuleta) {
+    width: min(100%, 22rem, calc(100svh - 30rem));
+    min-width: 15rem;
+    max-width: none;
+  }
+}
+
+/* Tableta: dos columnas proporcionales que llenan el ancho de la página (así el conjunto queda
+   centrado y nada se sale del padding); la ruleta, a lo ancho de su columna. */
+@media (min-width: 48rem) {
+  .explorador {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: clamp(1.25rem, 0.5rem + 2vw, 2.5rem);
+  }
+
+  .zonaRuleta > :is(.giroRuleta, .esqueletoRuleta) {
+    width: min(100%, 20rem);
+  }
+
+  .contenedorEdificio {
+    width: 100%;
+    max-width: 36rem;
+  }
+}
+
+/* Escritorio: ambos crecen con el alto de la pantalla (lo que queda bajo el encabezado de la
+   página) y se quedan en el centro, con un hueco medido entre ellos. */
+@media (min-width: 64rem) {
+  .explorador {
+    grid-template-columns: auto auto;
+    gap: clamp(2rem, 1rem + 3vw, 5rem);
+  }
+
+  .zonaRuleta > :is(.giroRuleta, .esqueletoRuleta) {
+    width: clamp(16rem, calc(100svh - 30rem), 28rem);
+  }
+
+  .contenedorEdificio {
+    width: clamp(24rem, calc((100svh - 33rem) * 1.45), 48rem);
+    max-width: none;
+  }
+
+  .contenedorEdificio > .edificio {
+    max-width: none;
   }
 }

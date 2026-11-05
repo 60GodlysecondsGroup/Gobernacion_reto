@@ -3,12 +3,18 @@
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import Link from 'next/link';
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
+import { Inclinable } from '@/components/movimiento/Inclinable';
 import type { Necesidad } from '@/lib/api/orientacion';
-import { CURVA_SALIDA, DURACION } from '@/lib/movimiento';
 import { anguloDe, giroHacia } from '@/lib/ruleta';
 import { EscenaEdificio } from './EscenaEdificio';
 import estilos from './Orientacion.module.css';
+import {
+  DURACION_ESPIRAL,
+  barridoMarco,
+  espiralRuleta,
+  estadosRotulo,
+} from './movimientoExplorador';
 import { RuletaTemas } from './RuletaTemas';
 
 /**
@@ -44,7 +50,14 @@ const cuentaServicios = (n: number) => (n === 1 ? '1 servicio' : `${n} servicios
  * contenido. Entrar usa el mismo enlace de siempre, `/orientacion/<código>`, con `next/link`;
  * Intro en la ruleta, tocar el centro o volver a tocar el tema elegido pulsan ese mismo enlace.
  */
-export function ExploradorTemas({ necesidades }: { necesidades: Necesidad[] }) {
+export function ExploradorTemas({
+  necesidades,
+  retraso = 0,
+}: {
+  necesidades: Necesidad[];
+  /** Segundos de espera antes de la entrada (la página la usa para no pisar el encabezado). */
+  retraso?: number;
+}) {
   const total = necesidades.length;
   const idAyuda = useId();
   const idDescripcion = useId();
@@ -66,53 +79,90 @@ export function ExploradorTemas({ necesidades }: { necesidades: Necesidad[] }) {
   };
 
   const entrar = () => enlace.current?.click();
+  // La ruleta encaja → destella y el edificio sube. Hasta entonces todo arranca oculto desde el
+  // primer pintado (estilos iniciales de Motion), así que no hay destello de carga.
+  const [encajada, setEncajada] = useState(false);
+  // Respaldo: si el aviso de fin de la espiral no llega (pestaña en segundo plano, animación
+  // interrumpida), el edificio y el rótulo aparecen igualmente a su hora.
+  useEffect(() => {
+    const t = setTimeout(() => setEncajada(true), (retraso + DURACION_ESPIRAL + 0.25) * 1000);
+    return () => clearTimeout(t);
+  }, [retraso]);
 
   return (
     <section className={estilos.explorador} aria-label="Explorar temas">
       <div className={estilos.zonaRuleta}>
-        <RuletaTemas
-          necesidades={necesidades}
-          indice={seleccion.indice}
-          giro={seleccion.giro}
-          alElegir={elegir}
-          alEntrar={entrar}
-          idAyuda={idAyuda}
-        />
-        <p id={idAyuda} className={estilos.ayudaRuleta}>
+        <motion.div
+          className={estilos.giroRuleta}
+          data-encajada={encajada || undefined}
+          style={{ transformPerspective: 1000 }}
+          variants={espiralRuleta}
+          custom={retraso}
+          initial="oculto"
+          animate="visible"
+          onAnimationComplete={() => setEncajada(true)}
+        >
+          <RuletaTemas
+            necesidades={necesidades}
+            indice={seleccion.indice}
+            giro={seleccion.giro}
+            alElegir={elegir}
+            alEntrar={entrar}
+            idAyuda={idAyuda}
+          />
+        </motion.div>
+        <motion.p
+          id={idAyuda}
+          className={estilos.ayudaRuleta}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: encajada ? 1 : 0 }}
+          transition={{ duration: 0.4 }}
+        >
           <span className={estilos.ayudaPuntero}>Elige un tema con un clic o con las flechas</span>
           <span className={estilos.ayudaTactil}>Toca un tema para elegirlo</span> y su edificio
           aparece. Para entrar, toca el edificio, vuelve a tocar el tema o pulsa Intro.
-        </p>
+        </motion.p>
       </div>
 
-      <Link
-        ref={enlace}
-        href={`/orientacion/${necesidad.codigo}`}
-        className={`${estilos.edificio} con-luz`}
-        aria-label={`${necesidad.nombre}: ver ${cuentaServicios(necesidad.servicios)}`}
-        aria-describedby={idDescripcion}
+      <motion.div
+        className={estilos.contenedorEdificio}
+        variants={barridoMarco}
+        custom={retraso}
+        initial="oculto"
+        animate="visible"
       >
-        <EscenaEdificio codigo={necesidad.codigo} />
-        <motion.span
-          key={necesidad.codigo}
-          className={estilos.rotulo}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: DURACION.media, ease: CURVA_SALIDA }}
+        <Link
+          ref={enlace}
+          href={`/orientacion/${necesidad.codigo}`}
+          className={`${estilos.edificio} con-luz`}
+          aria-label={`${necesidad.nombre}: ver ${cuentaServicios(necesidad.servicios)}`}
+          aria-describedby={idDescripcion}
         >
-          <span className={estilos.nombreTema}>{necesidad.nombre}</span>
-          <span id={idDescripcion} className={estilos.descripcionTema}>
-            {necesidad.descripcion}
-          </span>
-          <span className={estilos.pieTema}>
-            <span>{cuentaServicios(necesidad.servicios)}</span>
-            <span className={estilos.entrarTema}>
-              Ver servicios
-              <ArrowRight aria-hidden="true" size={18} />
+          {/* Parallax muy suave: el edificio se inclina en 3D siguiendo al cursor (solo ratón). */}
+          <Inclinable maximo={3}>
+            <EscenaEdificio codigo={necesidad.codigo} listo={encajada} />
+          </Inclinable>
+          <motion.span
+            key={necesidad.codigo}
+            className={estilos.rotulo}
+            variants={estadosRotulo}
+            initial="esperando"
+            animate={encajada ? 'visible' : 'esperando'}
+          >
+            <span className={estilos.nombreTema}>{necesidad.nombre}</span>
+            <span id={idDescripcion} className={estilos.descripcionTema}>
+              {necesidad.descripcion}
             </span>
-          </span>
-        </motion.span>
-      </Link>
+            <span className={estilos.pieTema}>
+              <span>{cuentaServicios(necesidad.servicios)}</span>
+              <span className={estilos.entrarTema}>
+                Ver servicios
+                <ArrowRight aria-hidden="true" size={18} />
+              </span>
+            </span>
+          </motion.span>
+        </Link>
+      </motion.div>
     </section>
   );
 }

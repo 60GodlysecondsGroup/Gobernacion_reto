@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'motion/react';
-import { createElement, type ReactNode } from 'react';
+import { createElement, useState, type ReactNode } from 'react';
 import { Cocuyo } from '@/components/guia/Cocuyo';
 import {
   edificioNecesidad,
@@ -10,8 +10,8 @@ import {
   type FormaEdificio,
   type TonoVentana,
 } from '@/config/necesidades';
-import { CURVA_SALIDA, DESPLAZAMIENTO_ENTRADA, DURACION } from '@/lib/movimiento';
 import estilos from './EscenaEdificio.module.css';
+import { CAMBIO_TEMA, RESORTE_EDIFICIO, estadosEdificio } from './movimientoExplorador';
 
 /**
  * El pueblo de Orientación: un edificio en pixel art propio (RF28) por cada tema, dibujado con
@@ -539,7 +539,17 @@ const PUERTAS: Record<TonoVentana, string> = {
 };
 
 /** Escena completa: paisaje (fijo, cambia de luz) y el edificio del tema, que entra y sale. */
-export function EscenaEdificio({ codigo }: { codigo: string }) {
+export function EscenaEdificio({
+  codigo,
+  listo = true,
+}: {
+  codigo: string;
+  /** Falso hasta que termina la entrada de la ruleta: el edificio espera abajo, invisible. */
+  listo?: boolean;
+}) {
+  // El primer edificio llega con un resorte desde abajo; los siguientes, con despiece en Z.
+  const [primero] = useState(codigo);
+  const llegada = codigo === primero;
   const forma = edificioNecesidad(codigo);
   const tono = tonoNecesidad(codigo);
   const Edificio = EDIFICIOS[forma];
@@ -593,18 +603,15 @@ export function EscenaEdificio({ codigo }: { codigo: string }) {
           />
         </svg>
 
-        <AnimatePresence initial={false}>
+        <AnimatePresence>
           <motion.div
             key={codigo}
             className={estilos.capaEdificio}
-            initial={{ opacity: 0, y: DESPLAZAMIENTO_ENTRADA, scale: 0.97 }}
-            animate={{
-              opacity: 1,
-              y: 0,
-              scale: 1,
-              transition: { duration: DURACION.contexto, ease: CURVA_SALIDA },
-            }}
-            exit={{ opacity: 0, y: -6, transition: { duration: DURACION.rapida } }}
+            variants={estadosEdificio}
+            initial={llegada ? 'esperando' : 'despiece'}
+            animate={listo ? 'visible' : 'esperando'}
+            exit="despiece"
+            transition={llegada ? RESORTE_EDIFICIO : CAMBIO_TEMA}
           >
             <svg
               className={estilos.lienzo}
