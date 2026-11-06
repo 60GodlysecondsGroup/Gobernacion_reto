@@ -532,7 +532,10 @@
   max-width: 36rem;
 }
 
+/* Dentro del contenedor no hay área «edificio»: sin este reinicio la rejilla crea una columna
+   implícita vacía y, con un nombre corto (p. ej. «Bienestar»), la tarjeta queda corrida. */
 .contenedorEdificio > .edificio {
+  grid-area: auto;
   max-width: none;
 }
 
