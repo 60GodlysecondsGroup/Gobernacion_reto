@@ -627,7 +627,7 @@
 
 /* Aviso de límites. Sin animaciones ligadas al scroll: entra con un retraso, tras el resto. */
 .avisoLimites {
-  margin-top: var(--espacio-8);
+  margin-top: var(--espacio-9);
 }
 
 @media (prefers-reduced-motion: no-preference) {
