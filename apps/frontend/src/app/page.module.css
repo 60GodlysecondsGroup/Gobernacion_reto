@@ -758,13 +758,15 @@
   @supports (animation-timeline: view()) {
     @media (prefers-reduced-motion: no-preference) {
       .pila > .pilaCapa {
+        /* cederPila arranca cuando la tarjeta de salas asoma y termina cuando la cubre:
+           la capa de abajo se aleja (escala, desenfoque, oscurece) al ritmo de la de arriba. */
         animation:
           entrarPila linear both,
-          cederPila linear forwards;
+          cederPila cubic-bezier(0.45, 0, 0.55, 1) forwards;
         animation-timeline: view(), --salas;
         animation-range:
           entry 0% entry 45%,
-          cover 25% cover 60%;
+          entry 10% cover 55%;
       }
     }
   }
@@ -781,10 +783,19 @@
   from {
     opacity: 1;
     transform: none;
+    filter: blur(0) brightness(1);
+  }
+  45% {
+    opacity: 0.55;
+    filter: blur(1px) brightness(0.8);
   }
   to {
-    opacity: 0.5;
-    transform: translateY(-10px) scale(0.93);
+    /* Desaparece del todo; `visibility` solo cambia en el último instante, así que
+       la capa oculta no recibe clics ni foco y reaparece igual al volver a subir. */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-16px) scale(0.9);
+    filter: blur(4px) brightness(0.55);
   }
 }
 
@@ -977,14 +988,6 @@
   transition: rotate 360ms cubic-bezier(0.32, 1.25, 0.5, 1);
 }
 
-.irAyuda {
-  background-image: linear-gradient(currentColor, currentColor);
-  background-position: 0 100%;
-  background-size: 0% 1.5px;
-  background-repeat: no-repeat;
-  transition: background-size 320ms var(--curva-salida);
-}
-
 @media (hover: hover) and (pointer: fine) {
   .ayuda:hover {
     translate: 0 -3px;
@@ -993,10 +996,6 @@
 
   .ayuda:hover .iconoAyuda {
     rotate: -10deg;
-  }
-
-  .ayuda:hover .irAyuda {
-    background-size: 100% 1.5px;
   }
 
   .ayuda:hover .irAyuda svg {
