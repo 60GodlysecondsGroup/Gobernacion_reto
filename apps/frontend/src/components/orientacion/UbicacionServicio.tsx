@@ -26,8 +26,9 @@ const AVISO_PRIVACIDAD =
  * - Solo con dirección escrita: la dirección y «Buscar en Google Maps» (no se inventa un punto).
  * - Sin dirección ni ubicación: no se muestra nada (nunca un mapa vacío).
  *
- * Nunca usa la geolocalización del navegador ni pide permisos de ubicación. Los datos de
- * demostración se muestran sin enlaces activos, como el resto de sus canales.
+ * Nunca usa la geolocalización del navegador ni pide permisos de ubicación. El mapa y sus
+ * botones abren Google Maps también en los datos de demostración (con un aviso de que el punto
+ * no es una sede real): ver un lugar no contacta a nadie, a diferencia de llamar o abrir un sitio.
  */
 export function UbicacionServicio({
   servicio,
@@ -61,11 +62,7 @@ export function UbicacionServicio({
       )}
 
       {ubicacion && !compacta && (
-        <MapaUbicacion
-          ubicacion={ubicacion}
-          lugar={lugar}
-          enlace={esDemo ? null : urlVerEnMapa(ubicacion)}
-        />
+        <MapaUbicacion ubicacion={ubicacion} lugar={lugar} enlace={urlVerEnMapa(ubicacion)} />
       )}
 
       <div className={estilos.datos}>
@@ -83,47 +80,44 @@ export function UbicacionServicio({
         )}
       </div>
 
-      {esDemo ? (
-        <p className={estilos.nota}>
-          Ubicación de demostración: no corresponde a una sede real y no tiene indicaciones activas.
-        </p>
-      ) : (
-        <>
-          <div className={estilos.acciones}>
-            {ubicacion ? (
-              <>
-                <BotonEnlaceExterno
-                  href={urlComoLlegar(ubicacion)}
-                  tamano={compacta ? 'sm' : 'md'}
-                  aria-label={`Cómo llegar a ${lugar}: abre las indicaciones en Google Maps, en otra pestaña`}
-                >
-                  <Navigation aria-hidden="true" size={18} />
-                  Cómo llegar
-                </BotonEnlaceExterno>
-                {!compacta && (
-                  <BotonEnlaceExterno
-                    href={urlVerEnMapa(ubicacion)}
-                    variante="secundario"
-                    aria-label={`Ver ${lugar} en Google Maps, en otra pestaña`}
-                  >
-                    Ver en Google Maps
-                  </BotonEnlaceExterno>
-                )}
-              </>
-            ) : (
+      <div className={estilos.acciones}>
+        {ubicacion ? (
+          <>
+            <BotonEnlaceExterno
+              href={urlComoLlegar(ubicacion)}
+              tamano={compacta ? 'sm' : 'md'}
+              aria-label={`Cómo llegar a ${lugar}: abre las indicaciones en Google Maps, en otra pestaña`}
+            >
+              <Navigation aria-hidden="true" size={18} />
+              Cómo llegar
+            </BotonEnlaceExterno>
+            {!compacta && (
               <BotonEnlaceExterno
-                href={urlBuscarDireccion(direccion!)}
+                href={urlVerEnMapa(ubicacion)}
                 variante="secundario"
-                tamano={compacta ? 'sm' : 'md'}
-                aria-label={`Buscar la dirección de ${lugar} en Google Maps, en otra pestaña`}
+                aria-label={`Ver ${lugar} en Google Maps, en otra pestaña`}
               >
-                <Search aria-hidden="true" size={18} />
-                Buscar en Google Maps
+                Ver en Google Maps
               </BotonEnlaceExterno>
             )}
-          </div>
-          {ubicacion && !compacta && <p className={estilos.nota}>{AVISO_PRIVACIDAD}</p>}
-        </>
+          </>
+        ) : (
+          <BotonEnlaceExterno
+            href={urlBuscarDireccion(direccion!)}
+            variante="secundario"
+            tamano={compacta ? 'sm' : 'md'}
+            aria-label={`Buscar la dirección de ${lugar} en Google Maps, en otra pestaña`}
+          >
+            <Search aria-hidden="true" size={18} />
+            Buscar en Google Maps
+          </BotonEnlaceExterno>
+        )}
+      </div>
+      {ubicacion && !compacta && <p className={estilos.nota}>{AVISO_PRIVACIDAD}</p>}
+      {esDemo && (
+        <p className={estilos.nota}>
+          Ubicación de demostración: el punto del mapa no corresponde a una sede real.
+        </p>
       )}
     </section>
   );

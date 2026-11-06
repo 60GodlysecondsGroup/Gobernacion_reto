@@ -375,6 +375,15 @@
   color: #fff;
 }
 
+/* WhatsApp: verde de la marca, oscurecido para el contraste AA del texto blanco (igual que la ficha). */
+.datoWhatsapp {
+  background: #117a43;
+}
+
+.datoWhatsapp:hover {
+  background: #0d6436;
+}
+
 /* Ficha completa */
 .ficha {
   display: grid;

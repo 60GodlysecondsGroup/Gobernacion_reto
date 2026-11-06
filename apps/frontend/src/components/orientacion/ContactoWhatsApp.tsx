@@ -8,19 +8,19 @@ type Props = {
   numero: string;
   /** Nombre del servicio, para que el lector de pantalla diga a quién se escribe. */
   servicio: string;
-  esDemo: boolean;
 };
 
 /**
  * Contacto por WhatsApp de la ficha: el número registrado y el botón «Contactar vía WhatsApp»,
  * que abre el enlace oficial `https://wa.me/<dígitos>` en otra pestaña (`noopener noreferrer`):
  * en el celular abre la aplicación o su alternativa web; en el computador, WhatsApp Web o la
- * aplicación instalada. Los registros de demostración muestran el número como texto, sin botón,
- * igual que su teléfono y su enlace (un dato ficticio no debe poder usarse como un canal real).
+ * aplicación instalada. Está activo en todas las fichas, también las de demostración: el número
+ * lo registra el equipo de gestión desde el panel.
  */
-export function ContactoWhatsApp({ numero, servicio, esDemo }: Props) {
+export function ContactoWhatsApp({ numero, servicio }: Props) {
   const legible = formatearWhatsapp(numero);
-  const href = esDemo ? null : urlWhatsapp(numero);
+  // El backend solo guarda números válidos; si aun así no lo fuera, se muestra sin botón.
+  const href = urlWhatsapp(numero);
 
   return (
     <div className={estilos.whatsapp}>
@@ -30,7 +30,6 @@ export function ContactoWhatsApp({ numero, servicio, esDemo }: Props) {
       <span className={estilos.textos}>
         <span className={estilos.rotulo}>WhatsApp</span>
         <span className={estilos.numero}>{legible}</span>
-        {!href && <span className={estilos.nota}>Sin enlace: es de demostración</span>}
       </span>
       {href && (
         <a

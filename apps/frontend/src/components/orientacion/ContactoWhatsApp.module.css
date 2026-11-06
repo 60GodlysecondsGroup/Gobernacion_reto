@@ -48,11 +48,6 @@
   overflow-wrap: anywhere;
 }
 
-.nota {
-  color: var(--color-texto-tenue);
-  font-size: var(--texto-xs);
-}
-
 .boton {
   grid-column: 1 / -1;
   display: inline-flex;

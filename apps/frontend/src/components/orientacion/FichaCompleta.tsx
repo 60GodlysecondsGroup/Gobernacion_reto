@@ -224,16 +224,13 @@ export function FichaCompleta() {
       >
         <div className={estilos.bloque}>
           <p className={estilos.rotulo}>Canal</p>
-          <ContactoServicio servicio={servicio} />
+          {/* El WhatsApp va aparte, con su botón grande. */}
+          <ContactoServicio servicio={servicio} sinWhatsapp />
         </div>
         {servicio.whatsapp && (
           <div className={estilos.bloque}>
             <p className={estilos.rotulo}>WhatsApp</p>
-            <ContactoWhatsApp
-              numero={servicio.whatsapp}
-              servicio={servicio.servicio}
-              esDemo={servicio.esDemo}
-            />
+            <ContactoWhatsApp numero={servicio.whatsapp} servicio={servicio.servicio} />
           </div>
         )}
         {(servicio.ubicacion || servicio.direccion) && (

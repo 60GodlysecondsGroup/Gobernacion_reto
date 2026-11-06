@@ -139,7 +139,7 @@ export function DetalleServicio({ servicio }: { servicio: FichaServicio }) {
           )}
           {whatsapp && (
             <li>
-              <ContactoWhatsApp numero={whatsapp} servicio={servicio.servicio} esDemo={esDemo} />
+              <ContactoWhatsApp numero={whatsapp} servicio={servicio.servicio} />
             </li>
           )}
         </ul>
