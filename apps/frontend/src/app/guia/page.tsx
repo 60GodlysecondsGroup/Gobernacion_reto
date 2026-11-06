@@ -18,7 +18,7 @@ export default function PaginaGuia() {
     <div className={estilos.pagina}>
       <EncabezadoPagina antetitulo="Guía" titulo="Cómo funciona la plataforma">
         <span className={estilos.presentacion}>
-          <Cocuyo tamano={44} />
+          <Cocuyo tamano={44} movimientoEnSitio />
           {PRESENTACION_GUIA}
         </span>
       </EncabezadoPagina>

@@ -8,7 +8,9 @@
 
 .ala,
 .ojos,
-.halo {
+.halo,
+.destelloIzquierdo,
+.destelloDerecho {
   transform-box: fill-box;
 }
 
@@ -28,13 +30,34 @@
   transform-origin: 50% 30%;
 }
 
+.destelloIzquierdo,
+.destelloDerecho {
+  transform-origin: center;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .cocuyo {
     animation: flotarCocuyo 3.6s ease-in-out infinite alternate;
   }
 
+  .cocuyo[data-movimiento-en-sitio] {
+    animation: none;
+  }
+
   .ala {
     animation: aletear 1.8s ease-in-out infinite;
+  }
+
+  .cocuyo[data-movimiento-en-sitio] .ala {
+    animation-duration: 0.8s;
+  }
+
+  .cocuyo[data-movimiento-en-sitio] .alaIzquierda {
+    animation-duration: 1.1s;
+  }
+
+  .cocuyo[data-movimiento-en-sitio] .alaDerecha {
+    animation-delay: -0.35s;
   }
 
   .ojos {
@@ -43,6 +66,19 @@
 
   .halo {
     animation: respirarLuz 2.8s ease-in-out infinite alternate;
+  }
+
+  .cocuyo[data-movimiento-en-sitio] .halo {
+    animation: latirLuz 2.2s ease-in-out infinite;
+  }
+
+  .cocuyo[data-movimiento-en-sitio] .destelloIzquierdo,
+  .cocuyo[data-movimiento-en-sitio] .destelloDerecho {
+    animation: destellar 2.4s ease-in-out infinite;
+  }
+
+  .cocuyo[data-movimiento-en-sitio] .destelloDerecho {
+    animation-delay: -1.2s;
   }
 
   /* Al pasar por encima o enfocar el elemento que lo contiene, aletea más rápido. */
@@ -89,5 +125,30 @@
   to {
     opacity: 0.42;
     transform: scale(1.06);
+  }
+}
+
+@keyframes latirLuz {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 0.48;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes destellar {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.6);
+  }
+  45%,
+  60% {
+    opacity: 1;
+    transform: scale(1.2);
   }
 }

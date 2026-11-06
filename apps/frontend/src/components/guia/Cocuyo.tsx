@@ -14,11 +14,13 @@ export function Cocuyo({
   encendido = true,
   mira,
   expresion,
+  movimientoEnSitio = false,
 }: {
   tamano?: number;
   encendido?: boolean;
   mira?: 'izquierda' | 'derecha';
   expresion?: ExpresionCocuyo;
+  movimientoEnSitio?: boolean;
 }) {
   return (
     <svg
@@ -30,10 +32,31 @@ export function Cocuyo({
       focusable="false"
       className={estilos.cocuyo}
       data-encendido={encendido || undefined}
+      data-movimiento-en-sitio={movimientoEnSitio || undefined}
     >
       {/* Antenas */}
       <rect x="5" y="1" width="1" height="2" fill="#1e2152" />
       <rect x="10" y="1" width="1" height="2" fill="#1e2152" />
+      {movimientoEnSitio && (
+        <>
+          <rect
+            x="2"
+            y="3"
+            width="1"
+            height="1"
+            fill="#f7c96f"
+            className={estilos.destelloIzquierdo}
+          />
+          <rect
+            x="13"
+            y="2"
+            width="1"
+            height="1"
+            fill="#f7c96f"
+            className={estilos.destelloDerecho}
+          />
+        </>
+      )}
       {/* Cabeza */}
       <rect x="5" y="3" width="6" height="3" fill="#1e2152" />
       <g
