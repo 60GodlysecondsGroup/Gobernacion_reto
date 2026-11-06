@@ -72,6 +72,42 @@ export const esquemaUbicacion = z
 
 export type Ubicacion = z.output<typeof esquemaUbicacion>;
 
+/** Mensajes del número de WhatsApp; el frontend usa los mismos (`lib/fuentes-validacion.ts`). */
+export const MENSAJES_WHATSAPP = {
+  indicativo:
+    'Escribe el celular con su indicativo internacional, empezando por + (p. ej. +57 300 123 4567).',
+  formato:
+    'Revisa el número: el indicativo no empieza por 0 y el número completo tiene de 8 a 15 dígitos.',
+  colombia:
+    'Un celular de Colombia (+57) tiene 10 dígitos y empieza por 3 (p. ej. +57 300 123 4567).',
+} as const;
+
+/** Quita los separadores que se suelen escribir: «+57 (300) 123-4567» → «+573001234567». */
+export const normalizarWhatsapp = (valor: string) => valor.replace(/[\s().-]/g, '');
+
+/**
+ * Celular de WhatsApp (opcional). Llega como lo escribe el equipo, con su indicativo, y se guarda
+ * en E.164 («+» y solo dígitos): así el enlace `https://wa.me/<dígitos>` sale siempre igual.
+ * En Colombia (+57) se exige un celular (10 dígitos que empiezan por 3): WhatsApp no funciona
+ * en una línea fija.
+ */
+const whatsapp = z.preprocess(
+  vacioANull,
+  z
+    .string()
+    .trim()
+    .max(30, maximo(30))
+    .regex(/^\+[0-9 ().-]+$/, MENSAJES_WHATSAPP.indicativo)
+    .transform(normalizarWhatsapp)
+    .refine((numero) => /^\+[1-9]\d{7,14}$/.test(numero), MENSAJES_WHATSAPP.formato)
+    .refine(
+      (numero) => !numero.startsWith('+57') || /^\+573\d{9}$/.test(numero),
+      MENSAJES_WHATSAPP.colombia,
+    )
+    .nullable()
+    .default(null),
+);
+
 const camposFuente = {
   institucion: texto(2, 120, 'Escribe el nombre de la institución (al menos 2 caracteres).'),
   servicio: texto(2, 120, 'Escribe el nombre del servicio o canal (al menos 2 caracteres).'),
@@ -100,6 +136,8 @@ const camposFuente = {
       .nullable()
       .default(null),
   ),
+  /** Celular para escribir por WhatsApp (opcional, en cualquier tipo de canal). */
+  whatsapp,
   /**
    * Texto del horario. Si llega `horarioSemanal`, se reemplaza por su versión legible (que puede
    * pasar de 200 caracteres); si no, es texto libre de hasta 200 (ver `textoHorarioLibre`).

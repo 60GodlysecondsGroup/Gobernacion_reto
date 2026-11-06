@@ -59,6 +59,8 @@ function inicial(props: Props): DatosNuevaFuente {
       tipoCanal: f.tipoCanal,
       telefono: f.telefono ?? '',
       enlace: f.enlace ?? '',
+      // `?? ''`: también si la API aún no envía el campo (base sin la migración 0014).
+      whatsapp: f.whatsapp ?? '',
       horario: f.horario ?? '',
       horarioSemanal: f.horarioSemanal,
       direccion: f.direccion ?? '',
@@ -78,6 +80,7 @@ function inicial(props: Props): DatosNuevaFuente {
     tipoCanal: 'telefono',
     telefono: '',
     enlace: '',
+    whatsapp: '',
     horario: '',
     horarioSemanal: null,
     direccion: '',
@@ -99,6 +102,7 @@ const aEdicion = (datos: DatosNuevaFuente): DatosFuente => ({
   tipoCanal: datos.tipoCanal,
   telefono: datos.telefono,
   enlace: datos.enlace,
+  whatsapp: datos.whatsapp,
   horario: datos.horario,
   horarioSemanal: datos.horarioSemanal,
   direccion: datos.direccion,
@@ -126,6 +130,7 @@ type CampoTextoFuente =
   | 'descripcion'
   | 'telefono'
   | 'enlace'
+  | 'whatsapp'
   | 'direccion'
   | 'fuenteOriginal'
   | 'observaciones'
@@ -346,6 +351,18 @@ export function FormularioFuente(props: Props) {
             placeholder="https://"
             autoComplete="off"
             {...campo('enlace')}
+          />
+        </div>
+        <div className={estilos.dosColumnas}>
+          <CampoTexto
+            etiqueta="Número de WhatsApp (opcional)"
+            ayuda="Celular con indicativo internacional, p. ej. +57 300 123 4567. La ficha muestra «Contactar vía WhatsApp»."
+            type="tel"
+            inputMode="tel"
+            placeholder="+57 300 123 4567"
+            maxLength={30}
+            autoComplete="off"
+            {...campo('whatsapp')}
           />
         </div>
       </SeccionFormulario>

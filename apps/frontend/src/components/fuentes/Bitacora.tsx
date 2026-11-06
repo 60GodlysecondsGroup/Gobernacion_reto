@@ -22,6 +22,7 @@ const CAMPOS: Record<string, string> = {
   tipoCanal: 'Tipo de canal',
   telefono: 'Teléfono',
   enlace: 'Enlace',
+  whatsapp: 'WhatsApp',
   horario: 'Horario',
   horarioSemanal: 'Horario semanal',
   direccion: 'Dirección',

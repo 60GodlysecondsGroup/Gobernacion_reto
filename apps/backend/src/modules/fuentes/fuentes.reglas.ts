@@ -38,6 +38,7 @@ export const CAMPOS_FUENTE = [
   'tipoCanal',
   'telefono',
   'enlace',
+  'whatsapp',
   'horario',
   'horarioSemanal',
   'direccion',

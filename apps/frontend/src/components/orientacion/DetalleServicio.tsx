@@ -17,6 +17,7 @@ import { ESTADOS_FUENTE, TIPOS_CANAL } from '@/config/fuentes';
 import type { FichaServicio } from '@/lib/api/orientacion';
 import { formatearFecha } from '@/lib/fechas';
 import { dominio, hrefTelefono, IconoCanal } from './ContactoServicio';
+import { ContactoWhatsApp } from './ContactoWhatsApp';
 import estilos from './DetalleServicio.module.css';
 import { HorarioAtencion, tieneHorario } from './HorarioAtencion';
 import { ModalFicha } from './ModalFicha';
@@ -70,7 +71,8 @@ export function ModalServicio({
  * Contenido completo de la ficha, de lo general a lo concreto:
  * 1. Estado y verificación, y los avisos (en revisión, demostración).
  * 2. Qué ofrece: la descripción como texto principal y sus temas.
- * 3. Cómo usarlo, en tarjetas: contacto (teléfono, enlace), horario de atención y dónde queda.
+ * 3. Cómo usarlo, en tarjetas: contacto (teléfono, enlace y, si lo tiene, WhatsApp), horario de
+ *    atención y dónde queda (el mapa y sus botones abren el punto registrado en Google Maps).
  *    En pantallas amplias van en dos columnas: el contacto siempre a la izquierda; con mapa, el
  *    horario debajo del contacto y el mapa a la derecha; sin mapa, el horario a la derecha.
  * 4. Fuente y verificación, y el aviso de la plataforma.
@@ -84,6 +86,8 @@ export function DetalleServicio({ servicio }: { servicio: FichaServicio }) {
   const idFuente = useId();
   const estado = ESTADOS_FUENTE[servicio.estado];
   const { telefono, enlace, esDemo } = servicio;
+  // `|| null`: también si la API aún no envía el campo (base sin la migración 0014).
+  const whatsapp = servicio.whatsapp || null;
   const esChat = servicio.tipoCanal === 'chat';
   const conMapa = Boolean(servicio.ubicacion);
   const conUbicacion = conMapa || Boolean(servicio.direccion);
@@ -106,7 +110,7 @@ export function DetalleServicio({ servicio }: { servicio: FichaServicio }) {
         </span>
       </div>
 
-      {telefono || enlace ? (
+      {telefono || enlace || whatsapp ? (
         <ul className={estilos.filas} aria-label="Datos de contacto">
           {telefono && (
             <li>
@@ -131,6 +135,11 @@ export function DetalleServicio({ servicio }: { servicio: FichaServicio }) {
                 externo
                 etiqueta={`Abrir ${dominio(enlace)} (sitio oficial, se abre en otra pestaña)`}
               />
+            </li>
+          )}
+          {whatsapp && (
+            <li>
+              <ContactoWhatsApp numero={whatsapp} servicio={servicio.servicio} esDemo={esDemo} />
             </li>
           )}
         </ul>
