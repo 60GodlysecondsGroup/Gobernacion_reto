@@ -89,6 +89,8 @@ describe('TRL-09 · Orientación institucional', () => {
       tipoCanal: 'telefono',
       telefono: '000 000 0000',
       enlace: null,
+      // Fuente registrada antes del WhatsApp: sin número, la ficha no muestra el botón.
+      whatsapp: null,
       horario: 'Horario de demostración',
       // Fuente registrada antes del horario semanal: solo el texto (la ficha lo muestra tal cual).
       horarioSemanal: null,
@@ -648,6 +650,132 @@ describe('Ubicación de fuentes presenciales', () => {
       const busqueda = await gestor.get('/api/gestion/fuentes/lugares/sugerencias?texto=gober');
       expect(busqueda.status).toBe(503);
       expect(busqueda.body.error.codigo).toBe('LUGARES_NO_CONFIGURADO');
+    });
+  });
+});
+
+describe('Número de WhatsApp de las fuentes', () => {
+  const nueva = {
+    institucion: 'InstituciónDemo',
+    servicio: 'Canal con WhatsApp de prueba',
+    descripcion: 'Registro ficticio con WhatsApp y sede, creado por una prueba.',
+    tipoCanal: 'presencial',
+    fuenteOriginal: 'Prueba automatizada',
+    necesidades: ['informacion_institucional'],
+    esDemo: false,
+    estado: 'activo',
+    fechaVerificacion: hoyEnColombia(),
+    ubicacion: {
+      latitud: 4.151235,
+      longitud: -73.639877,
+      placeId: null,
+      direccion: 'Cl. 38 #30-25, Villavicencio, Meta, Colombia',
+    },
+  };
+  const editable = (f: Record<string, unknown> & { necesidades: { codigo: string }[] }) => ({
+    institucion: f.institucion,
+    servicio: f.servicio,
+    descripcion: f.descripcion,
+    tipoCanal: f.tipoCanal,
+    telefono: f.telefono,
+    enlace: f.enlace,
+    whatsapp: f.whatsapp,
+    horario: f.horario,
+    horarioSemanal: f.horarioSemanal,
+    direccion: f.direccion,
+    ubicacion: f.ubicacion,
+    fuenteOriginal: f.fuenteOriginal,
+    necesidades: f.necesidades.map((n) => n.codigo),
+    observaciones: f.observaciones,
+    esDemo: f.esDemo,
+  });
+
+  it('crear, consultar, editar y quitar el WhatsApp sin tocar el resto de la fuente', async () => {
+    await enTransaccionRevertida(async (enTx, cliente) => {
+      const gestor = await entrar(enTx, 'Gestor_001');
+
+      // Se escribe como se suele copiar y se guarda normalizado (E.164).
+      const creada = await gestor.post('/api/gestion/fuentes', {
+        ...nueva,
+        whatsapp: '+57 (300) 000-0000',
+      });
+      expect(creada.status).toBe(201);
+      expect(creada.body.fuente).toMatchObject({
+        whatsapp: '+573000000000',
+        ubicacion: nueva.ubicacion,
+      });
+      const id = creada.body.fuente.id as string;
+      const ruta = `/api/gestion/fuentes/${id}`;
+
+      // La ficha pública y las listas lo reciben, sin sesión.
+      const ficha = await request(enTx).get(`/api/orientacion/servicios/${id}`);
+      expect(ficha.body.servicio).toMatchObject({
+        whatsapp: '+573000000000',
+        ubicacion: nueva.ubicacion,
+      });
+      const lista = await request(enTx).get(
+        '/api/orientacion/necesidades/informacion_institucional',
+      );
+      expect(lista.body.servicios.find((s: { id: string }) => s.id === id).whatsapp).toBe(
+        '+573000000000',
+      );
+
+      // Editar el número: queda en la bitácora con el valor anterior.
+      const datos = editable((await gestor.get(ruta)).body.fuente);
+      const igual = await gestor.put(ruta, { ...datos, whatsapp: '+57 300 000 0000' });
+      expect(igual.body.bitacora).toHaveLength(1);
+      const cambiada = await gestor.put(ruta, { ...datos, whatsapp: '+52 1 55 0000 0000' });
+      expect(cambiada.status).toBe(200);
+      expect(cambiada.body.fuente.whatsapp).toBe('+5215500000000');
+      expect(cambiada.body.bitacora[0].cambios).toEqual({
+        whatsapp: { antes: '+573000000000', despues: '+5215500000000' },
+      });
+
+      // Quitarlo (vacío): la fuente sigue igual y la ficha ya no lo trae.
+      const sinWhatsapp = await gestor.put(ruta, { ...datos, whatsapp: '' });
+      expect(sinWhatsapp.status).toBe(200);
+      expect(sinWhatsapp.body.fuente).toMatchObject({
+        whatsapp: null,
+        estado: 'activo',
+        ubicacion: nueva.ubicacion,
+      });
+      const fichaSin = await request(enTx).get(`/api/orientacion/servicios/${id}`);
+      expect(fichaSin.body.servicio.whatsapp).toBeNull();
+
+      // Números inválidos no se guardan.
+      for (const whatsapp of ['3000000000', '+57 300 000', '+57 601 000 0000', '+0 300 000 0000']) {
+        const invalida = await gestor.put(ruta, { ...datos, whatsapp });
+        expect(invalida.status).toBe(400);
+        expect(invalida.body.error.detalles).toEqual([
+          expect.objectContaining({ campo: 'whatsapp' }),
+        ]);
+      }
+      expect((await gestor.get(ruta)).body.fuente.whatsapp).toBeNull();
+
+      // La base también exige el formato, aunque alguien escriba sin pasar por la API.
+      await expect(
+        cliente.query(
+          `update app.fuente_institucional set whatsapp = '300 000 0000' where id_fuente = $1`,
+          [id],
+        ),
+      ).rejects.toThrow(/fuente_whatsapp_formato/);
+    });
+  });
+
+  it('las fuentes registradas antes siguen sin WhatsApp y se editan igual', async () => {
+    await enTransaccionRevertida(async (enTx) => {
+      const gestor = await entrar(enTx, 'Gestor_001');
+      const ruta = `/api/gestion/fuentes/${ids['demo-canal-demo']}`;
+      const { fuente } = (await gestor.get(ruta)).body;
+      expect(fuente.whatsapp).toBeNull();
+      const ficha = await request(enTx).get(`/api/orientacion/servicios/${ids['demo-canal-demo']}`);
+      expect(ficha.body.servicio.whatsapp).toBeNull();
+
+      // Un cliente anterior que no envía el campo sigue pudiendo editar.
+      const { whatsapp: _whatsapp, ...anterior } = editable(fuente);
+      const editada = await gestor.put(ruta, { ...anterior, observaciones: 'Nota de prueba' });
+      expect(editada.status).toBe(200);
+      expect(Object.keys(editada.body.bitacora[0].cambios)).toEqual(['observaciones']);
     });
   });
 });

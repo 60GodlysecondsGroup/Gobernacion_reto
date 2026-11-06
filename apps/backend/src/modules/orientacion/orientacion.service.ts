@@ -23,6 +23,7 @@ export type FichaServicio = Pick<
   | 'tipoCanal'
   | 'telefono'
   | 'enlace'
+  | 'whatsapp'
   | 'horario'
   | 'horarioSemanal'
   | 'direccion'
@@ -42,6 +43,7 @@ const aFicha = (fuente: FuenteRegistrada): FichaServicio => ({
   tipoCanal: fuente.tipoCanal,
   telefono: fuente.telefono,
   enlace: fuente.enlace,
+  whatsapp: fuente.whatsapp,
   horario: fuente.horario,
   horarioSemanal: fuente.horarioSemanal,
   direccion: fuente.direccion,
