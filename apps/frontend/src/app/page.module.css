@@ -1007,3 +1007,25 @@
   translate: 0 0;
   scale: 0.99;
 }
+
+/* ─── Móvil: textos sin transiciones ─────────────────────────────────────────
+   Las garantías, la descripción de salas y los textos de la tarjeta de ayuda aparecen ya en su
+   sitio (la tarjeta, el icono y el enlace conservan su animación). El título del héroe muestra
+   desde el primer pintado la frase final que ya se reserva en la misma celda: sin escritura,
+   sin hueco y sin salto. Escritorio y tableta (≥ 48rem) no cambian. */
+@media (max-width: 47.99rem) {
+  .garantias li,
+  .entradaJuegos .textoJuegos > p:not(.antetituloSeccion),
+  a.ayuda .textoAyuda strong,
+  a.ayuda .textoAyuda span {
+    animation: none;
+  }
+
+  .reserva {
+    visibility: visible;
+  }
+
+  .frase {
+    visibility: hidden;
+  }
+}

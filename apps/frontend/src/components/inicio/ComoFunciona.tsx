@@ -26,6 +26,7 @@ import Link from 'next/link';
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { TextoRevelado } from '@/components/movimiento/TextoRevelado';
 import FoldText from '@/components/react-bits/FoldText';
+import { useTextoEstatico } from '@/lib/hooks/useTextoEstatico';
 import estilos from './ComoFunciona.module.css';
 
 type Etapa = {
@@ -131,6 +132,7 @@ const ETAPAS: Etapa[] = [
 export function ComoFunciona() {
   const [activa, setActiva] = useState(0);
   const reducir = useReducedMotion();
+  const estatico = useTextoEstatico();
   const resorte = reducir
     ? { duration: 0 }
     : ({ type: 'spring', stiffness: 300, damping: 30 } as const);
@@ -243,9 +245,14 @@ export function ComoFunciona() {
           <motion.div
             key={etapa.id}
             className={estilos.contenidoPanel}
-            initial={{ opacity: 0, y: 14 }}
+            // Móvil: el contenido del paso cambia directamente (la ilustración conserva su mosaico).
+            initial={estatico ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8, transition: { duration: reducir ? 0 : 0.14 } }}
+            exit={
+              estatico
+                ? undefined
+                : { opacity: 0, y: -8, transition: { duration: reducir ? 0 : 0.14 } }
+            }
             transition={resorte}
           >
             <div className={`${estilos.ilustracion} mosaico`} aria-hidden="true">

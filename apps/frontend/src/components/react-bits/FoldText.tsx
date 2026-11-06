@@ -8,6 +8,8 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react';
+import { useTextoEstatico } from '@/lib/hooks/useTextoEstatico';
+import { CONSULTA_TEXTO_ESTATICO } from '@/lib/movimiento';
 import estilos from './FoldText.module.css';
 
 /*
@@ -20,6 +22,8 @@ import estilos from './FoldText.module.css';
  *  - `trigger="scroll"` usa IntersectionObserver (mismo punto: cuando la parte superior llega al
  *    82 % de la pantalla).
  *  - Estilos en CSS Modules.
+ *  - En móvil no se pliega: el texto se ve tal cual, sin bucle de animación ni escuchas del
+ *    puntero (el CSS lo deja visible también antes de hidratar).
  */
 
 type Hinge = 'top' | 'bottom' | 'left' | 'right';
@@ -165,6 +169,7 @@ export default function FoldText({
   const safeRadius = Math.max(1, refoldRadius);
   const safeRefold = clamp(refoldAngle, 0, 180);
   const startsFolded = trigger !== 'hover';
+  const estatico = useTextoEstatico();
 
   const segments = useMemo(() => {
     const renderPiece = (content: string, key: string, isLine = false) => (
@@ -226,6 +231,8 @@ export default function FoldText({
   useIsomorphicLayoutEffect(() => {
     const root = rootRef.current;
     if (!root) return undefined;
+    // Se consulta aquí también: en la hidratación `estatico` aún vale lo del servidor (escritorio).
+    if (estatico || window.matchMedia(CONSULTA_TEXTO_ESTATICO).matches) return undefined;
     const elements = Array.from(root.querySelectorAll<HTMLElement>(`.${estilos.piece}`));
     if (!elements.length) return undefined;
 
@@ -447,6 +454,7 @@ export default function FoldText({
     safeRadius,
     safeRefold,
     startsFolded,
+    estatico,
   ]);
 
   const rootStyle = {

@@ -4,6 +4,7 @@ import { useReducedMotion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import ShinyText from '@/components/react-bits/ShinyText';
 import TextType from '@/components/react-bits/TextType';
+import { useTextoEstatico } from '@/lib/hooks/useTextoEstatico';
 import estilos from '@/app/page.module.css';
 
 const INICIO = 'Un espacio para ';
@@ -33,13 +34,15 @@ const Resalte = () => (
  * encadenados para que «crecer, conectar y compartir» salga ya en morado y, al terminar, pase a
  * ShinyText sin cambio de color. Solo el tramo que se escribe lleva cursor; al final no queda.
  * La frase completa se reserva invisible en la misma celda (el alto no cambia mientras escribe)
- * y los lectores de pantalla leen la etiqueta del título, no cada letra.
+ * y los lectores de pantalla leen la etiqueta del título, no cada letra. En móvil se muestra
+ * terminado (sin escritura ni temporizadores); el CSS enseña la reserva desde el primer pintado.
  */
 export function TituloHeroe() {
   const reducir = useReducedMotion();
+  const estatico = useTextoEstatico();
   // Tramo que se está escribiendo (0–2); 3 = terminado.
   const [fase, setFase] = useState(0);
-  const terminado = reducir || fase >= TRAMOS.length;
+  const terminado = reducir || estatico || fase >= TRAMOS.length;
 
   useEffect(() => {
     if (terminado) return;

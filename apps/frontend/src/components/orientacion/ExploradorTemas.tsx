@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useEffect, useId, useRef, useState } from 'react';
 import { Inclinable } from '@/components/movimiento/Inclinable';
 import type { Necesidad } from '@/lib/api/orientacion';
+import { useTextoEstatico } from '@/lib/hooks/useTextoEstatico';
 import { anguloDe, giroHacia } from '@/lib/ruleta';
 import { EscenaEdificio } from './EscenaEdificio';
 import estilos from './Orientacion.module.css';
@@ -14,6 +15,7 @@ import {
   barridoMarco,
   espiralRuleta,
   estadosRotulo,
+  estadosRotuloInmediato,
 } from './movimientoExplorador';
 import { RuletaTemas } from './RuletaTemas';
 
@@ -82,6 +84,8 @@ export function ExploradorTemas({
   // La ruleta encaja → destella y el edificio sube. Hasta entonces todo arranca oculto desde el
   // primer pintado (estilos iniciales de Motion), así que no hay destello de carga.
   const [encajada, setEncajada] = useState(false);
+  // Móvil: la ayuda y el rótulo aparecen en el mismo momento (al encajar), pero sin fundido.
+  const estatico = useTextoEstatico();
   // Respaldo: si el aviso de fin de la espiral no llega (pestaña en segundo plano, animación
   // interrumpida), el edificio y el rótulo aparecen igualmente a su hora.
   useEffect(() => {
@@ -116,7 +120,7 @@ export function ExploradorTemas({
           className={estilos.ayudaRuleta}
           initial={{ opacity: 0 }}
           animate={{ opacity: encajada ? 1 : 0 }}
-          transition={{ duration: 0.4 }}
+          transition={{ duration: estatico ? 0 : 0.4 }}
         >
           <span className={estilos.ayudaPuntero}>Elige un tema con un clic o con las flechas</span>
           <span className={estilos.ayudaTactil}>Toca un tema para elegirlo</span> y su edificio
@@ -145,7 +149,7 @@ export function ExploradorTemas({
           <motion.span
             key={necesidad.codigo}
             className={estilos.rotulo}
-            variants={estadosRotulo}
+            variants={estatico ? estadosRotuloInmediato : estadosRotulo}
             initial="esperando"
             animate={encajada ? 'visible' : 'esperando'}
           >

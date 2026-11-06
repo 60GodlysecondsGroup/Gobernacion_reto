@@ -40,3 +40,13 @@
   display: inline-block;
   white-space: nowrap;
 }
+
+/* Móvil: el texto se ve desde el primer pintado, aunque el HTML del servidor traiga el estado
+   inicial de la entrada animada (que en móvil no se ejecuta). */
+@media (max-width: 47.99rem) {
+  .palabra {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+}

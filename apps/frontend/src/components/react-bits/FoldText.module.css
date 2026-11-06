@@ -125,3 +125,18 @@
     opacity: 0 !important;
   }
 }
+
+/* Móvil: sin pliegue. El texto se ve desde el primer pintado (el HTML trae las piezas ocultas
+   para el despliegue de escritorio) y sin sombra de doblez. */
+@media (max-width: 47.99rem) {
+  .piece,
+  .slat {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .piece::after,
+  .slat::after {
+    opacity: 0 !important;
+  }
+}

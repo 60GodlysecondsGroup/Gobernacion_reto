@@ -8,6 +8,7 @@ import {
   useSpring,
 } from 'motion/react';
 import { useRef, useState, type PointerEvent } from 'react';
+import { useTextoEstatico } from '@/lib/hooks/useTextoEstatico';
 import estilos from './TextoLuminosa.module.css';
 
 const contenedor = {
@@ -28,8 +29,10 @@ const palabra = {
 
 export function TextoLuminosa({ texto, className }: { texto: string; className: string }) {
   const reducirMovimiento = useReducedMotion() ?? false;
+  // Móvil: las palabras no entran animadas (spans simples); la luz al tocar se conserva.
+  const estatico = useTextoEstatico();
   const [animacionCompleta, setAnimacionCompleta] = useState(false);
-  const entradaCompleta = reducirMovimiento || animacionCompleta;
+  const entradaCompleta = reducirMovimiento || estatico || animacionCompleta;
   const elemento = useRef<HTMLParagraphElement>(null);
   const x = useMotionValue(50);
   const y = useMotionValue(50);
@@ -86,6 +89,10 @@ export function TextoLuminosa({ texto, className }: { texto: string; className: 
       {texto.split(/(\s+)/u).map((parte, indice) =>
         /^\s+$/u.test(parte) ? (
           parte
+        ) : estatico ? (
+          <span key={indice} className={estilos.palabra}>
+            {parte}
+          </span>
         ) : (
           <motion.span key={indice} variants={palabra} className={estilos.palabra}>
             {parte}

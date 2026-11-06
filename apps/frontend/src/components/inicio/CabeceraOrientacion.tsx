@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'motion/react';
+import { useTextoEstatico } from '@/lib/hooks/useTextoEstatico';
 import { useEstiloScrollOrientacion } from './SeccionOrientacion';
 
 type Props = {
@@ -8,7 +9,29 @@ type Props = {
   antetituloClassName: string;
 };
 
-export function CabeceraOrientacion({ className, antetituloClassName }: Props) {
+const DESCRIPCION =
+  'No necesitas iniciar sesión. Aquí no hay preguntas sobre ti ni resultados: solo información de instituciones.';
+
+/**
+ * Móvil: los textos aparecen ya en su sitio. Sin la versión animada no se registran sus escuchas
+ * de scroll (la sección conserva su propio movimiento).
+ */
+export function CabeceraOrientacion(props: Props) {
+  const estatico = useTextoEstatico();
+  return estatico ? <CabeceraEstatica {...props} /> : <CabeceraAnimada {...props} />;
+}
+
+function CabeceraEstatica({ className, antetituloClassName }: Props) {
+  return (
+    <div className={className}>
+      <p className={antetituloClassName}>Orientación</p>
+      <h2 id="titulo-orientacion">¿Qué información buscas hoy?</h2>
+      <p>{DESCRIPCION}</p>
+    </div>
+  );
+}
+
+function CabeceraAnimada({ className, antetituloClassName }: Props) {
   // Antetítulo primero; título y descripción justo después.
   const { ref: refAntetitulo, style: estiloAntetitulo } = useEstiloScrollOrientacion(0);
   const { ref: refTitulo, style: estiloTitulo } = useEstiloScrollOrientacion(0.08);
@@ -34,8 +57,7 @@ export function CabeceraOrientacion({ className, antetituloClassName }: Props) {
         ref={refDescripcion as React.RefObject<HTMLParagraphElement | null>}
         style={estiloDescripcion}
       >
-        No necesitas iniciar sesión. Aquí no hay preguntas sobre ti ni resultados: solo información
-        de instituciones.
+        {DESCRIPCION}
       </motion.p>
     </div>
   );

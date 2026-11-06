@@ -62,3 +62,9 @@ export const estadosRotulo: Variants = {
     transition: { duration: 0.45, ease: CURVA_SALIDA },
   },
 };
+
+/** Móvil: el rótulo aparece de golpe al encajar (mismos estados, sin fundido ni enfoque). */
+export const estadosRotuloInmediato: Variants = {
+  esperando: { opacity: 0, scale: 0.95, filter: 'blur(4px)' },
+  visible: { opacity: 1, scale: 1, filter: 'blur(0px)', transition: { duration: 0 } },
+};

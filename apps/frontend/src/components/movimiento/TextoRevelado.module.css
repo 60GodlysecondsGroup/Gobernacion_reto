@@ -24,7 +24,8 @@
   transform-origin: 50% 100%;
 }
 
-@media (prefers-reduced-motion: no-preference) {
+/* Solo desde 48rem: en móvil el texto aparece directamente, sin animación (ver `movimiento.ts`). */
+@media (prefers-reduced-motion: no-preference) and (min-width: 48rem) {
   /* ── Al cargar ─────────────────────────────── */
   .texto[data-cuando='montaje'] .interior {
     animation-duration: 820ms;
@@ -54,7 +55,7 @@
 
 /* ── Ligado al scroll: cada pieza termina un poco después que la anterior ── */
 @supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
+  @media (prefers-reduced-motion: no-preference) and (min-width: 48rem) {
     .texto[data-cuando='scroll'] {
       view-timeline-name: --texto-revelado;
     }

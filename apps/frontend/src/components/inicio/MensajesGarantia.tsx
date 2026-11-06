@@ -3,6 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
+import { useTextoEstatico } from '@/lib/hooks/useTextoEstatico';
 import estilos from './MensajesGarantia.module.css';
 
 const POSICIONES = [0, 1, 2] as const;
@@ -44,6 +45,8 @@ function MensajeGarantia({
   indice: number;
 }) {
   const reducirMovimiento = useReducedMotion() ?? false;
+  // Móvil: el mensaje cambia directamente (texto simple, sin letras animadas ni medidas de layout).
+  const estatico = useTextoEstatico();
   const mensajes = MENSAJES_POR_POSICION[posicion];
   const mensaje = mensajes[indice]!;
   const letras = contarLetras(mensaje);
@@ -59,33 +62,39 @@ function MensajeGarantia({
           )}
         </span>
         <span className={estilos.mensaje} aria-hidden="true">
-          <AnimatePresence initial={false} mode="popLayout">
-            {letras.map(({ letra, clave }, indiceLetra) =>
-              clave === null ? (
-                <span key={`espacio-${indiceLetra}`}> </span>
-              ) : (
-                <motion.span
-                  key={clave}
-                  className={estilos.letra}
-                  layout="position"
-                  initial={reducirMovimiento ? false : { opacity: 0, y: 7, filter: 'blur(3px)' }}
-                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                  exit={
-                    reducirMovimiento ? { opacity: 0 } : { opacity: 0, y: -7, filter: 'blur(3px)' }
-                  }
-                  transition={{
-                    layout: {
-                      duration: reducirMovimiento ? 0 : 0.65,
-                      ease: [0.22, 1, 0.36, 1],
-                    },
-                    duration: reducirMovimiento ? 0 : 0.28,
-                  }}
-                >
-                  {letra}
-                </motion.span>
-              ),
-            )}
-          </AnimatePresence>
+          {estatico ? (
+            mensaje
+          ) : (
+            <AnimatePresence initial={false} mode="popLayout">
+              {letras.map(({ letra, clave }, indiceLetra) =>
+                clave === null ? (
+                  <span key={`espacio-${indiceLetra}`}> </span>
+                ) : (
+                  <motion.span
+                    key={clave}
+                    className={estilos.letra}
+                    layout="position"
+                    initial={reducirMovimiento ? false : { opacity: 0, y: 7, filter: 'blur(3px)' }}
+                    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                    exit={
+                      reducirMovimiento
+                        ? { opacity: 0 }
+                        : { opacity: 0, y: -7, filter: 'blur(3px)' }
+                    }
+                    transition={{
+                      layout: {
+                        duration: reducirMovimiento ? 0 : 0.65,
+                        ease: [0.22, 1, 0.36, 1],
+                      },
+                      duration: reducirMovimiento ? 0 : 0.28,
+                    }}
+                  >
+                    {letra}
+                  </motion.span>
+                ),
+              )}
+            </AnimatePresence>
+          )}
         </span>
         <span className="visualmente-oculto" aria-live="polite" aria-atomic="true">
           {mensaje}

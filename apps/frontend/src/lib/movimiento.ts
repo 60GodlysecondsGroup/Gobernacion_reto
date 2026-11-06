@@ -30,3 +30,10 @@ export const DESPLAZAMIENTO_ENTRADA = 14;
 
 /** Separación entre elementos relacionados de una lista. */
 export const PASO_ESCALONADO = 0.05;
+
+/**
+ * Móvil (mismo punto de quiebre que `tokens.css`): las transiciones de TEXTO se desactivan y el
+ * texto aparece ya en su sitio. Escritorio y tableta (≥ 48rem) conservan sus animaciones. El CSS
+ * usa la misma consulta (`@media (max-width: 47.99rem)` / `(min-width: 48rem)`).
+ */
+export const CONSULTA_TEXTO_ESTATICO = '(max-width: 47.99rem)';
