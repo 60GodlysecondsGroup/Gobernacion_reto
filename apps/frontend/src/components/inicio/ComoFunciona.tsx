@@ -25,6 +25,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import Link from 'next/link';
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { TextoRevelado } from '@/components/movimiento/TextoRevelado';
+import FoldText from '@/components/react-bits/FoldText';
 import estilos from './ComoFunciona.module.css';
 
 type Etapa = {
@@ -164,14 +165,25 @@ export function ComoFunciona() {
           cuando="scroll"
           tramos={['Cómo funciona']}
         />
-        <TextoRevelado
-          as="h2"
-          id={`${base}-titulo`}
-          className={estilos.titulo}
-          efecto="inclinado"
-          cuando="scroll"
-          tramos={['Seis pasos para sentirte en casa']}
-        />
+        <h2 id={`${base}-titulo`} className={estilos.titulo}>
+          <FoldText
+            text="Seis pasos para sentirte en casa"
+            foldStyle="paper"
+            splitBy="char"
+            hinge="top"
+            trigger="scroll"
+            foldAngle={92}
+            duration={0.65}
+            stagger={0.03}
+            staggerFrom="start"
+            ease="power3.out"
+            perspective={700}
+            creaseShading={0.55}
+            fontSize="inherit"
+            fontWeight="inherit"
+            style={{ lineHeight: 'inherit', letterSpacing: 'inherit' }}
+          />
+        </h2>
 
         <div
           className={`${estilos.pasos} ${estilos.pasosVidrio}`}
