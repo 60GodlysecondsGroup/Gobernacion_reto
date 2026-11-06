@@ -3,25 +3,37 @@ import estilos from './Cocuyo.module.css';
 /** Expresiones opcionales: sin ellas, Cocuyo se dibuja exactamente igual que siempre. */
 export type ExpresionCocuyo = 'feliz' | 'triste' | 'tapado' | 'cerrado';
 
+/** Posición de las manos (las puntas de las alas) cuando se animan: ver `manos`. */
+export type ManosCocuyo = 'abajo' | 'tapando' | 'espiando';
+
 /**
  * Cocuyo, la guía virtual del proyecto: una luciérnaga del llano en pixel art, dibujada por código
  * (recurso original, RF28). No representa a la Gobernación del Meta ni a ninguna institución.
- * `mira` desplaza los ojos un píxel hacia un lado; `expresion` cambia unos pocos píxeles (sonrisa,
- * lágrima, alas sobre los ojos u ojos cerrados) sin cambiar el personaje.
+ * `mira` desplaza los ojos un píxel hacia un lado; `mirada` los lleva a cualquier punto entre -1 y
+ * 1 píxel en cada eje (con una transición corta) y tiene prioridad sobre `mira`. `expresion`
+ * cambia unos pocos píxeles (sonrisa, lágrima, alas sobre los ojos u ojos cerrados) sin cambiar el
+ * personaje. `manos` anima las puntas de las alas: abajo, tapando los ojos o espiando con uno.
  */
 export function Cocuyo({
   tamano = 40,
   encendido = true,
   mira,
+  mirada,
   expresion,
+  manos,
   movimientoEnSitio = false,
 }: {
   tamano?: number;
   encendido?: boolean;
   mira?: 'izquierda' | 'derecha';
+  mirada?: { x: number; y: number };
   expresion?: ExpresionCocuyo;
+  manos?: ManosCocuyo;
   movimientoEnSitio?: boolean;
 }) {
+  const ojos = mirada
+    ? { x: limitar(mirada.x), y: limitar(mirada.y) }
+    : { x: mira === 'izquierda' ? -1 : mira === 'derecha' ? 1 : 0, y: 0 };
   return (
     <svg
       width={tamano}
@@ -60,13 +72,9 @@ export function Cocuyo({
       {/* Cabeza */}
       <rect x="5" y="3" width="6" height="3" fill="#1e2152" />
       <g
-        transform={
-          mira === 'izquierda'
-            ? 'translate(-1 0)'
-            : mira === 'derecha'
-              ? 'translate(1 0)'
-              : undefined
-        }
+        className={mirada ? estilos.mirada : undefined}
+        style={mirada ? { transform: `translate(${ojos.x}px, ${ojos.y}px)` } : undefined}
+        transform={!mirada && ojos.x ? `translate(${ojos.x} 0)` : undefined}
       >
         {expresion === 'cerrado' ? (
           // Ojos cerrados: los párpados, sin el brillo blanco.
@@ -105,6 +113,19 @@ export function Cocuyo({
           <rect x="10" y="4" width="1" height="1" fill="#e7e8fa" />
         </>
       )}
+      {/* Manos animables: suben desde las alas a tapar los ojos; al espiar, la derecha baja un poco. */}
+      {manos && (
+        <g className={estilos.manos} data-manos={manos}>
+          <g className={estilos.manoIzquierda}>
+            <rect x="4" y="4" width="3" height="2" fill="#c7cbf5" />
+            <rect x="5" y="4" width="1" height="1" fill="#e7e8fa" />
+          </g>
+          <g className={estilos.manoDerecha}>
+            <rect x="9" y="4" width="3" height="2" fill="#c7cbf5" />
+            <rect x="10" y="4" width="1" height="1" fill="#e7e8fa" />
+          </g>
+        </g>
+      )}
       {/* Luz */}
       {encendido && (
         <rect
@@ -121,4 +142,9 @@ export function Cocuyo({
       <rect x="6" y="14" width="4" height="1" fill={encendido ? '#f7c96f' : '#8a7a5a'} />
     </svg>
   );
+}
+
+/** Los ojos no salen de la cabeza: como mucho un píxel en cada eje, en pasos de medio píxel. */
+function limitar(valor: number) {
+  return Math.round(Math.max(-1, Math.min(1, valor)) * 2) / 2;
 }

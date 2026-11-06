@@ -2,37 +2,67 @@
 
 import { animate, motion, useMotionValue, useReducedMotion } from 'motion/react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Cocuyo, type ExpresionCocuyo } from '@/components/guia/Cocuyo';
+import { Cocuyo, type ExpresionCocuyo, type ManosCocuyo } from '@/components/guia/Cocuyo';
 import { useSesion } from './ProveedorSesion';
 import estilos from './EscenaAcceso.module.css';
 
-type Modo = 'reposo' | 'mirar' | 'espaldas' | 'triste' | 'celebrar';
+type Modo = 'reposo' | 'mirar' | 'tapar' | 'triste' | 'celebrar';
+type Mirada = { x: number; y: number };
 
 const RESORTE = { type: 'spring', stiffness: 120, damping: 20, mass: 0.8 } as const;
 const DURACION_TRISTE = 2600;
 const SEPARACION = 16;
+/** Cada cuánto, con la contraseña oculta, Cocuyo abre una rendija para espiar (y cuánto dura). */
+const CADA_ESPIADA = 4200;
+const DURACION_ESPIADA = 850;
 
-/** Solo el nametag y la contraseña atraen a Cocuyo. */
+/** Solo el nametag (o el correo) y la contraseña atraen a Cocuyo. */
 const esCampoVigilado = (el: Element | null): el is HTMLInputElement =>
   el instanceof HTMLInputElement && (el.name === 'username' || el.name === 'password');
 
-/** Contraseña escrita y oculta: Cocuyo no mira. */
+/** Contraseña oculta: Cocuyo se tapa los ojos. */
 const modoDeCampo = (campo: HTMLInputElement): Modo =>
-  campo.name === 'password' && campo.type === 'password' ? 'espaldas' : 'mirar';
+  campo.name === 'password' && campo.type === 'password' ? 'tapar' : 'mirar';
+
+let lienzo: CanvasRenderingContext2D | null | undefined;
 
 /**
- * Escena del acceso: Cocuyo acompaña el formulario de iniciar sesión y de crear cuenta, siempre
- * por fuera de él (a la derecha; en pantallas estrechas, encima de las pestañas).
+ * Qué tan avanzado está el cursor dentro del campo (0 = al principio, 1 = al final del ancho
+ * visible). Mide el texto hasta el cursor con la misma fuente del campo; no toca el campo.
+ */
+function avanceDelCursor(campo: HTMLInputElement): number {
+  lienzo ??= document.createElement('canvas').getContext('2d');
+  if (!lienzo) return 0;
+  const cs = getComputedStyle(campo);
+  lienzo.font = cs.font || `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  const hasta = campo.selectionEnd ?? campo.value.length;
+  const texto = campo.type === 'password' ? '•'.repeat(hasta) : campo.value.slice(0, hasta);
+  const espaciado = Number.parseFloat(cs.letterSpacing) || 0;
+  const izquierda = Number.parseFloat(cs.paddingLeft) + Number.parseFloat(cs.borderLeftWidth);
+  const derecha = Number.parseFloat(cs.paddingRight) + Number.parseFloat(cs.borderRightWidth);
+  const util = campo.clientWidth - izquierda - derecha;
+  if (util <= 0) return 0;
+  const ancho = lienzo.measureText(texto).width + espaciado * texto.length - campo.scrollLeft;
+  return Math.max(0, Math.min(1, ancho / util));
+}
+
+/**
+ * Escena del acceso: Cocuyo acompaña los formularios de entrada (jóvenes y equipo) y el de crear
+ * cuenta, siempre por fuera de ellos (a la derecha; en pantallas estrechas, encima).
  *  - En reposo se queda quieto junto al formulario, solo flotando un poco.
- *  - Al tocar el nametag, se acerca a su altura y lo mira.
- *  - En la contraseña: si está visible, la mira; si está oculta (o se oculta con «Ocultar»), se
- *    voltea y cierra los ojos.
+ *  - Al tocar el nametag o el correo se acerca a su altura y sigue con los ojos lo que se escribe
+ *    (asiente con cada tecla e inclina la cabeza según dónde va el cursor).
+ *  - En la contraseña: si está visible, la lee igual; si está oculta, sube las alas y se tapa los
+ *    ojos (con cada tecla tiembla un poco y de vez en cuando espía con un ojo). Al pulsar
+ *    «Mostrar» se sorprende; al pulsar «Ocultar» niega con la cabeza y se vuelve a tapar.
  *  - Ante un error (aviso con `role="alert"`) se pone triste; cuando se abre la sesión, celebra.
- * No toca la lógica de los formularios: observa el foco, el tipo del campo, los avisos y la
- * sesión. Es decorativo (`aria-hidden`), no captura clics y con «reducir movimiento» no se anima.
+ * No toca la lógica de los formularios: observa el foco, el cursor, el tipo del campo, los avisos y
+ * la sesión. Es decorativo (`aria-hidden`), no captura clics y con «reducir movimiento» no se anima.
  */
 export function EscenaAcceso({ children }: { children: ReactNode }) {
   const escena = useRef<HTMLDivElement>(null);
+  const personaje = useRef<HTMLDivElement>(null);
+  const gesto = useRef<HTMLSpanElement>(null);
   const reducir = useReducedMotion();
   const { usuario, cargando } = useSesion();
   const x = useMotionValue(0);
@@ -42,13 +72,30 @@ export function EscenaAcceso({ children }: { children: ReactNode }) {
   const [visible, setVisible] = useState(false);
   const [lateral, setLateral] = useState(true);
   const [version, setVersion] = useState(0);
+  const [avance, setAvance] = useState(0);
+  const [espiando, setEspiando] = useState(false);
   const campoActivo = useRef<HTMLInputElement | null>(null);
   const huboSinSesion = useRef(false);
   const temporal = useRef(false); // triste o celebrando: el foco no lo interrumpe
+  const reducirRef = useRef(reducir);
+
+  useEffect(() => {
+    reducirRef.current = reducir;
+  }, [reducir]);
 
   const tamano = () => (window.innerWidth < 640 ? 36 : 46);
 
-  // Foco y visibilidad de la contraseña.
+  /** Un gesto corto sobre el personaje (sin pisar el que ya está en marcha). */
+  const hacerGesto = (fotogramas: Keyframe[], duracion: number, interrumpir = false) => {
+    const el = gesto.current;
+    if (!el || reducirRef.current || typeof el.animate !== 'function') return;
+    const enCurso = el.getAnimations();
+    if (enCurso.length && !interrumpir) return;
+    enCurso.forEach((a) => a.cancel());
+    el.animate(fotogramas, { duration: duracion, easing: 'cubic-bezier(0.3, 1.3, 0.5, 1)' });
+  };
+
+  // Foco, cursor y visibilidad de la contraseña.
   useEffect(() => {
     const raiz = escena.current;
     if (!raiz) return;
@@ -65,9 +112,15 @@ export function EscenaAcceso({ children }: { children: ReactNode }) {
       );
     };
 
+    const medir = () => {
+      const actual = campoActivo.current;
+      if (actual) setAvance(avanceDelCursor(actual));
+    };
+
     const fijarCampo = (nuevo: HTMLInputElement | null) => {
       campoActivo.current = nuevo;
       setCampo(nuevo);
+      if (nuevo) setAvance(avanceDelCursor(nuevo));
       if (!temporal.current) setModo(nuevo ? modoDeCampo(nuevo) : 'reposo');
     };
 
@@ -90,24 +143,102 @@ export function EscenaAcceso({ children }: { children: ReactNode }) {
       }, 150);
     };
 
+    // Cada tecla: los ojos siguen el cursor y Cocuyo asiente (o, tapado, tiembla un poco).
+    const alEscribir = (e: Event) => {
+      if (e.target !== campoActivo.current || temporal.current) return;
+      medir();
+      const tapado = modoDeCampo(campoActivo.current!) === 'tapar';
+      hacerGesto(
+        tapado
+          ? [
+              { transform: 'none' },
+              { transform: 'translateX(-1px) rotate(-3deg)' },
+              { transform: 'translateX(1px) rotate(3deg)' },
+              { transform: 'none' },
+            ]
+          : [
+              { transform: 'none' },
+              { transform: 'translateY(2px) rotate(-2deg)' },
+              { transform: 'none' },
+            ],
+        tapado ? 200 : 170,
+      );
+    };
+
+    // Mover el cursor con flechas, clic o selección también mueve la mirada.
+    const alMoverCursor = (e: Event) => {
+      if (e.target === campoActivo.current) medir();
+    };
+
     // «Mostrar» / «Ocultar» cambian el tipo del campo de contraseña.
     const tipos = new MutationObserver((cambios) => {
       for (const c of cambios) {
-        if (c.target === campoActivo.current && !temporal.current) {
-          setModo(modoDeCampo(c.target as HTMLInputElement));
+        const el = c.target as HTMLInputElement;
+        if (el !== campoActivo.current || temporal.current) continue;
+        const nuevo = modoDeCampo(el);
+        setModo(nuevo);
+        setAvance(avanceDelCursor(el));
+        if (nuevo === 'mirar') {
+          // ¡Sorpresa! Salta un poco al ver la contraseña.
+          hacerGesto(
+            [
+              { transform: 'none' },
+              { transform: 'translateY(-7px) scale(1.12)', offset: 0.35 },
+              { transform: 'translateY(0) scale(0.96, 1.04)', offset: 0.7 },
+              { transform: 'none' },
+            ],
+            460,
+            true,
+          );
+        } else {
+          // «No, no miro»: niega con la cabeza mientras sube las alas.
+          hacerGesto(
+            [
+              { transform: 'none' },
+              { transform: 'rotate(-9deg)' },
+              { transform: 'rotate(8deg)' },
+              { transform: 'rotate(-5deg)' },
+              { transform: 'none' },
+            ],
+            480,
+            true,
+          );
         }
       }
     });
     tipos.observe(raiz, { attributes: true, attributeFilter: ['type'], subtree: true });
     raiz.addEventListener('focusin', alEnfocar);
     raiz.addEventListener('focusout', alDesenfocar);
+    raiz.addEventListener('input', alEscribir);
+    raiz.addEventListener('keyup', alMoverCursor);
+    raiz.addEventListener('pointerup', alMoverCursor);
+    raiz.addEventListener('select', alMoverCursor);
     return () => {
       clearTimeout(salida);
       tipos.disconnect();
       raiz.removeEventListener('focusin', alEnfocar);
       raiz.removeEventListener('focusout', alDesenfocar);
+      raiz.removeEventListener('input', alEscribir);
+      raiz.removeEventListener('keyup', alMoverCursor);
+      raiz.removeEventListener('pointerup', alMoverCursor);
+      raiz.removeEventListener('select', alMoverCursor);
     };
   }, []);
+
+  // Tapado, de vez en cuando abre una rendija y espía con un ojo.
+  useEffect(() => {
+    if (modo !== 'tapar' || reducir) return;
+    let cerrar: ReturnType<typeof setTimeout> | undefined;
+    const ciclo = setInterval(() => {
+      setEspiando(true);
+      cerrar = setTimeout(() => setEspiando(false), DURACION_ESPIADA);
+    }, CADA_ESPIADA);
+    return () => {
+      clearInterval(ciclo);
+      clearTimeout(cerrar);
+      setEspiando(false);
+    };
+  }, [modo, reducir]);
 
   // Errores: un aviso nuevo con role="alert" lo entristece un momento.
   useEffect(() => {
@@ -166,7 +297,9 @@ export function EscenaAcceso({ children }: { children: ReactNode }) {
     observador.observe(raiz);
     // Las entradas animadas del formulario lo desplazan un momento: al terminar, se vuelve a medir
     // para que Cocuyo quede siempre fuera de él.
-    const remedir = () => {
+    const remedir = (e: Event) => {
+      // Las de Cocuyo (alas, ojos, gestos) no mueven el formulario.
+      if (e.target instanceof Node && personaje.current?.contains(e.target)) return;
       cancelAnimationFrame(pendiente);
       pendiente = requestAnimationFrame(() => setVersion((v) => v + 1));
     };
@@ -200,10 +333,15 @@ export function EscenaAcceso({ children }: { children: ReactNode }) {
       const centro = ref ? ref.top - base.top + ref.height / 2 : r.top - base.top + 40;
       destino = { x: derecha, y: centro - t / 2 };
     } else {
-      // Sin sitio al lado: encima de las pestañas, en su extremo derecho.
+      // Sin sitio al lado: encima de las pestañas, en su extremo derecho. Sin pestañas (acceso del
+      // equipo), posado sobre el borde de arriba de la tarjeta, sin pisar el texto de encima.
       const pestanas = raiz.querySelector<HTMLElement>('[role="tablist"]');
-      const arriba = (pestanas ?? panel).getBoundingClientRect();
-      destino = { x: arriba.right - base.left - t, y: arriba.top - base.top - t - 8 };
+      if (pestanas) {
+        const arriba = pestanas.getBoundingClientRect();
+        destino = { x: arriba.right - base.left - t, y: arriba.top - base.top - t - 8 };
+      } else {
+        destino = { x: r.right - base.left - t - 14, y: r.top - base.top - t * 0.62 };
+      }
     }
     const mostrar = setTimeout(() => {
       setLateral(hayLado);
@@ -223,20 +361,29 @@ export function EscenaAcceso({ children }: { children: ReactNode }) {
   }, [campo, version, reducir, visible]);
 
   const expresion: ExpresionCocuyo | undefined =
-    modo === 'espaldas'
-      ? 'cerrado'
-      : modo === 'triste'
-        ? 'triste'
-        : modo === 'celebrar'
-          ? 'feliz'
-          : undefined;
-  // A la derecha del formulario mira hacia él; encima de las pestañas, al frente.
-  const mira = lateral && (modo === 'mirar' || modo === 'reposo') ? 'izquierda' : undefined;
+    modo === 'triste' ? 'triste' : modo === 'celebrar' ? 'feliz' : undefined;
+  const manos: ManosCocuyo = modo === 'tapar' ? (espiando ? 'espiando' : 'tapando') : 'abajo';
+
+  // Mirada: a la derecha del formulario, el campo queda a su izquierda y los ojos se acercan al
+  // centro a medida que el cursor avanza hacia él; encima, el campo queda abajo a la izquierda.
+  let mirada: Mirada | undefined;
+  let inclinar = 0;
+  if (modo === 'mirar') {
+    mirada = lateral ? { x: -1 + avance * 0.9, y: 0.5 } : { x: -1 + avance * 1.6, y: 1 };
+    // Cabeza ladeada hacia el campo: más cuanto más lejos esté el cursor.
+    inclinar = reducir ? 0 : lateral ? -9 + avance * 7 : -4 + avance * 8;
+  } else if (modo === 'tapar') {
+    // Tapado, los ojos quedan centrados bajo las alas; al espiar, el ojo libre mira de reojo.
+    mirada = { x: espiando && lateral ? -0.5 : 0, y: 0 };
+  } else if (modo === 'reposo') {
+    mirada = lateral ? { x: -1, y: 0 } : { x: 0, y: 0 };
+  }
 
   return (
     <div ref={escena} className={estilos.escena}>
       {children}
       <motion.div
+        ref={personaje}
         className={estilos.cocuyo}
         style={{ x, y }}
         data-modo={modo}
@@ -244,8 +391,16 @@ export function EscenaAcceso({ children }: { children: ReactNode }) {
         aria-hidden="true"
       >
         <span className={estilos.cuerpo}>
-          <span className={estilos.giro}>
-            <Cocuyo tamano={46} mira={mira} expresion={expresion} encendido={modo !== 'triste'} />
+          <span className={estilos.inclinacion} style={{ rotate: `${inclinar}deg` }}>
+            <span ref={gesto} className={estilos.gesto}>
+              <Cocuyo
+                tamano={46}
+                mirada={mirada}
+                expresion={expresion}
+                manos={manos}
+                encendido={modo !== 'triste'}
+              />
+            </span>
           </span>
         </span>
         {modo === 'celebrar' && (

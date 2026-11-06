@@ -1,13 +1,16 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { AccesoPersonal } from '@/components/sesion/AccesoPersonal';
+import { EscenaAcceso } from '@/components/sesion/EscenaAcceso';
 
 export const metadata: Metadata = { title: 'Acceso del equipo' };
 
 export default function PaginaAccesoPersonal() {
   return (
     <Suspense fallback={<p>Cargando…</p>}>
-      <AccesoPersonal />
+      <EscenaAcceso>
+        <AccesoPersonal />
+      </EscenaAcceso>
     </Suspense>
   );
 }
