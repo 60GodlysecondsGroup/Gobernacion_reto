@@ -526,6 +526,11 @@
 }
 
 @media (min-width: 64rem) {
+  /* Secciones administrativas: la barra lateral sustituye al encabezado (ver `MarcoPanel`). */
+  .encabezado[data-panel] {
+    display: none;
+  }
+
   .datosCuenta {
     display: grid;
   }

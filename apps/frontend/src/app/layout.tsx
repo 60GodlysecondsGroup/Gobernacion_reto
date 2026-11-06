@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import { Suspense } from 'react';
 import { GuiaVirtual } from '@/components/guia/GuiaVirtual';
+import { ContenidoPrincipal } from '@/components/layout/ContenidoPrincipal';
 import { Encabezado } from '@/components/layout/Encabezado';
 import { BarraInferior } from '@/components/layout/Navegacion';
 import { BarraProgreso } from '@/components/movimiento/BarraProgreso';
@@ -87,9 +88,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           <ProveedorSesion>
             <ProveedorNotificaciones>
               <Encabezado />
-              <main id="contenido" className="contenedor contenedor-principal">
-                {children}
-              </main>
+              <ContenidoPrincipal>{children}</ContenidoPrincipal>
               <PiePagina />
               <BarraInferior />
               <GuiaVirtual />

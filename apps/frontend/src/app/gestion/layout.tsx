@@ -7,8 +7,8 @@ import { RequiereSesion } from '@/components/sesion/RequiereSesion';
  */
 export default function LayoutGestion({ children }: { children: React.ReactNode }) {
   return (
-    <RequiereSesion permiso="gestionar_fuentes">
-      <MarcoPanel>{children}</MarcoPanel>
-    </RequiereSesion>
+    <MarcoPanel>
+      <RequiereSesion permiso="gestionar_fuentes">{children}</RequiereSesion>
+    </MarcoPanel>
   );
 }
