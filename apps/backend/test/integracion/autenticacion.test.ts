@@ -256,6 +256,30 @@ describe('Registro', () => {
     expect((await registrar({ alias: 'lunademo' })).status).toBe(409);
   });
 
+  it('el paso 1 comprueba el nametag antes de registrar, sin crear nada', async () => {
+    const comprobar = (alias: unknown) =>
+      request(app).post('/api/sesion/registro/alias').send({ alias });
+    const alias = aliasNuevo();
+
+    const libre = await comprobar(alias);
+    expect(libre.status).toBe(204);
+    expect(cookieSesion(libre)).toBeUndefined();
+    expect(await contarAlias(alias)).toBe(0);
+
+    expect((await registrar({ alias })).status).toBe(201);
+    const tomado = await comprobar(alias.toUpperCase());
+    expect(tomado.status).toBe(409);
+    expect(tomado.body.error).toMatchObject({
+      codigo: 'ALIAS_EN_USO',
+      detalles: { campo: 'alias' },
+    });
+    // Cuentas sintéticas y de personal también ocupan su nametag.
+    expect((await comprobar('lunademo')).status).toBe(409);
+
+    expect((await comprobar('a b')).status).toBe(400);
+    expect((await request(app).post('/api/sesion/registro/alias').send({})).status).toBe(400);
+  });
+
   it('dos registros simultáneos con el mismo nametag: solo uno gana', async () => {
     const alias = aliasNuevo();
     const estados = (await Promise.all([registrar({ alias }), registrar({ alias })])).map(

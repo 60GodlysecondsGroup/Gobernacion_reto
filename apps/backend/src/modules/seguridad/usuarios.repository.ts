@@ -81,6 +81,19 @@ export function crearRepositorioUsuarios(db: Database) {
       cuentaConHash(`u.correo = $1 and u.rol <> 'usuario'`, [correo]),
 
     /**
+     * true si ya hay una cuenta (de cualquier rol) con ese nametag, sin distinguir mayúsculas:
+     * el mismo criterio del índice único `usuario_alias_unico`. Solo orienta al formulario; el
+     * índice sigue siendo quien impide el duplicado al registrar.
+     */
+    async aliasEnUso(alias: string): Promise<boolean> {
+      const { rows } = await db.query<{ enUso: boolean }>(
+        'select exists (select 1 from app.usuario where lower(alias) = lower($1)) as "enUso"',
+        [alias],
+      );
+      return rows[0]?.enUso ?? false;
+    },
+
+    /**
      * Crea la cuenta, su contraseña y su avatar en una sola sentencia: o se guarda todo o nada.
      * Un nametag repetido falla por el índice único `usuario_alias_unico`, también si dos
      * registros llegan a la vez.

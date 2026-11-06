@@ -117,6 +117,8 @@ export type LimitesAcceso = {
   fallosPorIp: number;
   /** Registros (exitosos o no) por IP. */
   registrosPorIp: number;
+  /** Consultas de disponibilidad de nametag por IP (paso 1 del registro). */
+  consultasAliasPorIp?: number;
   ventanaMs: number;
 };
 
@@ -124,8 +126,14 @@ export const LIMITES_ACCESO: LimitesAcceso = {
   fallosPorCuenta: 5,
   fallosPorIp: 30,
   registrosPorIp: 10,
+  consultasAliasPorIp: 60,
   ventanaMs: 15 * 60 * 1000,
 };
+
+const aliasEnUso = () =>
+  new ErrorApp(409, 'ALIAS_EN_USO', 'Ese nametag ya está en uso. Prueba con otro.', {
+    campo: 'alias',
+  });
 
 type Dependencias = {
   usuarios: RepositorioUsuarios;
@@ -162,6 +170,10 @@ export function crearServicioSesion({
   const fallosPorIp = crearLimitador({ maximo: limites.fallosPorIp, ventanaMs: limites.ventanaMs });
   const registros = crearLimitador({
     maximo: limites.registrosPorIp,
+    ventanaMs: limites.ventanaMs,
+  });
+  const consultasAlias = crearLimitador({
+    maximo: limites.consultasAliasPorIp ?? LIMITES_ACCESO.consultasAliasPorIp!,
     ventanaMs: limites.ventanaMs,
   });
 
@@ -278,6 +290,20 @@ export function crearServicioSesion({
       });
     },
 
+    /**
+     * Paso 1 del registro: falla con el mismo 409 `ALIAS_EN_USO` del registro si el nametag ya
+     * está tomado. Es solo un aviso temprano: entre esta consulta y el registro otra persona
+     * puede tomarlo, y entonces el índice único lo rechaza al registrar.
+     */
+    async comprobarAlias(entrada: unknown, ip: string): Promise<void> {
+      const espera = consultasAlias.bloqueadoPor(ip);
+      if (espera > 0) throw demasiadosIntentos(espera);
+      consultasAlias.registrar(ip);
+
+      const { alias } = validar(z.object({ alias: esquemaAlias }).strict(), entrada);
+      if (await usuarios.aliasEnUso(alias)) throw aliasEnUso();
+    },
+
     /** Crea una cuenta de joven y abre su sesión. */
     async registrar(entrada: unknown, ip: string): Promise<SesionAbierta> {
       const espera = registros.bloqueadoPor(ip);
@@ -310,16 +336,7 @@ export function crearServicioSesion({
           });
         } catch (error) {
           const { code, constraint } = error as { code?: string; constraint?: string };
-          if (code === '23505' && constraint === 'usuario_alias_unico') {
-            throw new ErrorApp(
-              409,
-              'ALIAS_EN_USO',
-              'Ese nametag ya está en uso. Prueba con otro.',
-              {
-                campo: 'alias',
-              },
-            );
-          }
+          if (code === '23505' && constraint === 'usuario_alias_unico') throw aliasEnUso();
           // Choque (improbable) del código interno aleatorio: se intenta con otro.
           if (code === '23505' && constraint === 'usuario_codigo_key' && intento < 2) continue;
           throw error;

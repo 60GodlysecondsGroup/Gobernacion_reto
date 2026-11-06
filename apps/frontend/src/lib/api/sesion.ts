@@ -76,6 +76,13 @@ export const iniciarSesionPersonal = (datos: DatosInicioPersonal) =>
 export const registrarse = (datos: DatosRegistro) =>
   api.post<{ usuario: SesionPublica }>('/api/sesion/registro', datos);
 
+/**
+ * Paso 1 del registro: se resuelve si el nametag está libre y falla con `ALIAS_EN_USO` (campo
+ * `alias`) si ya lo tiene alguien. El registro final lo vuelve a comprobar.
+ */
+export const comprobarAlias = (alias: string) =>
+  api.post<null>('/api/sesion/registro/alias', { alias });
+
 /** Rangos de edad y catálogo de avatar: públicos, para el formulario de registro. */
 export const obtenerOpcionesRegistro = () =>
   api.get<{ rangos: RangoEdad[]; catalogo: ElementoAvatar[] }>('/api/sesion/registro');

@@ -65,6 +65,12 @@ export function rutasSesion(servicio: ServicioSesion, opciones: Opciones): Route
     res.json(await servicio.opcionesRegistro());
   });
 
+  // Paso 1 del registro: 204 si el nametag está libre, 409 ALIAS_EN_USO si ya lo tiene alguien.
+  router.post('/sesion/registro/alias', async (req, res) => {
+    await servicio.comprobarAlias(req.body, req.ip ?? 'desconocida');
+    res.set('Cache-Control', 'no-store').status(204).end();
+  });
+
   router.post('/sesion/registro', async (req, res) => {
     const abierta = await servicio.registrar(req.body, req.ip ?? 'desconocida');
     await cerrarAnterior(req);

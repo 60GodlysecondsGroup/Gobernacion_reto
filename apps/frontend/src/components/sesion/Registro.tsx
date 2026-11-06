@@ -9,6 +9,7 @@ import { HOBBIES_SUGERIDOS, MAXIMO_HOBBIES } from '@/config/hobbies';
 import type { Capa, ConfiguracionAvatar, ElementoAvatar } from '@/lib/api/avatar';
 import { campoDelError, erroresPorCampo, ErrorApi, mensajeDeError } from '@/lib/api/cliente';
 import {
+  comprobarAlias,
   obtenerOpcionesRegistro,
   type CodigoRango,
   type RangoEdad,
@@ -66,6 +67,8 @@ export function FormularioRegistro({
   const [contrasena, setContrasena] = useState('');
   const [recordar, setRecordar] = useState(false);
   const [enviando, setEnviando] = useState(false);
+  /** Consultando si el nametag está libre, al salir de la etapa 1. */
+  const [comprobando, setComprobando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errores, setErrores] = useState<ErroresRegistro>({});
 
@@ -74,6 +77,8 @@ export function FormularioRegistro({
   /** Tras cambiar de etapa: llevar el foco al primer error (true) o al título de la etapa. */
   const enfocarError = useRef(false);
   const primerRender = useRef(true);
+  /** El nametag escrito ahora mismo, para descartar una consulta que llegue tras editarlo. */
+  const aliasActual = useRef('');
 
   const quitarError = (campo: keyof ErroresRegistro) =>
     setErrores((actuales) => ({ ...actuales, [campo]: undefined }));
@@ -145,13 +150,40 @@ export function FormularioRegistro({
     setAlcanzado((actual) => (destino > actual ? destino : actual));
   }
 
+  /**
+   * Al salir de la etapa 1: pregunta al backend si el nametag está libre. Devuelve false (y
+   * marca el campo) solo si el backend lo rechaza; si la consulta no llega a responder (red,
+   * límite de intentos), se deja avanzar: el registro final vuelve a comprobarlo.
+   */
+  async function nametagDisponible(): Promise<boolean> {
+    const consultado = alias.trim();
+    setComprobando(true);
+    try {
+      await comprobarAlias(consultado);
+      return true;
+    } catch (e) {
+      const rechazo =
+        e instanceof ErrorApi &&
+        (campoDelError(e) === 'alias' ? mensajeDeError(e) : erroresPorCampo(e).alias);
+      if (!rechazo) return true;
+      // Si lo editaron mientras se consultaba, el aviso ya no corresponde a lo escrito.
+      if (aliasActual.current.trim() === consultado) {
+        setErrores((actuales) => ({ ...actuales, alias: rechazo }));
+      }
+      return false;
+    } finally {
+      setComprobando(false);
+    }
+  }
+
   /** Ir a otra etapa. Hacia adelante, se validan las etapas que quedan atrás. */
-  function irA(destino: IndicePaso) {
+  async function irA(destino: IndicePaso) {
     if (destino <= paso) {
       setError(null);
       mostrar(destino);
       return;
     }
+    if (comprobando) return;
     const pendientes: ErroresRegistro = {};
     for (let p = paso; p < destino; p++)
       Object.assign(pendientes, validarPaso(p as IndicePaso, datos));
@@ -160,6 +192,15 @@ export function FormularioRegistro({
       setErrores((actuales) => ({ ...actuales, ...pendientes }));
       mostrar(conError, true);
       return;
+    }
+    if (paso === 0) {
+      const consultado = alias;
+      if (!(await nametagDisponible())) {
+        mostrar(0, true);
+        return;
+      }
+      // Cambió mientras se consultaba: no se avanza con un nametag sin comprobar.
+      if (aliasActual.current !== consultado) return;
     }
     setError(null);
     mostrar(destino);
@@ -192,10 +233,10 @@ export function FormularioRegistro({
 
   async function enviar(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
-    if (enviando || !avatar) return;
+    if (enviando || comprobando || !avatar) return;
     // Enter en una etapa intermedia equivale a «Continuar».
     if (paso < ULTIMO_PASO) {
-      irA((paso + 1) as IndicePaso);
+      await irA((paso + 1) as IndicePaso);
       return;
     }
 
@@ -265,7 +306,7 @@ export function FormularioRegistro({
         {PASOS_REGISTRO.map((p, i) => {
           const actual = i === paso;
           const hecha = i < paso;
-          const disponible = i <= alcanzado && !actual && !enviando;
+          const disponible = i <= alcanzado && !actual && !enviando && !comprobando;
           const contenido = (
             <>
               <span className={estilos.punto} aria-hidden="true">
@@ -340,6 +381,7 @@ export function FormularioRegistro({
             value={alias}
             onChange={(e) => {
               setAlias(e.target.value);
+              aliasActual.current = e.target.value;
               quitarError('alias');
             }}
             error={errores.alias}
@@ -539,7 +581,7 @@ export function FormularioRegistro({
             </Boton>
           )}
           {paso < ULTIMO_PASO ? (
-            <Boton type="submit" tamano="lg" className={estilos.continuar}>
+            <Boton type="submit" tamano="lg" cargando={comprobando} className={estilos.continuar}>
               Continuar
               <ArrowRight aria-hidden="true" size={18} />
             </Boton>
