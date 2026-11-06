@@ -14,6 +14,8 @@ export type FichaServicio = {
   tipoCanal: TipoCanal;
   telefono: string | null;
   enlace: string | null;
+  /** Celular de WhatsApp en E.164 («+573001234567»). null si no tiene: no se muestra el botón. */
+  whatsapp: string | null;
   /** Texto legible del horario (con horario semanal, derivado de él). */
   horario: string | null;
   /**

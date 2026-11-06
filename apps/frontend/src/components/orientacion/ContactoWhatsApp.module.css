@@ -1,0 +1,109 @@
+/*
+ * Contacto por WhatsApp: misma forma que las filas de contacto de la ficha (icono, rótulo y dato)
+ * con el botón debajo, a todo el ancho: un objetivo táctil grande y fácil de reconocer.
+ * El verde es el de la marca, oscurecido para que el texto blanco cumpla el contraste AA (5,4:1).
+ */
+.whatsapp {
+  --verde-whatsapp: #117a43;
+  --verde-whatsapp-hover: #0d6436;
+
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espacio-3);
+  padding: var(--espacio-3);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie-solida);
+  color: var(--color-texto);
+}
+
+.icono {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radio-md);
+  background: var(--verde-whatsapp);
+  color: #fff;
+}
+
+.textos {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rotulo {
+  color: var(--color-texto-suave);
+  font-size: var(--texto-xs);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.numero {
+  font-weight: var(--peso-fuerte);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.nota {
+  color: var(--color-texto-tenue);
+  font-size: var(--texto-xs);
+}
+
+.boton {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-2);
+  min-height: 2.75rem;
+  padding: var(--espacio-2) var(--espacio-4);
+  border-radius: var(--radio-total);
+  background: var(--verde-whatsapp);
+  color: #fff;
+  font-weight: var(--peso-fuerte);
+  text-align: center;
+  text-decoration: none;
+  box-shadow: var(--sombra-1);
+  transition:
+    background var(--transicion),
+    box-shadow var(--transicion),
+    transform 200ms var(--curva-resorte);
+}
+
+.boton:hover {
+  background: var(--verde-whatsapp-hover);
+  color: #fff;
+  text-decoration: none;
+  box-shadow: var(--sombra-2);
+  transform: translateY(-1px);
+}
+
+.boton:active {
+  transform: scale(0.99);
+}
+
+.boton:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.boton svg {
+  flex-shrink: 0;
+}
+
+.flecha {
+  opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boton,
+  .boton:hover,
+  .boton:active {
+    transition: none;
+    transform: none;
+  }
+}

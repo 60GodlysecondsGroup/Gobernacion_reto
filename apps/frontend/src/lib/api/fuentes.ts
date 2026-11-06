@@ -15,6 +15,8 @@ export type FuenteGestion = {
   tipoCanal: TipoCanal;
   telefono: string | null;
   enlace: string | null;
+  /** Celular de WhatsApp en E.164 («+573001234567»); null si no tiene (y en las anteriores). */
+  whatsapp: string | null;
   /** Texto legible; con horario semanal, el backend lo deriva de él. */
   horario: string | null;
   /** null en las fuentes registradas antes del horario semanal: conservan su texto. */
@@ -58,6 +60,8 @@ export type DatosFuente = {
   tipoCanal: TipoCanal;
   telefono: string;
   enlace: string;
+  /** Vacío = sin WhatsApp (lo quita si lo había). El backend lo normaliza a E.164. */
+  whatsapp: string;
   /** Solo cuenta si `horarioSemanal` es null (texto anterior que se conserva). */
   horario: string;
   horarioSemanal: HorarioSemanal | null;

@@ -21,6 +21,7 @@ import { obtenerServicio, type FichaServicio } from '@/lib/api/orientacion';
 import { formatearFecha } from '@/lib/fechas';
 import comun from '../comun.module.css';
 import { ContactoServicio, IconoCanal } from './ContactoServicio';
+import { ContactoWhatsApp } from './ContactoWhatsApp';
 import estilos from './FichaCompleta.module.css';
 import { HorarioAtencion, tieneHorario } from './HorarioAtencion';
 import { ModalFicha } from './ModalFicha';
@@ -225,6 +226,16 @@ export function FichaCompleta() {
           <p className={estilos.rotulo}>Canal</p>
           <ContactoServicio servicio={servicio} />
         </div>
+        {servicio.whatsapp && (
+          <div className={estilos.bloque}>
+            <p className={estilos.rotulo}>WhatsApp</p>
+            <ContactoWhatsApp
+              numero={servicio.whatsapp}
+              servicio={servicio.servicio}
+              esDemo={servicio.esDemo}
+            />
+          </div>
+        )}
         {(servicio.ubicacion || servicio.direccion) && (
           <div className={estilos.bloque}>
             <p className={estilos.rotulo}>Dirección</p>

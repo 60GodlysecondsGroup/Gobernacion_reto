@@ -1,8 +1,11 @@
 /**
  * Validación de los datos de una fuente en el navegador, para avisar mientras se escribe. Son las
  * mismas reglas y los mismos mensajes del backend (`apps/backend/src/modules/fuentes/
- * fuentes.esquemas.ts`), que es quien decide al guardar. El horario se valida en `horarios.ts`.
+ * fuentes.esquemas.ts`), que es quien decide al guardar. El horario se valida en `horarios.ts`;
+ * el WhatsApp, en `whatsapp.ts`.
  */
+// Con extensión: este archivo también lo cargan las pruebas de `node --test`.
+import { errorWhatsapp } from './whatsapp.ts';
 export const MENSAJES_FUENTE = {
   institucion: 'Escribe el nombre de la institución (al menos 2 caracteres).',
   servicio: 'Escribe el nombre del servicio o canal (al menos 2 caracteres).',
@@ -29,6 +32,8 @@ export type DatosValidables = {
   tipoCanal: string;
   telefono: string;
   enlace: string;
+  /** Celular de WhatsApp con indicativo (opcional; reglas en `whatsapp.ts`). */
+  whatsapp?: string;
   fuenteOriginal: string;
   necesidades: string[];
   observaciones: string;
@@ -83,6 +88,9 @@ export function validarFuente(datos: DatosValidables, hoy?: string): ErroresFuen
   else if (!enlace && pideEnlace(datos.tipoCanal)) {
     errores.enlace = MENSAJES_FUENTE.enlaceObligatorio;
   }
+
+  const whatsapp = errorWhatsapp(datos.whatsapp ?? '');
+  if (whatsapp) errores.whatsapp = whatsapp;
 
   const direccion = (datos.direccion ?? '').trim();
   if (direccion && direccion.length < 5) errores.direccion = MENSAJES_FUENTE.direccion;
